@@ -1,0 +1,47 @@
+version: v1alpha1
+consts:
+  me:
+    values:
+      - pippo@gmail.com
+      - pippo@hotmail.com
+  spam:
+    values:
+      - spammer@spam.com
+rules:
+# important emails
+  - filters:
+      from:
+        - myalarm@myalarm.com
+    actions:
+      markImportant: true
+      labels:
+        - alarm
+# delete spammers
+  - filters:
+      subject:
+        - foo bar baz
+        - I want to spam you
+    actions:
+      delete: true
+  - filters:
+      consts:
+        from:
+          - spam
+    actions:
+      delete: true
+# mail list
+  - filters:
+      from:
+        - interesting@maillist.com
+      consts:
+        notTo:
+          - me
+    actions:
+      archive: true
+      markRead: true
+  - filters:
+      from:
+        - interesting@maillist.com
+    actions:
+      labels:
+        - mail-list
