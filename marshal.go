@@ -6,9 +6,29 @@ import (
 	"time"
 )
 
-// MarshalEntries exports the given entries to the Gmail xml format.
-func MarshalEntries(author Author, entries []Entry, w io.Writer) error {
-	doc := toXml(author, entries)
+// XMLExporter exports the given entries to the Gmail xml format.
+type XMLExporter interface {
+	// MarshalEntries exports the given entries to the Gmail xml format.
+	MarshalEntries(author Author, entries []Entry, w io.Writer) error
+}
+
+// DefaultXMLExporter returns a default implementation of the XMLExporter interface.
+func DefaultXMLExporter() XMLExporter {
+	return xmlExporter{now: defaultNow}
+}
+
+// nowFunc returns the current time
+type nowFunc func() time.Time
+
+var defaultNow nowFunc = func() time.Time { return time.Now() }
+
+type xmlExporter struct {
+	// Allows to be mocked away
+	now nowFunc
+}
+
+func (x xmlExporter) MarshalEntries(author Author, entries []Entry, w io.Writer) error {
+	doc := x.toXml(author, entries)
 	out, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		return err
@@ -46,35 +66,35 @@ type xmlProperty struct {
 	Value   string   `xml:"value,attr"`
 }
 
-func toXml(author Author, entries []Entry) xmlDoc {
+func (x xmlExporter) toXml(author Author, entries []Entry) xmlDoc {
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",
 		XMLNSApps:   "http://schemas.google.com/apps/2006",
 		Title:       "Mail Filters",
 		ID:          "tag:mail.google.com,2008:filters:",
-		Updated:     time.Now(),
+		Updated:     x.now(),
 		AuthorName:  author.Name,
 		AuthorEmail: author.Email,
-		Entries:     entriesToXml(entries),
+		Entries:     x.entriesToXml(entries),
 	}
 	return res
 }
 
-func entriesToXml(entries []Entry) []xmlEntry {
+func (x xmlExporter) entriesToXml(entries []Entry) []xmlEntry {
 	res := make([]xmlEntry, len(entries))
 	for i, entry := range entries {
 		xentry := xmlEntry{
 			CategoryTerm: "Filter",
 			Title:        "Mail Filter",
 			Content:      "",
-			Properties:   propertiesToXml(entry.Properties),
+			Properties:   x.propertiesToXml(entry.Properties),
 		}
 		res[i] = xentry
 	}
 	return res
 }
 
-func propertiesToXml(props []Property) []xmlProperty {
+func (x xmlExporter) propertiesToXml(props []Property) []xmlProperty {
 	res := make([]xmlProperty, len(props))
 	for i, prop := range props {
 		xprop := xmlProperty{
