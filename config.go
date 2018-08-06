@@ -2,11 +2,13 @@ package main
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
-	Version string            `yaml:"version"`
-	Author  Author            `yaml:"author"`
-	Consts  map[string]Values `yaml:"consts,omitempty"`
-	Rules   []Rule            `yaml:"rules"`
+	Version string `yaml:"version"`
+	Author  Author `yaml:"author"`
+	Consts  Consts `yaml:"consts,omitempty"`
+	Rules   []Rule `yaml:"rules"`
 }
+
+type Consts map[string]Values
 
 // Author represents the owner of the gmail account.
 type Author struct {
