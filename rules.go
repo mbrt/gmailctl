@@ -1,10 +1,12 @@
 package main
 
 const (
-	From      = "from"
-	Important = "shouldAlwaysMarkAsImportant"
-	Label     = "label"
-	Category  = "smartLabelToApply"
+	PropertyFrom          = "from"
+	PropertyHas           = "hasTheWord"
+	PropertyMarkImportant = "shouldAlwaysMarkAsImportant"
+	PropertyApplyLabel    = "label"
+	PropertyApplyCategory = "smartLabelToApply"
+	PropertyDelete        = "shouldTrash"
 )
 
 type Entry struct {

@@ -28,14 +28,17 @@ type xmlExporter struct {
 }
 
 func (x xmlExporter) MarshalEntries(author Author, entries []Entry, w io.Writer) error {
-	doc := x.toXml(author, entries)
+	doc := x.toXML(author, entries)
 	out, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		return err
 	}
-	w.Write([]byte(xml.Header))
-	w.Write(out)
-	return nil
+	_, err = w.Write([]byte(xml.Header))
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(out)
+	return err
 }
 
 type xmlDoc struct {
@@ -51,13 +54,15 @@ type xmlDoc struct {
 }
 
 type xmlEntry struct {
-	XMLName      xml.Name  `xml:"entry"`
-	CategoryTerm string    `xml:"category>term,attr"`
-	Title        string    `xml:"title"`
-	ID           string    `xml:"id"`
-	Updated      time.Time `xml:"updated"`
-	Content      string    `xml:"content"`
-	Properties   []xmlProperty
+	XMLName    xml.Name    `xml:"entry"`
+	Category   xmlCategory `xml:"category"`
+	Title      string      `xml:"title"`
+	Content    string      `xml:"content"`
+	Properties []xmlProperty
+}
+
+type xmlCategory struct {
+	Term string `xml:"term,attr"`
 }
 
 type xmlProperty struct {
@@ -66,7 +71,7 @@ type xmlProperty struct {
 	Value   string   `xml:"value,attr"`
 }
 
-func (x xmlExporter) toXml(author Author, entries []Entry) xmlDoc {
+func (x xmlExporter) toXML(author Author, entries []Entry) xmlDoc {
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",
 		XMLNSApps:   "http://schemas.google.com/apps/2006",
@@ -75,26 +80,26 @@ func (x xmlExporter) toXml(author Author, entries []Entry) xmlDoc {
 		Updated:     x.now(),
 		AuthorName:  author.Name,
 		AuthorEmail: author.Email,
-		Entries:     x.entriesToXml(entries),
+		Entries:     x.entriesToXML(entries),
 	}
 	return res
 }
 
-func (x xmlExporter) entriesToXml(entries []Entry) []xmlEntry {
+func (x xmlExporter) entriesToXML(entries []Entry) []xmlEntry {
 	res := make([]xmlEntry, len(entries))
 	for i, entry := range entries {
 		xentry := xmlEntry{
-			CategoryTerm: "Filter",
-			Title:        "Mail Filter",
-			Content:      "",
-			Properties:   x.propertiesToXml(entry.Properties),
+			Category:   xmlCategory{"filter"},
+			Title:      "Mail Filter",
+			Content:    "",
+			Properties: x.propertiesToXML(entry.Properties),
 		}
 		res[i] = xentry
 	}
 	return res
 }
 
-func (x xmlExporter) propertiesToXml(props []Property) []xmlProperty {
+func (x xmlExporter) propertiesToXML(props []Property) []xmlProperty {
 	res := make([]xmlProperty, len(props))
 	for i, prop := range props {
 		xprop := xmlProperty{
