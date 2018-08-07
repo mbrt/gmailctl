@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Property values
 const (
 	PropertyFrom          = "from"
 	PropertyTo            = "to"
@@ -21,13 +22,25 @@ const (
 	PropertyMarkRead      = "shouldMarkAsRead"
 )
 
+// SmartLabel values
+const (
+	SmartLabelPersonal     = "personal"
+	SmartLabelGroup        = "group"
+	SmartLabelNotification = "notification"
+	SmartLabelPromo        = "promo"
+	SmartLabelSocial       = "social"
+)
+
+// Entry is a Gmail filter
 type Entry []Property
 
+// Property is a property of a Gmail filter, as specified by its XML format
 type Property struct {
 	Name  string
 	Value string
 }
 
+// GenerateRules translates a config into entries that map directly into Gmail filters
 func GenerateRules(config Config) ([]Entry, error) {
 	res := []Entry{}
 	for i, rule := range config.Rules {
@@ -159,13 +172,35 @@ func generateActions(actions Actions) ([]Property, error) {
 		res = append(res, Property{PropertyMarkRead, "true"})
 	}
 	if len(actions.Category) > 0 {
-		cat := fmt.Sprintf("^smartlabel_%s", actions.Category)
+		cat, err := categoryToSmartLabel(actions.Category)
+		if err != nil {
+			return nil, err
+		}
 		res = append(res, Property{PropertyApplyCategory, cat})
 	}
 	for _, label := range actions.Labels {
 		res = append(res, Property{PropertyApplyLabel, label})
 	}
 	return res, nil
+}
+
+func categoryToSmartLabel(cat Category) (string, error) {
+	var smartl string
+	switch cat {
+	case CategoryPersonal:
+		smartl = SmartLabelPersonal
+	case CategorySocial:
+		smartl = SmartLabelSocial
+	case CategoryUpdates:
+		smartl = SmartLabelNotification
+	case CategoryForums:
+		smartl = SmartLabelGroup
+	case CategoryPromotions:
+		smartl = SmartLabelPromo
+	default:
+		return "", fmt.Errorf("unrecognized category '%s", cat)
+	}
+	return fmt.Sprintf("^smartlabel_%s", smartl), nil
 }
 
 func joinOR(a []string) string {

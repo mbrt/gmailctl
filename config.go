@@ -1,8 +1,12 @@
 package main
 
+// Categories supported by Gmail.
 const (
-	CategoryPersonal = Category("personal")
-	// TODO more categories
+	CategoryPersonal   = Category("personal")
+	CategorySocial     = Category("social")
+	CategoryUpdates    = Category("updates")
+	CategoryForums     = Category("forums")
+	CategoryPromotions = Category("promotions")
 )
 
 // Category is one of the smart categories in Gmail.
@@ -17,7 +21,7 @@ type Config struct {
 }
 
 // Consts maps names to a list of string values
-type Consts map[string]Values
+type Consts map[string]ConstValue
 
 // Author represents the owner of the gmail account.
 type Author struct {
@@ -25,8 +29,8 @@ type Author struct {
 	Email string `yaml:"email"`
 }
 
-// Values is a container for an array of string values.
-type Values struct {
+// ConstValue is a container for an array of string values.
+type ConstValue struct {
 	Values []string `yaml:"values"`
 }
 

@@ -86,3 +86,79 @@ func TestGenerateSingleEntry(t *testing.T) {
 	}
 	assert.Equal(t, expected, entries)
 }
+
+func TestGenerateMultipleEntities(t *testing.T) {
+	// Smoke test with a single entry as result
+	mf := MatchFilters{
+		From: []string{"foobar@mail.com"},
+		Has:  []string{"pippo", "pluto paperino"},
+	}
+	actions := Actions{
+		MarkRead: true,
+		Labels:   []string{"label1", "label2", "label3"},
+	}
+	config := Config{
+		Rules: []Rule{{ /* single empty rule */ }},
+	}
+	config.Rules[0].Filters.MatchFilters = mf
+	config.Rules[0].Actions = actions
+
+	entries, err := GenerateRules(config)
+	assert.Nil(t, err)
+	expected := []Entry{
+		Entry{
+			Property{PropertyFrom, "foobar@mail.com"},
+			Property{PropertyHas, `{pippo "pluto paperino"}`},
+			Property{PropertyMarkRead, "true"},
+			Property{PropertyApplyLabel, "label1"},
+		},
+		Entry{
+			Property{PropertyFrom, "foobar@mail.com"},
+			Property{PropertyHas, `{pippo "pluto paperino"}`},
+			Property{PropertyApplyLabel, "label2"},
+		},
+		Entry{
+			Property{PropertyFrom, "foobar@mail.com"},
+			Property{PropertyHas, `{pippo "pluto paperino"}`},
+			Property{PropertyApplyLabel, "label3"},
+		},
+	}
+	assert.Equal(t, expected, entries)
+}
+
+func TestGenerateConsts(t *testing.T) {
+	// Test constants replacement
+	mf := MatchFilters{
+		From: []string{"friends"},
+	}
+	actions := Actions{
+		MarkImportant: true,
+	}
+	config := Config{
+		Consts: Consts{
+			"friends": ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"foo":     ConstValue{Values: []string{"useless"}},
+		},
+		Rules: []Rule{{ /* single empty rule */ }},
+	}
+	config.Rules[0].Filters.Consts.MatchFilters = mf
+	config.Rules[0].Actions = actions
+
+	entries, err := GenerateRules(config)
+	assert.Nil(t, err)
+	expected := []Entry{
+		Entry{
+			Property{PropertyFrom, "{a@b.com b@c.it}"},
+			Property{PropertyMarkImportant, "true"},
+		},
+	}
+	assert.Equal(t, expected, entries)
+
+	// Test unknown constant
+	mf = MatchFilters{
+		From: []string{"wtf"},
+	}
+	config.Rules[0].Filters.Consts.MatchFilters = mf
+	_, err = GenerateRules(config)
+	assert.NotNil(t, err)
+}
