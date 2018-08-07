@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -20,20 +22,32 @@ func readConfig(path string) (Config, error) {
 
 }
 
+func fatal(format string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, format, a...)
+	if !strings.HasSuffix(format, "\n") {
+		// Add newline
+		fmt.Fprintln(os.Stderr, "")
+	}
+	os.Exit(1)
+}
+
 func main() {
+	flag.Parse()
+	if flag.NArg() < 1 {
+		fatal("usage: %s <config-file>", os.Args[0])
+	}
 	cfg, err := readConfig("example.yaml")
 	if err != nil {
-		panic(err)
+		fatal("error in config parse: %s", err)
 	}
-	fmt.Printf("%+v\n", cfg) // DEBUG
 
 	rules, err := GenerateRules(cfg)
 	if err != nil {
-		panic(err)
+		fatal("error generating rules: %s", err)
 	}
 
 	err = DefaultXMLExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
 	if err != nil {
-		panic(err)
+		fatal("error exporting to XML: %s", err)
 	}
 }
