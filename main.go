@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -24,5 +25,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%+v\n", cfg)
+	fmt.Printf("%+v\n", cfg) // DEBUG
+
+	rules, err := GenerateRules(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	err = DefaultXMLExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
+	if err != nil {
+		panic(err)
+	}
 }

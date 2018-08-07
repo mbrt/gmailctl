@@ -29,13 +29,21 @@ rules:
           - spam
     actions:
       delete: true
+  - filters:
+      has:
+        - buy this
+        - buy that
+    actions:
+      delete: true
 # mail list
+# archive unless directed to me
   - filters:
       from:
         - interesting@maillist.com
       consts:
-        notTo:
-          - me
+        not:
+          to:
+            - me
     actions:
       archive: true
       markRead: true

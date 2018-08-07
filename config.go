@@ -8,6 +8,7 @@ type Config struct {
 	Rules   []Rule `yaml:"rules"`
 }
 
+// Consts maps names to a list of string values
 type Consts map[string]Values
 
 // Author represents the owner of the gmail account.
@@ -29,22 +30,30 @@ type Rule struct {
 
 // Filters determine how to select emails.
 //
-// Two ways are possible: by directly specifying the constants or by referring
-// to constants specified by the `consts` section of the config.
+// Two ways are possible: by directly specifying the constants in the match filters
+// or by referring to constants specified by the global `consts` section on top of the
+// config.
 type Filters struct {
-	SimpleFilters `yaml:",inline"`
-	Consts        SimpleFilters `yaml:"consts"`
+	CompositeFilters `yaml:",inline"`
+	Consts           CompositeFilters `yaml:"consts"`
 }
 
-// SimpleFilters contains a list of filters interpreted at a higher level.
+// CompositeFilters contains alternatively match or negation of matches.
+// All the conditions are put in AND together.
+type CompositeFilters struct {
+	MatchFilters `yaml:",inline"`
+	Not          MatchFilters `yaml:"not"`
+}
+
+// MatchFilters contains a list of filters interpreted at a higher level.
 //
 // Every type of filter (e.g. Subject) is an array or requirements. They will be OR-ed
 // together. If multiple types of filters are specified, they will be put in AND together.
-type SimpleFilters struct {
-	Subject []string `yaml:"subject,omitempty"`
+type MatchFilters struct {
 	From    []string `yaml:"from,omitempty"`
 	To      []string `yaml:"to,omitempty"`
-	NotTo   []string `yaml:"notTo,omitempty"`
+	Subject []string `yaml:"subject,omitempty"`
+	Has     []string `yaml:"has,omitempty"`
 }
 
 // Actions contains the actions to be applied to a set of emails.
