@@ -30,7 +30,7 @@ gmailfilter config.yaml > filters.xml
 ```
 
 where `config.yaml` is the configuration file containing the filtering rules
-(see [Configuration][configuration]). The utility will print out an XML that you
+(see [Configuration](configuration)). The utility will print out an XML that you
 can import as Gmail filters.
 
 **NOTE:** It's recommended to backup your current configuration before to
@@ -220,7 +220,7 @@ this one are:
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailfilter`)
 * `gmail-britta` allows to write complex chains of filters, but fails to provide
-  easy ways to write reasonably easy filters[1][footnote 1].
+  easy ways to write reasonably easy filters[1](footnote 1).
 * `gmailfilter` tries to workaround certain limitations in Gmail (like applying
   multiple labels with the same filter) `gmail-britta` tries to workaround
   others (chain filtering).
