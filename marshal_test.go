@@ -37,15 +37,15 @@ func TestEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
 	author := Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	entries := []Entry{
-		{Properties: []Property{
+		Entry{
 			{Name: PropertyFrom, Value: "foo@baz.com"},
 			{Name: PropertyMarkImportant, Value: "true"},
-		}},
-		{Properties: []Property{
+		},
+		Entry{
 			{Name: PropertyHas, Value: "SPAM!!"},
 			{Name: PropertyDelete, Value: "true"},
 			{Name: PropertyApplyLabel, Value: "spam"},
-		}},
+		},
 	}
 	buf := new(bytes.Buffer)
 	err := exporter.MarshalEntries(author, entries, buf)

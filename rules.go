@@ -17,11 +17,11 @@ const (
 	PropertyApplyLabel    = "label"
 	PropertyApplyCategory = "smartLabelToApply"
 	PropertyDelete        = "shouldTrash"
+	PropertyArchive       = "shouldArchive"
+	PropertyMarkRead      = "shouldMarkAsRead"
 )
 
-type Entry struct {
-	Properties []Property
-}
+type Entry []Property
 
 type Property struct {
 	Name  string
@@ -48,7 +48,7 @@ func generateRule(rule Rule, consts Consts) ([]Entry, error) {
 	if len(filters) == 0 {
 		return nil, errors.New("at least one filter has to be specified")
 	}
-	actions, err := generateActions(rule.Actions, consts)
+	actions, err := generateActions(rule.Actions)
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating actions")
 	}
@@ -144,11 +144,37 @@ func generateMatchFilters(filters MatchFilters) ([]Property, error) {
 	return res, nil
 }
 
-func generateActions(actions Actions, consts Consts) ([]Property, error) {
-	return nil, nil
+func generateActions(actions Actions) ([]Property, error) {
+	res := []Property{}
+	if actions.Archive {
+		res = append(res, Property{PropertyArchive, "true"})
+	}
+	if actions.Delete {
+		res = append(res, Property{PropertyDelete, "true"})
+	}
+	if actions.MarkImportant {
+		res = append(res, Property{PropertyMarkImportant, "true"})
+	}
+	if actions.MarkRead {
+		res = append(res, Property{PropertyMarkRead, "true"})
+	}
+	if len(actions.Category) > 0 {
+		cat := fmt.Sprintf("^smartlabel_%s", actions.Category)
+		res = append(res, Property{PropertyApplyCategory, cat})
+	}
+	for _, label := range actions.Labels {
+		res = append(res, Property{PropertyApplyLabel, label})
+	}
+	return res, nil
 }
 
 func joinOR(a []string) string {
+	if len(a) == 0 {
+		return ""
+	}
+	if len(a) == 1 {
+		return a[0]
+	}
 	return fmt.Sprintf("{%s}", strings.Join(quote(a), " "))
 }
 
@@ -156,14 +182,39 @@ func quote(a []string) []string {
 	res := make([]string, len(a))
 	for i, s := range a {
 		if strings.ContainsRune(s, ' ') {
-			res[i] = fmt.Sprintf(`"%s"`, s)
-		} else {
-			res[i] = s
+			s = fmt.Sprintf(`"%s"`, s)
 		}
+		res[i] = s
 	}
 	return res
 }
 
 func combineFiltersActions(filters []Property, actions []Property) []Entry {
-	return nil
+	// Since only one label is allowed in the exported entries,
+	// we have to create a new entry for each label and use the same filters for each of them
+	res := []Entry{}
+	curr := copyPropertiesToEntry(filters)
+	countLabels := 0
+	for _, action := range actions {
+		if action.Name == PropertyApplyLabel {
+			countLabels++
+			if countLabels > 1 {
+				// Append the current entry and start with a fresh one
+				res = append(res, curr)
+				curr = copyPropertiesToEntry(filters)
+			}
+			countLabels = 1
+		}
+		curr = append(curr, action)
+	}
+	// Append the last entry
+	res = append(res, curr)
+
+	return res
+}
+
+func copyPropertiesToEntry(p []Property) Entry {
+	cp := make([]Property, len(p))
+	copy(cp, p)
+	return Entry(cp)
 }

@@ -1,5 +1,13 @@
 package main
 
+const (
+	CategoryPersonal = Category("personal")
+	// TODO more categories
+)
+
+// Category is one of the smart categories in Gmail.
+type Category string
+
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
 	Version string `yaml:"version"`
@@ -39,6 +47,7 @@ type Filters struct {
 }
 
 // CompositeFilters contains alternatively match or negation of matches.
+//
 // All the conditions are put in AND together.
 type CompositeFilters struct {
 	MatchFilters `yaml:",inline"`
@@ -62,5 +71,6 @@ type Actions struct {
 	Delete        bool     `yaml:"delete,omitempty"`
 	MarkImportant bool     `yaml:"markImportant,omitempty"`
 	MarkRead      bool     `yaml:"markRead,omitempty"`
+	Category      Category `yaml:"category,omitempty"`
 	Labels        []string `yaml:"labels,omitempty"`
 }

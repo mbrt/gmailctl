@@ -92,7 +92,7 @@ func (x xmlExporter) entriesToXML(entries []Entry) []xmlEntry {
 			Category:   xmlCategory{"filter"},
 			Title:      "Mail Filter",
 			Content:    "",
-			Properties: x.propertiesToXML(entry.Properties),
+			Properties: x.propertiesToXML(entry),
 		}
 		res[i] = xentry
 	}
