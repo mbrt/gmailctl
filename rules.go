@@ -13,7 +13,6 @@ const (
 	PropertyTo            = "to"
 	PropertySubject       = "subject"
 	PropertyHas           = "hasTheWord"
-	PropertyDoesNotHave   = "doesNotHaveTheWord"
 	PropertyMarkImportant = "shouldAlwaysMarkAsImportant"
 	PropertyApplyLabel    = "label"
 	PropertyApplyCategory = "smartLabelToApply"
@@ -73,14 +72,14 @@ func generateRule(rule Rule, consts Consts) ([]Entry, error) {
 
 func generateFilters(filters Filters, consts Consts) ([]Property, error) {
 	res := []Property{}
-	// simple filters first
-	mf, err := generateMatchFilters(filters.CompositeFilters.MatchFilters)
+	// simple filters
+	mf, err := generateMatchFilters(filters.MatchFilters)
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating match filters")
 	}
 	res = append(res, mf...)
 
-	// then simple filters with consts
+	// simple filters with consts
 	resolved, err := resolveFiltersConsts(filters.Consts.MatchFilters, consts)
 	if err != nil {
 		return nil, errors.Wrap(err, "error resolving consts in filter")
@@ -91,10 +90,99 @@ func generateFilters(filters Filters, consts Consts) ([]Property, error) {
 	}
 	res = append(res, mf...)
 
-	// TODO Not
-	// The negation looks like:
-	// -{to:{foobar@baz.com} } -{"Build failed"}
-	// which are mapped to hasTheWord and doesNotHaveTheWord
+	// negated filters
+	mf, err = generateNegatedFilters(filters.Not)
+	if err != nil {
+		return nil, errors.Wrap(err, "error generating negated filters")
+	}
+	res = append(res, mf...)
+
+	// negated filters with consts
+	resolved, err = resolveFiltersConsts(filters.Consts.Not, consts)
+	if err != nil {
+		return nil, errors.Wrap(err, "error resolving consts in filter")
+	}
+	mf, err = generateNegatedFilters(resolved)
+	if err != nil {
+		return nil, errors.Wrap(err, "error generating negated filters")
+	}
+	res = append(res, mf...)
+
+	return res, nil
+}
+
+func generateMatchFilters(filters MatchFilters) ([]Property, error) {
+	res := []Property{}
+	if len(filters.From) > 0 {
+		p := Property{PropertyFrom, joinOR(filters.From)}
+		res = append(res, p)
+	}
+	if len(filters.To) > 0 {
+		p := Property{PropertyTo, joinOR(filters.To)}
+		res = append(res, p)
+	}
+	if len(filters.Subject) > 0 {
+		p := Property{PropertySubject, joinOR(filters.Subject)}
+		res = append(res, p)
+	}
+	if len(filters.Has) > 0 {
+		p := Property{PropertyHas, joinOR(filters.Has)}
+		res = append(res, p)
+	}
+	return res, nil
+}
+
+func generateNegatedFilters(filters MatchFilters) ([]Property, error) {
+	clauses := []string{}
+	if len(filters.From) > 0 {
+		c := fmt.Sprintf("-{from:%s}", joinOR(filters.From))
+		clauses = append(clauses, c)
+	}
+	if len(filters.To) > 0 {
+		c := fmt.Sprintf("-{to:%s}", joinOR(filters.To))
+		clauses = append(clauses, c)
+	}
+	if len(filters.Subject) > 0 {
+		c := fmt.Sprintf("-{subject:%s}", joinOR(filters.Subject))
+		clauses = append(clauses, c)
+	}
+	if len(filters.Has) > 0 {
+		c := fmt.Sprintf("-%s", joinOR(filters.Has))
+		clauses = append(clauses, c)
+	}
+
+	if len(clauses) == 0 {
+		return nil, nil
+	}
+
+	res := Property{PropertyHas, strings.Join(clauses, " ")}
+	return []Property{res}, nil
+}
+
+func generateActions(actions Actions) ([]Property, error) {
+	res := []Property{}
+	if actions.Archive {
+		res = append(res, Property{PropertyArchive, "true"})
+	}
+	if actions.Delete {
+		res = append(res, Property{PropertyDelete, "true"})
+	}
+	if actions.MarkImportant {
+		res = append(res, Property{PropertyMarkImportant, "true"})
+	}
+	if actions.MarkRead {
+		res = append(res, Property{PropertyMarkRead, "true"})
+	}
+	if len(actions.Category) > 0 {
+		cat, err := categoryToSmartLabel(actions.Category)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, Property{PropertyApplyCategory, cat})
+	}
+	for _, label := range actions.Labels {
+		res = append(res, Property{PropertyApplyLabel, label})
+	}
 	return res, nil
 }
 
@@ -136,54 +224,6 @@ func resolveConsts(a []string, consts Consts) ([]string, error) {
 	return res, nil
 }
 
-func generateMatchFilters(filters MatchFilters) ([]Property, error) {
-	res := []Property{}
-	if len(filters.From) > 0 {
-		p := Property{PropertyFrom, joinOR(filters.From)}
-		res = append(res, p)
-	}
-	if len(filters.To) > 0 {
-		p := Property{PropertyTo, joinOR(filters.To)}
-		res = append(res, p)
-	}
-	if len(filters.Subject) > 0 {
-		p := Property{PropertySubject, joinOR(filters.Subject)}
-		res = append(res, p)
-	}
-	if len(filters.Has) > 0 {
-		p := Property{PropertyHas, joinOR(filters.Has)}
-		res = append(res, p)
-	}
-	return res, nil
-}
-
-func generateActions(actions Actions) ([]Property, error) {
-	res := []Property{}
-	if actions.Archive {
-		res = append(res, Property{PropertyArchive, "true"})
-	}
-	if actions.Delete {
-		res = append(res, Property{PropertyDelete, "true"})
-	}
-	if actions.MarkImportant {
-		res = append(res, Property{PropertyMarkImportant, "true"})
-	}
-	if actions.MarkRead {
-		res = append(res, Property{PropertyMarkRead, "true"})
-	}
-	if len(actions.Category) > 0 {
-		cat, err := categoryToSmartLabel(actions.Category)
-		if err != nil {
-			return nil, err
-		}
-		res = append(res, Property{PropertyApplyCategory, cat})
-	}
-	for _, label := range actions.Labels {
-		res = append(res, Property{PropertyApplyLabel, label})
-	}
-	return res, nil
-}
-
 func categoryToSmartLabel(cat Category) (string, error) {
 	var smartl string
 	switch cat {
@@ -198,7 +238,15 @@ func categoryToSmartLabel(cat Category) (string, error) {
 	case CategoryPromotions:
 		smartl = SmartLabelPromo
 	default:
-		return "", fmt.Errorf("unrecognized category '%s", cat)
+		possib := []string{
+			string(CategoryPersonal),
+			string(CategorySocial),
+			string(CategoryUpdates),
+			string(CategoryForums),
+			string(CategoryPromotions),
+		}
+		return "", fmt.Errorf("unrecognized category '%s' (possible values: %s)",
+			cat, strings.Join(possib, ", "))
 	}
 	return fmt.Sprintf("^smartlabel_%s", smartl), nil
 }
@@ -208,20 +256,24 @@ func joinOR(a []string) string {
 		return ""
 	}
 	if len(a) == 1 {
-		return a[0]
+		return quote(a[0])
 	}
-	return fmt.Sprintf("{%s}", strings.Join(quote(a), " "))
+	return fmt.Sprintf("{%s}", strings.Join(quoteStrings(a), " "))
 }
 
-func quote(a []string) []string {
+func quoteStrings(a []string) []string {
 	res := make([]string, len(a))
 	for i, s := range a {
-		if strings.ContainsRune(s, ' ') {
-			s = fmt.Sprintf(`"%s"`, s)
-		}
-		res[i] = s
+		res[i] = quote(s)
 	}
 	return res
+}
+
+func quote(a string) string {
+	if strings.ContainsRune(a, ' ') {
+		return fmt.Sprintf(`"%s"`, a)
+	}
+	return a
 }
 
 func combineFiltersActions(filters []Property, actions []Property) []Entry {

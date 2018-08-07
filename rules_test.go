@@ -137,6 +137,7 @@ func TestGenerateConsts(t *testing.T) {
 	config := Config{
 		Consts: Consts{
 			"friends": ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"spam":    ConstValue{Values: []string{"a@spam.com"}},
 			"foo":     ConstValue{Values: []string{"useless"}},
 		},
 		Rules: []Rule{{ /* single empty rule */ }},
@@ -154,6 +155,38 @@ func TestGenerateConsts(t *testing.T) {
 	}
 	assert.Equal(t, expected, entries)
 
+	// Test multiple constants in the same clause
+	mf = MatchFilters{
+		From: []string{"friends", "spam"},
+	}
+	config.Rules[0].Filters.Consts.MatchFilters = mf
+	entries, err = GenerateRules(config)
+	assert.Nil(t, err)
+	expected = []Entry{
+		Entry{
+			Property{PropertyFrom, "{a@b.com b@c.it a@spam.com}"},
+			Property{PropertyMarkImportant, "true"},
+		},
+	}
+	assert.Equal(t, expected, entries)
+
+	// Test constants in multiple clauses
+	mf = MatchFilters{
+		From: []string{"friends"},
+		To:   []string{"spam"},
+	}
+	config.Rules[0].Filters.Consts.MatchFilters = mf
+	entries, err = GenerateRules(config)
+	assert.Nil(t, err)
+	expected = []Entry{
+		Entry{
+			Property{PropertyFrom, "{a@b.com b@c.it}"},
+			Property{PropertyTo, "a@spam.com"},
+			Property{PropertyMarkImportant, "true"},
+		},
+	}
+	assert.Equal(t, expected, entries)
+
 	// Test unknown constant
 	mf = MatchFilters{
 		From: []string{"wtf"},
@@ -161,4 +194,60 @@ func TestGenerateConsts(t *testing.T) {
 	config.Rules[0].Filters.Consts.MatchFilters = mf
 	_, err = GenerateRules(config)
 	assert.NotNil(t, err)
+}
+
+func TestGenerateNot(t *testing.T) {
+	// Test constants replacement
+	mf := MatchFilters{
+		To:  []string{"my@self.com"},
+		Has: []string{"foo", "bar baz"},
+	}
+	actions := Actions{
+		MarkImportant: true,
+	}
+	config := Config{
+		Rules: []Rule{{ /* single empty rule */ }},
+	}
+	config.Rules[0].Filters.Not = mf
+	config.Rules[0].Actions = actions
+
+	entries, err := GenerateRules(config)
+	assert.Nil(t, err)
+	expected := []Entry{
+		Entry{
+			Property{PropertyHas, `-{to:my@self.com} -{foo "bar baz"}`},
+			Property{PropertyMarkImportant, "true"},
+		},
+	}
+	assert.Equal(t, expected, entries)
+}
+
+func TestGenerateNotConsts(t *testing.T) {
+	// Test constants replacement
+	mf := MatchFilters{
+		From: []string{"friends"},
+		Has:  []string{"foo"},
+	}
+	actions := Actions{
+		MarkImportant: true,
+	}
+	config := Config{
+		Consts: Consts{
+			"friends": ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"foo":     ConstValue{Values: []string{"useless stuff"}},
+		},
+		Rules: []Rule{{ /* single empty rule */ }},
+	}
+	config.Rules[0].Filters.Consts.Not = mf
+	config.Rules[0].Actions = actions
+
+	entries, err := GenerateRules(config)
+	assert.Nil(t, err)
+	expected := []Entry{
+		Entry{
+			Property{PropertyHas, `-{from:{a@b.com b@c.it}} -"useless stuff"`},
+			Property{PropertyMarkImportant, "true"},
+		},
+	}
+	assert.Equal(t, expected, entries)
 }
