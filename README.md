@@ -22,7 +22,25 @@ This project exists to combine:
 1. maintainability
 2. powerful but declarative language
 
+## Usage
+
+```
+go install github.com/mbrt/gmailfilter
+gmailfilter config.yaml > filters.xml
+```
+
+where `config.yaml` is the configuration file containing the filtering rules
+(see [Configuration][configuration]). The utility will print out an XML that you
+can import as Gmail filters.
+
+**NOTE:** It's recommended to backup your current configuration before to
+applying a generated one. Bugs can happen in both code and configuration. Always
+backup to avoid surprises.
+
 ## Configuration
+
+**NOTE:** The configuration format is still in alpha and might change in the
+future.
 
 The configuration contains two important sections:
 
@@ -202,7 +220,7 @@ this one are:
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailfilter`)
 * `gmail-britta` allows to write complex chains of filters, but fails to provide
-  easy ways to write reasonably easy filters[^1].
+  easy ways to write reasonably easy filters[1][footnote 1].
 * `gmailfilter` tries to workaround certain limitations in Gmail (like applying
   multiple labels with the same filter) `gmail-britta` tries to workaround
   others (chain filtering).
@@ -216,7 +234,9 @@ scenarios handled instead by `gmail-britta` (like chaining).
   
 ## Footnotes
 
-[^1]: Try to write the equivalent of this filter with `gmail-britta`:
+### Footnote 1
+
+Try to write the equivalent of this filter with `gmail-britta`:
 
 ```yaml
 version: v1alpha1
