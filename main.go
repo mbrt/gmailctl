@@ -7,13 +7,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
 func readConfig(path string) (Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return Config{}, err
+		return Config{}, errors.Wrap(err, fmt.Sprintf("cannot read %s", path))
 	}
 
 	var res Config
@@ -36,7 +37,7 @@ func main() {
 	if flag.NArg() < 1 {
 		fatal("usage: %s <config-file>", os.Args[0])
 	}
-	cfg, err := readConfig("example.yaml")
+	cfg, err := readConfig(flag.Arg(0))
 	if err != nil {
 		fatal("error in config parse: %s", err)
 	}
