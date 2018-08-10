@@ -35,7 +35,7 @@ func errorf(format string, a ...interface{}) {
 func fatal(format string, a ...interface{}) {
 	errorf(format, a...)
 	if !strings.HasSuffix(format, "\n") {
-		errorf("") // Add newline
+		errorf("\n") // Add newline
 	}
 	os.Exit(1)
 }
