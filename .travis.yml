@@ -1,0 +1,23 @@
+language: go
+sudo: false
+
+go:
+  - stable
+  - tip
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - go: tip
+
+install:
+  - go get -u -v github.com/alecthomas/gometalinter
+  - gometalinter --install --update
+
+script:
+  - go test ./...
+  - gometalinter --vendor ./...
+
+notifications:
+  email:
+    on_success: never

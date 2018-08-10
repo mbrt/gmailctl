@@ -15,6 +15,7 @@ import (
 )
 
 func readConfig(path string) (config.Config, error) {
+	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return config.Config{}, errors.Wrap(err, fmt.Sprintf("cannot read %s", path))
@@ -26,11 +27,15 @@ func readConfig(path string) (config.Config, error) {
 
 }
 
+func errorf(format string, a ...interface{}) {
+	/* #nosec */
+	_, _ = fmt.Fprintf(os.Stderr, format, a...)
+}
+
 func fatal(format string, a ...interface{}) {
-	fmt.Fprintf(os.Stderr, format, a...)
+	errorf(format, a...)
 	if !strings.HasSuffix(format, "\n") {
-		// Add newline
-		fmt.Fprintln(os.Stderr, "")
+		errorf("") // Add newline
 	}
 	os.Exit(1)
 }

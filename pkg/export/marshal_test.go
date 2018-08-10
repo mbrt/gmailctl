@@ -39,11 +39,11 @@ func TestEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
 	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	entries := []Entry{
-		Entry{
+		{
 			{Name: PropertyFrom, Value: "foo@baz.com"},
 			{Name: PropertyMarkImportant, Value: "true"},
 		},
-		Entry{
+		{
 			{Name: PropertyHas, Value: "SPAM!!"},
 			{Name: PropertyDelete, Value: "true"},
 			{Name: PropertyApplyLabel, Value: "spam"},

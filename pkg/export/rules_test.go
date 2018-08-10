@@ -80,7 +80,7 @@ func TestGenerateSingleEntry(t *testing.T) {
 	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
-		Entry{
+		{
 			Property{PropertyFrom, "foobar@mail.com"},
 			Property{PropertyArchive, "true"},
 			Property{PropertyMarkRead, "true"},
@@ -108,18 +108,18 @@ func TestGenerateMultipleEntities(t *testing.T) {
 	entries, err := GenerateRules(config)
 	assert.Nil(t, err)
 	expected := []Entry{
-		Entry{
+		{
 			Property{PropertyFrom, "foobar@mail.com"},
 			Property{PropertyHas, `{pippo "pluto paperino"}`},
 			Property{PropertyMarkRead, "true"},
 			Property{PropertyApplyLabel, "label1"},
 		},
-		Entry{
+		{
 			Property{PropertyFrom, "foobar@mail.com"},
 			Property{PropertyHas, `{pippo "pluto paperino"}`},
 			Property{PropertyApplyLabel, "label2"},
 		},
-		Entry{
+		{
 			Property{PropertyFrom, "foobar@mail.com"},
 			Property{PropertyHas, `{pippo "pluto paperino"}`},
 			Property{PropertyApplyLabel, "label3"},
@@ -150,7 +150,7 @@ func TestGenerateConsts(t *testing.T) {
 	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
-		Entry{
+		{
 			Property{PropertyFrom, "{a@b.com b@c.it}"},
 			Property{PropertyMarkImportant, "true"},
 		},
@@ -165,7 +165,7 @@ func TestGenerateConsts(t *testing.T) {
 	entries, err = GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected = []Entry{
-		Entry{
+		{
 			Property{PropertyFrom, "{a@b.com b@c.it a@spam.com}"},
 			Property{PropertyMarkImportant, "true"},
 		},
@@ -181,7 +181,7 @@ func TestGenerateConsts(t *testing.T) {
 	entries, err = GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected = []Entry{
-		Entry{
+		{
 			Property{PropertyFrom, "{a@b.com b@c.it}"},
 			Property{PropertyTo, "a@spam.com"},
 			Property{PropertyMarkImportant, "true"},
@@ -216,7 +216,7 @@ func TestGenerateNot(t *testing.T) {
 	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
-		Entry{
+		{
 			Property{PropertyHas, `-{to:my@self.com} -{foo "bar baz"}`},
 			Property{PropertyMarkImportant, "true"},
 		},
@@ -246,7 +246,7 @@ func TestGenerateNotConsts(t *testing.T) {
 	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
-		Entry{
+		{
 			Property{PropertyHas, `-{from:{a@b.com b@c.it}} -"useless stuff"`},
 			Property{PropertyMarkImportant, "true"},
 		},
