@@ -1,4 +1,4 @@
-package main
+package config
 
 // Categories supported by Gmail.
 const (

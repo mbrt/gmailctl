@@ -1,4 +1,4 @@
-package main
+package export
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
 func testNow() time.Time {
@@ -16,7 +18,7 @@ func testNow() time.Time {
 
 func TestEmptyEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
-	author := Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	buf := new(bytes.Buffer)
 	err := exporter.MarshalEntries(author, []Entry{}, buf)
 	assert.Nil(t, err)
@@ -35,7 +37,7 @@ func TestEmptyEntries(t *testing.T) {
 
 func TestEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
-	author := Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	entries := []Entry{
 		Entry{
 			{Name: PropertyFrom, Value: "foo@baz.com"},

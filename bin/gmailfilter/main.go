@@ -9,15 +9,18 @@ import (
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailfilter/pkg/export"
 )
 
-func readConfig(path string) (Config, error) {
+func readConfig(path string) (config.Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return Config{}, errors.Wrap(err, fmt.Sprintf("cannot read %s", path))
+		return config.Config{}, errors.Wrap(err, fmt.Sprintf("cannot read %s", path))
 	}
 
-	var res Config
+	var res config.Config
 	err = yaml.Unmarshal(b, &res)
 	return res, err
 
@@ -42,12 +45,12 @@ func main() {
 		fatal("error in config parse: %s", err)
 	}
 
-	rules, err := GenerateRules(cfg)
+	rules, err := export.GenerateRules(cfg)
 	if err != nil {
 		fatal("error generating rules: %s", err)
 	}
 
-	err = DefaultXMLExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
+	err = export.DefaultXMLExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
 	if err != nil {
 		fatal("error exporting to XML: %s", err)
 	}
