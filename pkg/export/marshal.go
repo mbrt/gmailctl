@@ -1,15 +1,17 @@
-package main
+package export
 
 import (
 	"encoding/xml"
 	"io"
 	"time"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
 // XMLExporter exports the given entries to the Gmail xml format.
 type XMLExporter interface {
 	// MarshalEntries exports the given entries to the Gmail xml format.
-	MarshalEntries(author Author, entries []Entry, w io.Writer) error
+	MarshalEntries(author config.Author, entries []Entry, w io.Writer) error
 }
 
 // DefaultXMLExporter returns a default implementation of the XMLExporter interface.
@@ -27,7 +29,7 @@ type xmlExporter struct {
 	now nowFunc
 }
 
-func (x xmlExporter) MarshalEntries(author Author, entries []Entry, w io.Writer) error {
+func (x xmlExporter) MarshalEntries(author config.Author, entries []Entry, w io.Writer) error {
 	doc := x.toXML(author, entries)
 	out, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
@@ -71,7 +73,7 @@ type xmlProperty struct {
 	Value   string   `xml:"value,attr"`
 }
 
-func (x xmlExporter) toXML(author Author, entries []Entry) xmlDoc {
+func (x xmlExporter) toXML(author config.Author, entries []Entry) xmlDoc {
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",
 		XMLNSApps:   "http://schemas.google.com/apps/2006",

@@ -1,10 +1,12 @@
-package main
+package export
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
 // Property values
@@ -40,10 +42,10 @@ type Property struct {
 }
 
 // GenerateRules translates a config into entries that map directly into Gmail filters
-func GenerateRules(config Config) ([]Entry, error) {
+func GenerateRules(cfg config.Config) ([]Entry, error) {
 	res := []Entry{}
-	for i, rule := range config.Rules {
-		entries, err := generateRule(rule, config.Consts)
+	for i, rule := range cfg.Rules {
+		entries, err := generateRule(rule, cfg.Consts)
 		if err != nil {
 			return res, errors.Wrap(err, fmt.Sprintf("error generating rule #%d", i))
 		}
@@ -52,7 +54,7 @@ func GenerateRules(config Config) ([]Entry, error) {
 	return res, nil
 }
 
-func generateRule(rule Rule, consts Consts) ([]Entry, error) {
+func generateRule(rule config.Rule, consts config.Consts) ([]Entry, error) {
 	filters, err := generateFilters(rule.Filters, consts)
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating filters")
@@ -70,7 +72,7 @@ func generateRule(rule Rule, consts Consts) ([]Entry, error) {
 	return combineFiltersActions(filters, actions), nil
 }
 
-func generateFilters(filters Filters, consts Consts) ([]Property, error) {
+func generateFilters(filters config.Filters, consts config.Consts) ([]Property, error) {
 	res := []Property{}
 	// simple filters
 	mf, err := generateMatchFilters(filters.MatchFilters)
@@ -111,7 +113,7 @@ func generateFilters(filters Filters, consts Consts) ([]Property, error) {
 	return res, nil
 }
 
-func generateMatchFilters(filters MatchFilters) ([]Property, error) {
+func generateMatchFilters(filters config.MatchFilters) ([]Property, error) {
 	res := []Property{}
 	if len(filters.From) > 0 {
 		p := Property{PropertyFrom, joinOR(filters.From)}
@@ -132,7 +134,7 @@ func generateMatchFilters(filters MatchFilters) ([]Property, error) {
 	return res, nil
 }
 
-func generateNegatedFilters(filters MatchFilters) ([]Property, error) {
+func generateNegatedFilters(filters config.MatchFilters) ([]Property, error) {
 	clauses := []string{}
 	if len(filters.From) > 0 {
 		c := fmt.Sprintf("-{from:%s}", joinOR(filters.From))
@@ -159,7 +161,7 @@ func generateNegatedFilters(filters MatchFilters) ([]Property, error) {
 	return []Property{res}, nil
 }
 
-func generateActions(actions Actions) ([]Property, error) {
+func generateActions(actions config.Actions) ([]Property, error) {
 	res := []Property{}
 	if actions.Archive {
 		res = append(res, Property{PropertyArchive, "true"})
@@ -186,7 +188,7 @@ func generateActions(actions Actions) ([]Property, error) {
 	return res, nil
 }
 
-func resolveFiltersConsts(mf MatchFilters, consts Consts) (MatchFilters, error) {
+func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.MatchFilters, error) {
 	from, err := resolveConsts(mf.From, consts)
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'from' clause")
@@ -203,7 +205,7 @@ func resolveFiltersConsts(mf MatchFilters, consts Consts) (MatchFilters, error) 
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'has' clause")
 	}
-	res := MatchFilters{
+	res := config.MatchFilters{
 		From:    from,
 		To:      to,
 		Subject: sub,
@@ -212,7 +214,7 @@ func resolveFiltersConsts(mf MatchFilters, consts Consts) (MatchFilters, error) 
 	return res, nil
 }
 
-func resolveConsts(a []string, consts Consts) ([]string, error) {
+func resolveConsts(a []string, consts config.Consts) ([]string, error) {
 	res := []string{}
 	for _, s := range a {
 		resolved, ok := consts[s]
@@ -224,26 +226,27 @@ func resolveConsts(a []string, consts Consts) ([]string, error) {
 	return res, nil
 }
 
-func categoryToSmartLabel(cat Category) (string, error) {
+func categoryToSmartLabel(cat config.Category) (string, error) {
 	var smartl string
 	switch cat {
-	case CategoryPersonal:
+	case config.CategoryPersonal:
 		smartl = SmartLabelPersonal
-	case CategorySocial:
+	case config.CategorySocial:
 		smartl = SmartLabelSocial
-	case CategoryUpdates:
+	case config.CategoryUpdates:
 		smartl = SmartLabelNotification
-	case CategoryForums:
+	case config.CategoryForums:
 		smartl = SmartLabelGroup
-	case CategoryPromotions:
+	case config.CategoryPromotions:
 		smartl = SmartLabelPromo
 	default:
+		// TODO: move this to config package
 		possib := []string{
-			string(CategoryPersonal),
-			string(CategorySocial),
-			string(CategoryUpdates),
-			string(CategoryForums),
-			string(CategoryPromotions),
+			string(config.CategoryPersonal),
+			string(config.CategorySocial),
+			string(config.CategoryUpdates),
+			string(config.CategoryForums),
+			string(config.CategoryPromotions),
 		}
 		return "", fmt.Errorf("unrecognized category '%s' (possible values: %s)",
 			cat, strings.Join(possib, ", "))

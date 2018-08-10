@@ -1,14 +1,16 @@
-package main
+package export
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
 func TestMatchFilter(t *testing.T) {
 	// Test a single filter
-	filt := MatchFilters{
+	filt := config.MatchFilters{
 		Subject: []string{"important", "not important"},
 	}
 	props, err := generateMatchFilters(filt)
@@ -19,7 +21,7 @@ func TestMatchFilter(t *testing.T) {
 	assert.Equal(t, expected, props)
 
 	// Test all the filters together
-	filt = MatchFilters{
+	filt = config.MatchFilters{
 		From:    []string{"foobar@mail.com", "baz@g.com"},
 		To:      []string{"my@self.com"},
 		Subject: []string{"important", "not important"},
@@ -38,12 +40,12 @@ func TestMatchFilter(t *testing.T) {
 
 func TestActions(t *testing.T) {
 	// Test all the actions together
-	act := Actions{
+	act := config.Actions{
 		Archive:       true,
 		Delete:        true,
 		MarkImportant: true,
 		MarkRead:      true,
-		Category:      CategoryPersonal,
+		Category:      config.CategoryPersonal,
 		Labels:        []string{"label1", "label2"},
 	}
 	props, err := generateActions(act)
@@ -62,20 +64,20 @@ func TestActions(t *testing.T) {
 
 func TestGenerateSingleEntry(t *testing.T) {
 	// Smoke test with a single entry as result
-	mf := MatchFilters{
+	mf := config.MatchFilters{
 		From: []string{"foobar@mail.com"},
 	}
-	actions := Actions{
+	actions := config.Actions{
 		Archive:  true,
 		MarkRead: true,
 	}
-	config := Config{
-		Rules: []Rule{{ /* single empty rule */ }},
+	cfg := config.Config{
+		Rules: []config.Rule{{ /* single empty rule */ }},
 	}
-	config.Rules[0].Filters.MatchFilters = mf
-	config.Rules[0].Actions = actions
+	cfg.Rules[0].Filters.MatchFilters = mf
+	cfg.Rules[0].Actions = actions
 
-	entries, err := GenerateRules(config)
+	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
 		Entry{
@@ -89,16 +91,16 @@ func TestGenerateSingleEntry(t *testing.T) {
 
 func TestGenerateMultipleEntities(t *testing.T) {
 	// Smoke test with a single entry as result
-	mf := MatchFilters{
+	mf := config.MatchFilters{
 		From: []string{"foobar@mail.com"},
 		Has:  []string{"pippo", "pluto paperino"},
 	}
-	actions := Actions{
+	actions := config.Actions{
 		MarkRead: true,
 		Labels:   []string{"label1", "label2", "label3"},
 	}
-	config := Config{
-		Rules: []Rule{{ /* single empty rule */ }},
+	config := config.Config{
+		Rules: []config.Rule{{ /* single empty rule */ }},
 	}
 	config.Rules[0].Filters.MatchFilters = mf
 	config.Rules[0].Actions = actions
@@ -128,24 +130,24 @@ func TestGenerateMultipleEntities(t *testing.T) {
 
 func TestGenerateConsts(t *testing.T) {
 	// Test constants replacement
-	mf := MatchFilters{
+	mf := config.MatchFilters{
 		From: []string{"friends"},
 	}
-	actions := Actions{
+	actions := config.Actions{
 		MarkImportant: true,
 	}
-	config := Config{
-		Consts: Consts{
-			"friends": ConstValue{Values: []string{"a@b.com", "b@c.it"}},
-			"spam":    ConstValue{Values: []string{"a@spam.com"}},
-			"foo":     ConstValue{Values: []string{"useless"}},
+	cfg := config.Config{
+		Consts: config.Consts{
+			"friends": config.ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"spam":    config.ConstValue{Values: []string{"a@spam.com"}},
+			"foo":     config.ConstValue{Values: []string{"useless"}},
 		},
-		Rules: []Rule{{ /* single empty rule */ }},
+		Rules: []config.Rule{{ /* single empty rule */ }},
 	}
-	config.Rules[0].Filters.Consts.MatchFilters = mf
-	config.Rules[0].Actions = actions
+	cfg.Rules[0].Filters.Consts.MatchFilters = mf
+	cfg.Rules[0].Actions = actions
 
-	entries, err := GenerateRules(config)
+	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
 		Entry{
@@ -156,11 +158,11 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test multiple constants in the same clause
-	mf = MatchFilters{
+	mf = config.MatchFilters{
 		From: []string{"friends", "spam"},
 	}
-	config.Rules[0].Filters.Consts.MatchFilters = mf
-	entries, err = GenerateRules(config)
+	cfg.Rules[0].Filters.Consts.MatchFilters = mf
+	entries, err = GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected = []Entry{
 		Entry{
@@ -171,12 +173,12 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test constants in multiple clauses
-	mf = MatchFilters{
+	mf = config.MatchFilters{
 		From: []string{"friends"},
 		To:   []string{"spam"},
 	}
-	config.Rules[0].Filters.Consts.MatchFilters = mf
-	entries, err = GenerateRules(config)
+	cfg.Rules[0].Filters.Consts.MatchFilters = mf
+	entries, err = GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected = []Entry{
 		Entry{
@@ -188,30 +190,30 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test unknown constant
-	mf = MatchFilters{
+	mf = config.MatchFilters{
 		From: []string{"wtf"},
 	}
-	config.Rules[0].Filters.Consts.MatchFilters = mf
-	_, err = GenerateRules(config)
+	cfg.Rules[0].Filters.Consts.MatchFilters = mf
+	_, err = GenerateRules(cfg)
 	assert.NotNil(t, err)
 }
 
 func TestGenerateNot(t *testing.T) {
 	// Test constants replacement
-	mf := MatchFilters{
+	mf := config.MatchFilters{
 		To:  []string{"my@self.com"},
 		Has: []string{"foo", "bar baz"},
 	}
-	actions := Actions{
+	actions := config.Actions{
 		MarkImportant: true,
 	}
-	config := Config{
-		Rules: []Rule{{ /* single empty rule */ }},
+	cfg := config.Config{
+		Rules: []config.Rule{{ /* single empty rule */ }},
 	}
-	config.Rules[0].Filters.Not = mf
-	config.Rules[0].Actions = actions
+	cfg.Rules[0].Filters.Not = mf
+	cfg.Rules[0].Actions = actions
 
-	entries, err := GenerateRules(config)
+	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
 		Entry{
@@ -224,24 +226,24 @@ func TestGenerateNot(t *testing.T) {
 
 func TestGenerateNotConsts(t *testing.T) {
 	// Test constants replacement
-	mf := MatchFilters{
+	mf := config.MatchFilters{
 		From: []string{"friends"},
 		Has:  []string{"foo"},
 	}
-	actions := Actions{
+	actions := config.Actions{
 		MarkImportant: true,
 	}
-	config := Config{
-		Consts: Consts{
-			"friends": ConstValue{Values: []string{"a@b.com", "b@c.it"}},
-			"foo":     ConstValue{Values: []string{"useless stuff"}},
+	cfg := config.Config{
+		Consts: config.Consts{
+			"friends": config.ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"foo":     config.ConstValue{Values: []string{"useless stuff"}},
 		},
-		Rules: []Rule{{ /* single empty rule */ }},
+		Rules: []config.Rule{{ /* single empty rule */ }},
 	}
-	config.Rules[0].Filters.Consts.Not = mf
-	config.Rules[0].Actions = actions
+	cfg.Rules[0].Filters.Consts.Not = mf
+	cfg.Rules[0].Actions = actions
 
-	entries, err := GenerateRules(config)
+	entries, err := GenerateRules(cfg)
 	assert.Nil(t, err)
 	expected := []Entry{
 		Entry{
