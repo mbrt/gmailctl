@@ -15,6 +15,7 @@ import (
 )
 
 func readConfig(path string) (config.Config, error) {
+	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return config.Config{}, errors.Wrap(err, fmt.Sprintf("cannot read %s", path))
