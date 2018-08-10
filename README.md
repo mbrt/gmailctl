@@ -25,7 +25,7 @@ This project exists to combine:
 ## Usage
 
 ```
-go install github.com/mbrt/gmailfilter
+go install github.com/mbrt/gmailfilter/bin/gmailfilter
 gmailfilter config.yaml > filters.xml
 ```
 
