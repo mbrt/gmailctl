@@ -4,7 +4,7 @@
 
 This utility helps you generate Gmail filters. It has a Yaml configuration file
 that aims to be more simple to write and maintain than using the Gmail web
-interface.
+interface, to categorize, label, archive and manage automatically your inbox.
 
 ## Motivation
 
