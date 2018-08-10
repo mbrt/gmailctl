@@ -1,4 +1,5 @@
 # gmailfilter
+[![Build Status](https://travis-ci.org/mbrt/gmailfilter.svg?branch=master)](https://travis-ci.org/mbrt/gmailfilter)
 
 This utility helps you generate Gmail filters. It has a Yaml configuration file
 that aims to be more simple to write and maintain than using the Gmail web
