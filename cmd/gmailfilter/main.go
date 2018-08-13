@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/mbrt/gmailfilter/pkg/config"
-	"github.com/mbrt/gmailfilter/pkg/export"
+	export "github.com/mbrt/gmailfilter/pkg/export/xml"
 )
 
 func readConfig(path string) (config.Config, error) {
