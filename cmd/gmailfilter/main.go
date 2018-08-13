@@ -55,7 +55,7 @@ func main() {
 		fatal("error generating rules: %s", err)
 	}
 
-	err = export.DefaultXMLExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
+	err = export.DefaultExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
 	if err != nil {
 		fatal("error exporting to XML: %s", err)
 	}

@@ -8,14 +8,14 @@ import (
 	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
-// XMLExporter exports the given entries to the Gmail xml format.
-type XMLExporter interface {
+// Exporter exports the given entries to the Gmail xml format.
+type Exporter interface {
 	// MarshalEntries exports the given entries to the Gmail xml format.
 	MarshalEntries(author config.Author, entries []Entry, w io.Writer) error
 }
 
-// DefaultXMLExporter returns a default implementation of the XMLExporter interface.
-func DefaultXMLExporter() XMLExporter {
+// DefaultExporter returns a default implementation of the XMLExporter interface.
+func DefaultExporter() Exporter {
 	return xmlExporter{now: defaultNow}
 }
 
