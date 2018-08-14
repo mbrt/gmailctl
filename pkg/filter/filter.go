@@ -23,10 +23,20 @@ type Action struct {
 	AddLabel      string
 }
 
+// Empty returns true if no action is specified.
+func (a Action) Empty() bool {
+	return a == Action{}
+}
+
 // Criteria represents the filtering criteria associated with a Gmail filter.
 type Criteria struct {
 	From    string
 	To      string
 	Subject string
 	Query   string
+}
+
+// Empty returns true if no criteria is specified.
+func (c Criteria) Empty() bool {
+	return c == Criteria{}
 }

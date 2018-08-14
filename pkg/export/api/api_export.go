@@ -31,13 +31,51 @@ type Exporter interface {
 
 // LabelMap maps label names and IDs together.
 type LabelMap interface {
+	// NameToID maps the name of a label to its ID.
 	NameToID(name string) (string, bool)
+	// IDToName maps the id of a string to its name.
 	IDToName(id string) (string, bool)
 }
 
 // DefaulExporter returns a default implementation of a Gmail API filter exporter.
 func DefaulExporter() Exporter {
 	return defaultExporter{}
+}
+
+// DefaultLabelMap implements the LabelMap interface with a regular map of strings
+type DefaultLabelMap struct {
+	ntid map[string]string
+	idtn map[string]string
+}
+
+// NewDefaultLabelMap creates a new DefaultLabelMap, given mapping between IDs to label names.
+func NewDefaultLabelMap(idNameMap map[string]string) DefaultLabelMap {
+	nameIDMap := map[string]string{}
+	for id, name := range idNameMap {
+		nameIDMap[name] = id
+	}
+	return DefaultLabelMap{
+		ntid: nameIDMap,
+		idtn: idNameMap,
+	}
+}
+
+// NameToID maps the name of a label to its ID.
+func (m DefaultLabelMap) NameToID(name string) (string, bool) {
+	id, ok := m.ntid[name]
+	return id, ok
+}
+
+// IDToName maps the id of a string to its name.
+func (m DefaultLabelMap) IDToName(id string) (string, bool) {
+	name, ok := m.ntid[id]
+	return name, ok
+}
+
+// AddLabel adds a label to the mapping
+func (m DefaultLabelMap) AddLabel(id, name string) {
+	m.ntid[name] = id
+	m.idtn[id] = name
 }
 
 type defaultExporter struct{}
@@ -55,6 +93,13 @@ func (de defaultExporter) Export(filters filter.Filters, lmap LabelMap) ([]gmail
 }
 
 func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.Filter, error) {
+	if filter.Action.Empty() {
+		return nil, errors.New("no action specified")
+	}
+	if filter.Criteria.Empty() {
+		return nil, errors.New("no criteria specified")
+	}
+
 	action, err := de.exportAction(filter.Action, lmap)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in export action")
@@ -63,6 +108,7 @@ func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.
 	if err != nil {
 		return nil, errors.Wrap(err, "error in export criteria")
 	}
+
 	return &gmailv1.Filter{
 		Action:   action,
 		Criteria: criteria,
