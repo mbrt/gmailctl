@@ -28,11 +28,9 @@ func FromConfigRule(rule config.Rule, consts config.Consts) (Filters, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error resolving consts")
 	}
-	res := Filters{}
 	criteria := generateCriteria(rule.Filters)
-	// TODO actions and combine criteria + actions together
-	res = append(res, Filter{Criteria: criteria})
-	return res, nil
+	actions := generateActions(rule.Actions)
+	return combineCriteriaWithActions(criteria, actions), nil
 }
 
 // resolveRuleConsts resolves the sections with consts with their respective values
@@ -193,4 +191,41 @@ func quote(a string) string {
 		return fmt.Sprintf(`"%s"`, a)
 	}
 	return a
+}
+
+func generateActions(actions config.Actions) []Action {
+	res := []Action{
+		{
+			Archive:       actions.Archive,
+			Delete:        actions.Delete,
+			MarkImportant: actions.MarkImportant,
+			MarkRead:      actions.MarkRead,
+			Category:      actions.Category,
+		},
+	}
+
+	// Since every action can contain a single lable only, we might need to produce multiple actions
+	for i, label := range actions.Labels {
+		if i == 0 {
+			// The first label can stay in the first action
+			res[0].AddLabel = label
+		} else {
+			// All the subsequent labels need a separate action
+			res = append(res, Action{AddLabel: label})
+		}
+	}
+
+	return res
+}
+
+func combineCriteriaWithActions(criteria Criteria, actions []Action) Filters {
+	// We have to duplicate the criteria for all the given actions
+	res := make(Filters, len(actions))
+	for i, action := range actions {
+		res[i] = Filter{
+			Criteria: criteria,
+			Action:   action,
+		}
+	}
+	return res
 }
