@@ -30,7 +30,7 @@ func TestExportActions(t *testing.T) {
 		},
 	}
 	exported, err := DefaulExporter().Export(filters, emptyLabelMap())
-	expected := []gmailv1.Filter{
+	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
 				AddLabelIds: []string{
@@ -68,7 +68,7 @@ func TestExportCriteria(t *testing.T) {
 		},
 	}
 	exported, err := DefaulExporter().Export(filters, emptyLabelMap())
-	expected := []gmailv1.Filter{
+	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
 				AddLabelIds:    []string{labelIDTrash},
@@ -129,7 +129,7 @@ func TestExportLabels(t *testing.T) {
 	})
 
 	exported, err := DefaulExporter().Export(filters, lmap)
-	expected := []gmailv1.Filter{
+	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
 				AddLabelIds: []string{

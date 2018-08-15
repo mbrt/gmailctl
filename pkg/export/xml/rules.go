@@ -219,7 +219,7 @@ func resolveConsts(a []string, consts config.Consts) ([]string, error) {
 	for _, s := range a {
 		resolved, ok := consts[s]
 		if !ok {
-			return nil, fmt.Errorf("failed to resolve const '%s'", s)
+			return nil, errors.Errorf("failed to resolve const '%s'", s)
 		}
 		res = append(res, resolved.Values...)
 	}
@@ -248,7 +248,7 @@ func categoryToSmartLabel(cat config.Category) (string, error) {
 			string(config.CategoryForums),
 			string(config.CategoryPromotions),
 		}
-		return "", fmt.Errorf("unrecognized category '%s' (possible values: %s)",
+		return "", errors.Errorf("unrecognized category '%s' (possible values: %s)",
 			cat, strings.Join(possib, ", "))
 	}
 	return fmt.Sprintf("^smartlabel_%s", smartl), nil

@@ -88,7 +88,7 @@ func resolveConsts(a []string, consts config.Consts) ([]string, error) {
 	for _, s := range a {
 		resolved, ok := consts[s]
 		if !ok {
-			return nil, fmt.Errorf("failed to resolve const '%s'", s)
+			return nil, errors.Errorf("failed to resolve const '%s'", s)
 		}
 		res = append(res, resolved.Values...)
 	}

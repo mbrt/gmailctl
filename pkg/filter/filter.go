@@ -40,3 +40,9 @@ type Criteria struct {
 func (c Criteria) Empty() bool {
 	return c == Criteria{}
 }
+
+// Label contains information about a Gmail label.
+type Label struct {
+	ID   string
+	Name string
+}
