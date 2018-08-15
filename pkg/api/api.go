@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"sync"
@@ -23,6 +24,7 @@ type GmailAPI interface {
 	ListFilters() (filter.Filters, error)
 	DeleteFilters(ids []string) error
 	AddFilters(fs filter.Filters) error
+
 	ListLabels() ([]filter.Label, error)
 }
 
@@ -81,11 +83,34 @@ func (g *gmailAPI) ListFilters() (filter.Filters, error) {
 }
 
 func (g *gmailAPI) DeleteFilters(ids []string) error {
-	panic("not implemented")
+	for _, id := range ids {
+		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do()
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("error deleting filter '%s'", id))
+		}
+	}
+	return nil
 }
 
 func (g *gmailAPI) AddFilters(fs filter.Filters) error {
-	panic("not implemented")
+	lmap, err := g.getLabelMap()
+	if err != nil {
+		return err
+	}
+
+	gfilters, err := exportapi.DefaulExporter().Export(fs, lmap)
+	if err != nil {
+		return err
+	}
+
+	for i, gfilter := range gfilters {
+		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do()
+		if err != nil {
+			return errors.Wrapf(err, "error creating filter '%d'", i)
+		}
+	}
+
+	return nil
 }
 
 func (g *gmailAPI) ListLabels() ([]filter.Label, error) {
