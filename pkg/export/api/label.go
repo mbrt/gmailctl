@@ -47,7 +47,7 @@ func (m DefaultLabelMap) NameToID(name string) (string, bool) {
 
 // IDToName maps the id of a string to its name.
 func (m DefaultLabelMap) IDToName(id string) (string, bool) {
-	name, ok := m.ntid[id]
+	name, ok := m.idtn[id]
 	return name, ok
 }
 
