@@ -62,36 +62,43 @@ func (di defaultImporter) importFilter(gf *gmailv1.Filter, lmap LabelMap) (filte
 
 func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Action, error) {
 	res := filter.Action{}
+	if err := di.importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
+		return res, err
+	}
+	err := di.importRemoveLabels(&res, action.RemoveLabelIds)
+	return res, err
+}
 
-	// Parse the added labels
-	for _, labelID := range action.AddLabelIds {
+func (di defaultImporter) importAddLabels(res *filter.Action, addLabelIDs []string, lmap LabelMap) error {
+	for _, labelID := range addLabelIDs {
+		category := di.importCategory(labelID)
+		if category != "" {
+			if res.Category != "" {
+				return errors.Errorf("multiple categories specified: '%s', '%s'", category, res.Category)
+			}
+			res.Category = category
+			continue
+		}
+
 		switch labelID {
 		case labelIDTrash:
 			res.Delete = true
 		case labelIDImportant:
 			res.MarkImportant = true
-		case labelIDCategoryPersonal:
-			res.Category = config.CategoryPersonal
-		case labelIDCategorySocial:
-			res.Category = config.CategorySocial
-		case labelIDCategoryUpdates:
-			res.Category = config.CategoryUpdates
-		case labelIDCategoryForums:
-			res.Category = config.CategoryForums
-		case labelIDCategoryPromotions:
-			res.Category = config.CategoryPromotions
 		default:
 			// it should be a label to add
 			labelName, ok := lmap.IDToName(labelID)
 			if !ok {
-				return res, errors.Errorf("unknown label ID '%s'", labelID)
+				return errors.Errorf("unknown label ID '%s'", labelID)
 			}
 			res.AddLabel = labelName
 		}
 	}
+	return nil
+}
 
-	// Parse the removed labels
-	for _, labelID := range action.RemoveLabelIds {
+func (di defaultImporter) importRemoveLabels(res *filter.Action, removeLabelIDs []string) error {
+	for _, labelID := range removeLabelIDs {
 		switch labelID {
 		case labelIDInbox:
 			res.Archive = true
@@ -99,11 +106,27 @@ func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelM
 			res.MarkRead = true
 		default:
 			// filters not added by us are not supported
-			return res, errors.Errorf("unupported label to remove '%s'", labelID)
+			return errors.Errorf("unupported label to remove '%s'", labelID)
 		}
 	}
+	return nil
+}
 
-	return res, nil
+func (di defaultImporter) importCategory(labelID string) config.Category {
+	switch labelID {
+	case labelIDCategoryPersonal:
+		return config.CategoryPersonal
+	case labelIDCategorySocial:
+		return config.CategorySocial
+	case labelIDCategoryUpdates:
+		return config.CategoryUpdates
+	case labelIDCategoryForums:
+		return config.CategoryForums
+	case labelIDCategoryPromotions:
+		return config.CategoryPromotions
+	default:
+		return ""
+	}
 }
 
 func (di defaultImporter) importCriteria(action *gmailv1.FilterCriteria) (filter.Criteria, error) {
