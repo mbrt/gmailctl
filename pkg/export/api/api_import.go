@@ -74,7 +74,7 @@ func (di defaultImporter) importAddLabels(res *filter.Action, addLabelIDs []stri
 		category := di.importCategory(labelID)
 		if category != "" {
 			if res.Category != "" {
-				return errors.Errorf("multiple categories specified: '%s', '%s'", category, res.Category)
+				return errors.Errorf("multiple categories: '%s', '%s'", category, res.Category)
 			}
 			res.Category = category
 			continue
