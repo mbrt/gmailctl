@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/mbrt/gmailfilter/pkg/config"
@@ -12,8 +13,8 @@ type Filters []Filter
 func (fs Filters) String() string {
 	builder := strings.Builder{}
 	for _, f := range fs {
-		builder.WriteString(f.String())
-		builder.WriteRune('\n')
+		assertNoErr(builder.WriteString(f.String()))
+		assertNoErr(builder.WriteRune('\n'))
 	}
 	return builder.String()
 }
@@ -29,13 +30,13 @@ type Filter struct {
 func (f Filter) String() string {
 	builder := strings.Builder{}
 
-	builder.WriteString("- Criteria:\n")
+	assertNoErr(builder.WriteString("* Criteria:\n"))
 	writeParam(&builder, "from", f.Criteria.From)
 	writeParam(&builder, "to", f.Criteria.To)
 	writeParam(&builder, "subject", f.Criteria.Subject)
 	writeParam(&builder, "query", f.Criteria.Query)
 
-	builder.WriteString("  Actions:\n")
+	assertNoErr(builder.WriteString("  Actions:\n"))
 	writeBool(&builder, "archive", f.Action.Archive)
 	writeBool(&builder, "delete", f.Action.Delete)
 	writeBool(&builder, "mark as important", f.Action.MarkImportant)
@@ -44,24 +45,6 @@ func (f Filter) String() string {
 	writeParam(&builder, "apply label", f.Action.AddLabel)
 
 	return builder.String()
-}
-
-func writeParam(b *strings.Builder, name, value string) {
-	if value != "" {
-		b.WriteString("    ")
-		b.WriteString(name)
-		b.WriteString(": ")
-		b.WriteString(value)
-		b.WriteRune('\n')
-	}
-}
-
-func writeBool(b *strings.Builder, name string, value bool) {
-	if value {
-		b.WriteString("    ")
-		b.WriteString(name)
-		b.WriteRune('\n')
-	}
 }
 
 // Action represents an action associated with a Gmail filter.
@@ -96,4 +79,28 @@ func (c Criteria) Empty() bool {
 type Label struct {
 	ID   string
 	Name string
+}
+
+func writeParam(b *strings.Builder, name, value string) {
+	if value != "" {
+		assertNoErr(b.WriteString("    "))
+		assertNoErr(b.WriteString(name))
+		assertNoErr(b.WriteString(": "))
+		assertNoErr(b.WriteString(value))
+		assertNoErr(b.WriteRune('\n'))
+	}
+}
+
+func writeBool(b *strings.Builder, name string, value bool) {
+	if value {
+		assertNoErr(b.WriteString("    "))
+		assertNoErr(b.WriteString(name))
+		assertNoErr(b.WriteRune('\n'))
+	}
+}
+
+func assertNoErr(a interface{}, err error) {
+	if err != nil {
+		panic(fmt.Sprint("unexpected error", err))
+	}
 }
