@@ -57,6 +57,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/texttheater/golang-levenshtein"
+  packages = ["levenshtein"]
+  revision = "d188e65d659ef53fcdb0691c12f1bba64928b649"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
   revision = "c39426892332e1bb5ec0a434a079bf82f5d30c54"
@@ -88,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9968507339d2600d3be0a49737d957a95f4d8c3519d739bb7bf02f54d0713b6e"
+  inputs-digest = "e6a0246dbef5e416ed4a84d593c240296422c183d6f41fac36f656ab02c73690"
   solver-name = "gps-cdcl"
   solver-version = 1

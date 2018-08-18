@@ -1,9 +1,22 @@
 package filter
 
-import "github.com/mbrt/gmailfilter/pkg/config"
+import (
+	"strings"
+
+	"github.com/mbrt/gmailfilter/pkg/config"
+)
 
 // Filters is a list of filters created in Gmail.
 type Filters []Filter
+
+func (fs Filters) String() string {
+	builder := strings.Builder{}
+	for _, f := range fs {
+		builder.WriteString(f.String())
+		builder.WriteRune('\n')
+	}
+	return builder.String()
+}
 
 // Filter matches 1:1 a filter created on Gmail.
 type Filter struct {
@@ -11,6 +24,44 @@ type Filter struct {
 	ID       string
 	Action   Action
 	Criteria Criteria
+}
+
+func (f Filter) String() string {
+	builder := strings.Builder{}
+
+	builder.WriteString("- Criteria:\n")
+	writeParam(&builder, "from", f.Criteria.From)
+	writeParam(&builder, "to", f.Criteria.To)
+	writeParam(&builder, "subject", f.Criteria.Subject)
+	writeParam(&builder, "query", f.Criteria.Query)
+
+	builder.WriteString("  Actions:\n")
+	writeBool(&builder, "archive", f.Action.Archive)
+	writeBool(&builder, "delete", f.Action.Delete)
+	writeBool(&builder, "mark as important", f.Action.MarkImportant)
+	writeBool(&builder, "mark as read", f.Action.MarkImportant)
+	writeParam(&builder, "categorize as", string(f.Action.Category))
+	writeParam(&builder, "apply label", f.Action.AddLabel)
+
+	return builder.String()
+}
+
+func writeParam(b *strings.Builder, name, value string) {
+	if value != "" {
+		b.WriteString("    ")
+		b.WriteString(name)
+		b.WriteString(": ")
+		b.WriteString(value)
+		b.WriteRune('\n')
+	}
+}
+
+func writeBool(b *strings.Builder, name string, value bool) {
+	if value {
+		b.WriteString("    ")
+		b.WriteString(name)
+		b.WriteRune('\n')
+	}
 }
 
 // Action represents an action associated with a Gmail filter.
