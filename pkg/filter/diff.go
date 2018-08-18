@@ -11,38 +11,6 @@ import (
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
-// FiltersDiff contains filters that have been added and removed locally with respect to upstream.
-type FiltersDiff struct {
-	Added   Filters
-	Removed Filters
-}
-
-// NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
-// similar added and removed ones are next to each other.
-//
-// The algorithm used is a quadratic approximation to the otherwise NP-complete
-// travel salesman problem. Hopefully the number of filters is low enough to
-// make this not too slow and the approximation not too bad.
-func NewMinimalFiltersDiff(added, removed Filters) FiltersDiff {
-	reorderWithLevenshtein(added, removed)
-	return FiltersDiff{added, removed}
-}
-
-func (f FiltersDiff) String() string {
-	s, err := difflib.GetContextDiffString(difflib.ContextDiff{
-		A:        difflib.SplitLines(f.Removed.String()),
-		B:        difflib.SplitLines(f.Added.String()),
-		FromFile: "Original",
-		ToFile:   "Current",
-		Context:  5,
-	})
-	if err != nil {
-		// We can't get a diff apparently, let's make something up here
-		return fmt.Sprintf("Removed:\n%s\nAdded:\n%s", f.Removed, f.Added)
-	}
-	return s
-}
-
 // Diff computes the diff between two lists of filters.
 //
 // To compute the diff, IDs are ignored, only the contents of the filters are actually considered.
@@ -86,6 +54,38 @@ func Diff(upstream, local Filters) (FiltersDiff, error) {
 	}
 
 	return NewMinimalFiltersDiff(added, removed), nil
+}
+
+// FiltersDiff contains filters that have been added and removed locally with respect to upstream.
+type FiltersDiff struct {
+	Added   Filters
+	Removed Filters
+}
+
+// NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
+// similar added and removed ones are next to each other.
+//
+// The algorithm used is a quadratic approximation to the otherwise NP-complete
+// travel salesman problem. Hopefully the number of filters is low enough to
+// make this not too slow and the approximation not too bad.
+func NewMinimalFiltersDiff(added, removed Filters) FiltersDiff {
+	reorderWithLevenshtein(added, removed)
+	return FiltersDiff{added, removed}
+}
+
+func (f FiltersDiff) String() string {
+	s, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
+		A:        difflib.SplitLines(f.Removed.String()),
+		B:        difflib.SplitLines(f.Added.String()),
+		FromFile: "Original",
+		ToFile:   "Current",
+		Context:  5,
+	})
+	if err != nil {
+		// We can't get a diff apparently, let's make something up here
+		return fmt.Sprintf("Removed:\n%s\nAdded:\n%s", f.Removed, f.Added)
+	}
+	return s
 }
 
 type hashedFilter struct {
