@@ -83,7 +83,7 @@ func saveToken(path, authCode string, auth api.Authenticator) error {
 	if err != nil {
 		return errors.Wrap(err, "unable create token file")
 	}
-	defer func() { _ = f.Close() }()
+	defer func() { /* #nosec */ _ = f.Close() }()
 
 	return auth.CacheToken(context.Background(), authCode, f)
 }
