@@ -46,14 +46,7 @@ func categoryToSmartLabel(cat config.Category) (string, error) {
 	case config.CategoryPromotions:
 		smartl = SmartLabelPromo
 	default:
-		// TODO: move this to config package
-		possib := []string{
-			string(config.CategoryPersonal),
-			string(config.CategorySocial),
-			string(config.CategoryUpdates),
-			string(config.CategoryForums),
-			string(config.CategoryPromotions),
-		}
+		possib := config.PossibleCategoryValues()
 		return "", errors.Errorf("unrecognized category '%s' (possible values: %s)",
 			cat, strings.Join(possib, ", "))
 	}
