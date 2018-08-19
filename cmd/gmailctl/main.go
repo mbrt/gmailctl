@@ -25,7 +25,6 @@ func readConfig(path string) (config.Config, error) {
 	var res config.Config
 	err = yaml.Unmarshal(b, &res)
 	return res, err
-
 }
 
 func errorf(format string, a ...interface{}) {
@@ -155,7 +154,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
 	if !askYN("Do you want to apply them?") {
 		return
 	}
