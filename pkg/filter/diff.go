@@ -125,7 +125,12 @@ func newHashedFilters(fs Filters) hashedFilters {
 }
 
 func hashFilter(f Filter) hashedFilter {
-	h, err := structhash.Hash(f, 1)
+	// We have to hash only the contents, not the ID
+	noIDFilter := Filter{
+		Action:   f.Action,
+		Criteria: f.Criteria,
+	}
+	h, err := structhash.Hash(noIDFilter, 1)
 	if err != nil {
 		panic("hash cannot fail, unreachable")
 	}

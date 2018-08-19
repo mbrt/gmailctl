@@ -9,9 +9,39 @@ import (
 	"github.com/mbrt/gmailfilter/pkg/config"
 )
 
+func TestNoDiff(t *testing.T) {
+	old := Filters{
+		{
+			ID: "abcdefg",
+			Criteria: Criteria{
+				From: "someone@gmail.com",
+			},
+			Action: Action{
+				MarkRead: true,
+			},
+		},
+	}
+	new := Filters{
+		{
+			Criteria: Criteria{
+				From: "someone@gmail.com",
+			},
+			Action: Action{
+				MarkRead: true,
+			},
+		},
+	}
+
+	fd, err := Diff(old, new)
+	assert.Nil(t, err)
+	// No difference even if the ID is present in only one of them.
+	assert.True(t, fd.Empty())
+}
+
 func TestDiffOutput(t *testing.T) {
 	old := Filters{
 		{
+			ID: "abcdefg",
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
@@ -51,6 +81,7 @@ func TestDiffOutput(t *testing.T) {
 func someFilters() Filters {
 	return Filters{
 		{
+			ID: "abcdefg",
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
@@ -59,6 +90,7 @@ func someFilters() Filters {
 			},
 		},
 		{
+			ID: "qwerty",
 			Criteria: Criteria{
 				To: "me@gmail.com",
 			},
@@ -68,6 +100,7 @@ func someFilters() Filters {
 			},
 		},
 		{
+			ID: "zxcvb",
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
