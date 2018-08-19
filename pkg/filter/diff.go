@@ -56,12 +56,6 @@ func Diff(upstream, local Filters) (FiltersDiff, error) {
 	return NewMinimalFiltersDiff(added, removed), nil
 }
 
-// FiltersDiff contains filters that have been added and removed locally with respect to upstream.
-type FiltersDiff struct {
-	Added   Filters
-	Removed Filters
-}
-
 // NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
 // similar added and removed ones are next to each other.
 //
@@ -71,6 +65,17 @@ type FiltersDiff struct {
 func NewMinimalFiltersDiff(added, removed Filters) FiltersDiff {
 	reorderWithLevenshtein(added, removed)
 	return FiltersDiff{added, removed}
+}
+
+// FiltersDiff contains filters that have been added and removed locally with respect to upstream.
+type FiltersDiff struct {
+	Added   Filters
+	Removed Filters
+}
+
+// Empty returns true if the diff is empty.
+func (f FiltersDiff) Empty() bool {
+	return len(f.Added) == 0 && len(f.Removed) == 0
 }
 
 func (f FiltersDiff) String() string {

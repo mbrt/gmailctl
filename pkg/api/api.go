@@ -1,16 +1,10 @@
 package api
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"sync"
 
 	"github.com/pkg/errors"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
 	exportapi "github.com/mbrt/gmailfilter/pkg/export/api"
@@ -26,41 +20,7 @@ type GmailAPI interface {
 	AddFilters(fs filter.Filters) error
 
 	ListLabels() ([]filter.Label, error)
-}
-
-// NewGmailAPI creates a new GmailAPI object by giving credentials and token JSON file contents.
-func NewGmailAPI(ctx context.Context, credentials, token io.Reader) (GmailAPI, error) {
-	cfg, err := clientFromCredentials(credentials)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating config from credentials")
-	}
-	tok, err := parseToken(token)
-	if err != nil {
-		return nil, errors.Wrap(err, "error decoding token")
-	}
-
-	client := cfg.Client(ctx, tok)
-	srv, err := gmailv1.New(client)
-	if err != nil {
-		return nil, errors.Wrap(err, "error creating gmail client")
-	}
-
-	// Lazy load the LabelMap
-	return &gmailAPI{srv, nil, &sync.Mutex{}}, nil
-}
-
-func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
-	credBytes, err := ioutil.ReadAll(credentials)
-	if err != nil {
-		return nil, errors.Wrap(err, "error reading credentials")
-	}
-	return google.ConfigFromJSON(credBytes, gmailv1.GmailSettingsBasicScope)
-}
-
-func parseToken(token io.Reader) (*oauth2.Token, error) {
-	tok := &oauth2.Token{}
-	err := json.NewDecoder(token).Decode(tok)
-	return tok, err
+	LabelMap() (exportapi.LabelMap, error)
 }
 
 type gmailAPI struct {
@@ -127,6 +87,14 @@ func (g *gmailAPI) ListLabels() ([]filter.Label, error) {
 	}
 
 	return res, nil
+}
+
+func (g *gmailAPI) LabelMap() (exportapi.LabelMap, error) {
+	_, err := g.refreshLabelMap()
+	if err != nil {
+		return nil, err
+	}
+	return g.labelmap, nil
 }
 
 func (g *gmailAPI) getLabelMap() (exportapi.LabelMap, error) {
