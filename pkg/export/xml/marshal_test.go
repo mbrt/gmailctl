@@ -2,12 +2,14 @@ package xml
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailfilter/pkg/filter"
 )
 
 func testNow() time.Time {
@@ -20,7 +22,7 @@ func TestEmptyEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
 	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	buf := new(bytes.Buffer)
-	err := exporter.MarshalEntries(author, []Entry{}, buf)
+	err := exporter.Export(author, filter.Filters{}, buf)
 	assert.Nil(t, err)
 	expected := `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
@@ -38,21 +40,30 @@ func TestEmptyEntries(t *testing.T) {
 func TestEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
 	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
-	entries := []Entry{
+	filters := filter.Filters{
 		{
-			{Name: PropertyFrom, Value: "foo@baz.com"},
-			{Name: PropertyMarkImportant, Value: "true"},
+			Action: filter.Action{
+				MarkImportant: true,
+			},
+			Criteria: filter.Criteria{
+				From: "foo@baz.com",
+			},
 		},
 		{
-			{Name: PropertyHas, Value: "SPAM!!"},
-			{Name: PropertyDelete, Value: "true"},
-			{Name: PropertyApplyLabel, Value: "spam"},
+			Action: filter.Action{
+				Delete:   true,
+				AddLabel: "spam",
+			},
+			Criteria: filter.Criteria{
+				Query: "SPAM!!",
+			},
 		},
 	}
 	buf := new(bytes.Buffer)
-	err := exporter.MarshalEntries(author, entries, buf)
+	err := exporter.Export(author, filters, buf)
 	assert.Nil(t, err)
-	expected := `<?xml version="1.0" encoding="UTF-8"?>
+	expected := `
+<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
   <title>Mail Filters</title>
   <id>tag:mail.google.com,2008:filters:</id>
@@ -77,5 +88,5 @@ func TestEntries(t *testing.T) {
     <apps:property name="label" value="spam"></apps:property>
   </entry>
 </feed>`
-	assert.Equal(t, expected, buf.String())
+	assert.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(buf.String()))
 }

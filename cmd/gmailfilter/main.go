@@ -12,6 +12,7 @@ import (
 
 	"github.com/mbrt/gmailfilter/pkg/config"
 	export "github.com/mbrt/gmailfilter/pkg/export/xml"
+	"github.com/mbrt/gmailfilter/pkg/filter"
 )
 
 func readConfig(path string) (config.Config, error) {
@@ -50,12 +51,12 @@ func main() {
 		fatal("error in config parse: %s", err)
 	}
 
-	rules, err := export.GenerateRules(cfg)
+	filters, err := filter.FromConfig(cfg)
 	if err != nil {
-		fatal("error generating rules: %s", err)
+		fatal("errors exporting filters: %s", err)
 	}
 
-	err = export.DefaultExporter().MarshalEntries(cfg.Author, rules, os.Stdout)
+	err = export.DefaultExporter().Export(cfg.Author, filters, os.Stdout)
 	if err != nil {
 		fatal("error exporting to XML: %s", err)
 	}
