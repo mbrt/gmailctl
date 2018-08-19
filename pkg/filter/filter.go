@@ -12,10 +12,16 @@ type Filters []Filter
 
 func (fs Filters) String() string {
 	builder := strings.Builder{}
+
+	first := true
 	for _, f := range fs {
+		if !first {
+			assertNoErr(builder.WriteRune('\n'))
+		}
+		first = false
 		assertNoErr(builder.WriteString(f.String()))
-		assertNoErr(builder.WriteRune('\n'))
 	}
+
 	return builder.String()
 }
 

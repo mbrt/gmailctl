@@ -116,5 +116,5 @@ func main() {
 		fmt.Println("No difference found from upstream.")
 		return
 	}
-	fmt.Printf("You are going to apply the following to your settings:\n\n%s", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
 }

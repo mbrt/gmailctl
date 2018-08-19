@@ -69,7 +69,7 @@ func TestDiffOutput(t *testing.T) {
 	expected := `
 --- Original
 +++ Current
-@@ -1,6 +1,6 @@
+@@ -1,5 +1,5 @@
  * Criteria:
 -    from: someone@gmail.com
 +    from: {someone@gmail.com else@gmail.com}
