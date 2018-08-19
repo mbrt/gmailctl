@@ -88,23 +88,61 @@ func saveToken(path, authCode string, auth api.Authenticator) error {
 	return auth.CacheToken(context.Background(), authCode, f)
 }
 
+func updateFilters(gmailapi api.GmailAPI, diff filter.FiltersDiff) error {
+	if len(diff.Added) > 0 {
+		if err := gmailapi.AddFilters(diff.Added); err != nil {
+			return errors.Wrap(err, "error adding filters")
+		}
+	}
+	if len(diff.Removed) == 0 {
+		return nil
+	}
+
+	removedIds := make([]string, len(diff.Removed))
+	for i, f := range diff.Removed {
+		removedIds[i] = f.ID
+	}
+	err := gmailapi.DeleteFilters(removedIds)
+	return errors.Wrap(err, "error deleting filters")
+}
+
+func askYN(prompt string) bool {
+	for {
+		fmt.Printf("%s [y/N]: ", prompt)
+		var choice string
+		if _, err := fmt.Scan(&choice); err == nil {
+			switch choice {
+			case "y":
+				return true
+			case "yes":
+				return true
+			case "n":
+				return false
+			case "no":
+				return false
+			}
+		}
+		fmt.Println("invalid choice")
+	}
+}
+
 func main() {
 	cfg, err := readConfig("config.yaml")
 	if err != nil {
-		fatal("error in config parse: %s", err)
+		fatal("error in config parse: %v", err)
 	}
 	newFilters, err := filter.FromConfig(cfg)
 	if err != nil {
-		fatal("errors exporting local filters: %s", err)
+		fatal("errors exporting local filters: %v", err)
 	}
 
 	gmailapi, err := openAPI()
 	if err != nil {
-		fatal("cannot connect to Gmail: %s", err)
+		fatal("cannot connect to Gmail: %v", err)
 	}
 	upstreamFilters, err := gmailapi.ListFilters()
 	if err != nil {
-		fatal("cannot get filters from Gmail: %s", err)
+		fatal("cannot get filters from Gmail: %v", err)
 	}
 
 	diff, err := filter.Diff(upstreamFilters, newFilters)
@@ -113,8 +151,16 @@ func main() {
 	}
 
 	if diff.Empty() {
-		fmt.Println("No difference found from upstream.")
+		fmt.Println("No changes have been made.")
 		return
 	}
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
+
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
+	if !askYN("Do you want to apply them?") {
+		return
+	}
+
+	if err = updateFilters(gmailapi, diff); err != nil {
+		fatal("%v", err)
+	}
 }
