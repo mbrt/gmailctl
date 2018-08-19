@@ -110,7 +110,7 @@ func askYN(prompt string) bool {
 		fmt.Printf("%s [y/N]: ", prompt)
 		var choice string
 		if _, err := fmt.Scan(&choice); err == nil {
-			switch choice {
+			switch strings.ToLower(choice) {
 			case "y":
 				return true
 			case "yes":
