@@ -114,13 +114,19 @@ func setupToken(auth api.Authenticator) error {
 	return nil
 }
 
-func saveToken(path, authCode string, auth api.Authenticator) error {
+func saveToken(path, authCode string, auth api.Authenticator) (err error) {
 	fmt.Printf("Saving credential file to %s\n", path)
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
+	f, e := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if e != nil {
 		return errors.Wrap(err, "unable create token file")
 	}
-	defer func() { /* #nosec */ _ = f.Close() }()
+	defer func() {
+		e = f.Close()
+		// do not hide more important error
+		if err == nil {
+			err = e
+		}
+	}()
 
 	return auth.CacheToken(context.Background(), authCode, f)
 }

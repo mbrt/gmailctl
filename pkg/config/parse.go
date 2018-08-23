@@ -9,6 +9,7 @@ import (
 
 // ParseFile takes a path and returns the parsed config file.
 func ParseFile(path string) (Config, error) {
+	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return Config{}, NotFoundError(err)
