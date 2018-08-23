@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"os"
 	"path"
 
 	"github.com/pkg/errors"
@@ -55,22 +53,22 @@ func apply(path string) error {
 
 	newFilters, err := filter.FromConfig(cfg)
 	if err != nil {
-		fatal(errors.Wrap(err, "error exporting local filters"))
+		return errors.Wrap(err, "error exporting local filters")
 	}
 
 	gmailapi, err := openAPI()
 	if err != nil {
-		fatal(errors.Wrap(err, "cannot connect to Gmail"))
+		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
 	upstreamFilters, err := gmailapi.ListFilters()
 	if err != nil {
-		fatal(errors.Wrap(err, "cannot get filters from Gmail"))
+		return errors.Wrap(err, "cannot get filters from Gmail")
 	}
 
 	diff, err := filter.Diff(upstreamFilters, newFilters)
 	if err != nil {
-		fatal(errors.New("cannot compare upstream with local filters"))
+		return errors.New("cannot compare upstream with local filters")
 	}
 
 	if diff.Empty() {
@@ -84,28 +82,10 @@ func apply(path string) error {
 	}
 
 	if err = updateFilters(gmailapi, diff); err != nil {
-		fatal(err)
+		return err
 	}
 
 	return nil
-}
-
-func openAPI() (api.GmailAPI, error) {
-	cred, err := os.Open("credentials.json")
-	if err != nil {
-		return nil, configurationError(errors.Wrap(err, "cannot open credentials"))
-	}
-	auth, err := api.NewAuthenticator(cred)
-	if err != nil {
-		return nil, configurationError(errors.Wrap(err, "invalid credentials"))
-	}
-
-	token, err := os.Open("token.json")
-	if err != nil {
-		return nil, configurationError(errors.Wrap(err, "missing or invalid cached token"))
-	}
-
-	return auth.API(context.Background(), token)
 }
 
 func updateFilters(gmailapi api.GmailAPI, diff filter.FiltersDiff) error {

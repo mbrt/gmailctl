@@ -9,7 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cfgDir string
+var (
+	cfgDir          string
+	credentialsPath string
+	tokenPath       string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -54,4 +58,6 @@ func initConfig() {
 		}
 		cfgDir = path.Join(home, ".gmailctl")
 	}
+	credentialsPath = path.Join(cfgDir, "credentials.json")
+	tokenPath = path.Join(cfgDir, "token.json")
 }
