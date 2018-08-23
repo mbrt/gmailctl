@@ -81,11 +81,7 @@ func apply(path string) error {
 		return nil
 	}
 
-	if err = updateFilters(gmailapi, diff); err != nil {
-		return err
-	}
-
-	return nil
+	return updateFilters(gmailapi, diff)
 }
 
 func updateFilters(gmailapi api.GmailAPI, diff filter.FiltersDiff) error {

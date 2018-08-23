@@ -36,8 +36,7 @@ at: https://developers.google.com/gmail/api/auth/about-auth
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize the Gmail configuration",
-	Long: `
-The init command initialize the Gmail configuration, asking
+	Long: `The init command initialize the Gmail configuration, asking
 you for details and guiding you through the process of
 setting up the API authorizations and initial settings.`,
 	Run: func(cmd *cobra.Command, args []string) {
