@@ -69,9 +69,6 @@ func export(inputPath, outputPath string) (err error) {
 func exportWithOut(cfgPath string, out io.Writer) error {
 	cfg, err := config.ParseFile(cfgPath)
 	if err != nil {
-		if config.IsNotFound(err) {
-			return configurationError(err)
-		}
 		return errors.Wrap(err, "cannot parse config file")
 	}
 

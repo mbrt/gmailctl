@@ -1,10 +1,11 @@
-# gmailfilter
+# gmailctl
 [![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailfilter)](https://goreportcard.com/report/github.com/mbrt/gmailfilter)
 [![Build Status](https://travis-ci.org/mbrt/gmailfilter.svg?branch=master)](https://travis-ci.org/mbrt/gmailfilter)
 
-This utility helps you generate Gmail filters. It has a Yaml configuration file
-that aims to be more simple to write and maintain than using the Gmail web
-interface, to categorize, label, archive and manage automatically your inbox.
+This utility helps you generate and maintain Gmail filters in a declarative way.
+It has a Yaml configuration file that aims to be more simple to write and
+maintain than using the Gmail web interface, to categorize, label, archive and
+manage automatically your inbox.
 
 ## Motivation
 
@@ -13,31 +14,34 @@ labels, get rid of spam or categorize your emails, then you probably have (like
 me) a mess of filters that you don't even remember what they are intended to do
 and why.
 
-Gmail has an import export functionality for filters. The format used is XML.
-Every entry of this file maps maps 1:1 to a rule in Gmail. Editing these files
-is also quite painful because what you see in it doesn't map exactly with what
-you see in the web interface. What's more is that Gmail provides an undocumented
-and powerful expression language that goes beyond what you see in the Search
-form.
+Gmail has both an import export functionality for filters (in XML format) and
+powerful APIs that we can access to update our settings. Editing these XML files
+is pretty painful because the format is not human friendly. The Gmail query
+language is quite powerful but not easy to remember.
 
 This project exists to combine:
 1. maintainability
 2. powerful but declarative language
+3. quick updates to your settings
 
 ## Usage
 
 ```
-go install github.com/mbrt/gmailfilter/cmd/gmailfilter
-gmailfilter config.yaml > filters.xml
+go install github.com/mbrt/gmailfilter/cmd/gmailctl
+gmailctl init
+# edit the config file
+gmailctl apply -f config.yaml
 ```
 
 where `config.yaml` is the configuration file containing the filtering rules
-(see [Configuration](#configuration)). The utility will print out an XML that you
-can import as Gmail filters.
+(see [Configuration](#configuration)). The utility will guide you through
+setting up the Gmail APIs and update your settings without leaving your command
+line.
 
 **NOTE:** It's recommended to backup your current configuration before to
-applying a generated one. Bugs can happen in both code and configuration. Always
-backup to avoid surprises.
+applying a generated one. Your current filters will be wiped and replaced with
+the ones specified in the config file. Since bugs can happen in both code and
+configuration, always backup to avoid surprises.
 
 ## Configuration
 
@@ -104,7 +108,12 @@ not contain `Baz zorg` in the subject.
 ### Constants
 A filter can refer to global constants specified in the first section by using
 the `consts` section inside the filter. All values inside the rule will be
-replaced by the constants.
+replaced by the constants. Inside `consts` you can put again the same set of
+filters of the positive case:
+* from
+* to
+* subject
+* has
 
 Example:
 
@@ -218,21 +227,30 @@ rules:
 motivations and is quite popular. The difference between that project and
 this one are:
 
-* `gmail-britta` uses a custom DSL (versus YAML in `gmailfilter`)
+* `gmail-britta` uses a custom DSL (versus YAML in `gmailctl`)
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
-  code in your filters (versus pure declarative for `gmailfilter`)
+  code in your filters (versus pure declarative for `gmailctl`)
 * `gmail-britta` allows to write complex chains of filters, but fails to provide
   easy ways to write reasonably easy filters [1](#footnote-1).
-* `gmailfilter` tries to workaround certain limitations in Gmail (like applying
+* `gmail-britta` exports only to the Gmail XML format. You have to import the
+  filters yourself by using the Gmail web interface, manually delete the filters
+  you updated and import only the new ones. This process becomes tedious very
+  quickly and you will resort to quickly avoid using the tool when in a hurry.
+  `gmailctl` provides you this possibility, but also allows you to review your
+  changes and update the filters by using the Gmail APIs, without you having to
+  do anything manually.
+* `gmailctl` tries to workaround certain limitations in Gmail (like applying
   multiple labels with the same filter) `gmail-britta` tries to workaround
   others (chain filtering).
-* chain filtering is not supported in `gmailfilter` by design. The declarative
-  nature of the configuration makes it that every rule that matches is applyied,
+* chain filtering is not supported in `gmailctl` by design. The declarative
+  nature of the configuration makes it that every rule that matches is applied,
   just like Gmail does.
 
-In short `gmailfilter` takes the declarative approach to Gmail filters
+In short `gmailctl` takes the declarative approach to Gmail filters
 configuration, hoping it stays simpler to read and maintain, sacrificing complex
-scenarios handled instead by `gmail-britta` (like chaining).
+scenarios handled instead by `gmail-britta` (like chaining), and provides the
+automatic update that will save you time while you are iterating through new
+versions of your filters.
   
 ## Footnotes
 
