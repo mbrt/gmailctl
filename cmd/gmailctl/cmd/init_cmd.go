@@ -60,6 +60,13 @@ func init() {
 }
 
 func resetConfig() error {
+	if err := deleteFile(credentialsPath); err != nil {
+		return err
+	}
+	if err := deleteFile(tokenPath); err != nil {
+		return err
+	}
+	fmt.Println("Configuration reset.")
 	return nil
 }
 
@@ -128,4 +135,11 @@ func saveToken(path, authCode string, auth api.Authenticator) (err error) {
 	}()
 
 	return auth.CacheToken(context.Background(), authCode, f)
+}
+
+func deleteFile(path string) error {
+	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
+		return nil
+	}
+	return os.Remove(path)
 }
