@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
-	"github.com/mbrt/gmailfilter/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 func testNow() time.Time {

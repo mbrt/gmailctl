@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
-	"github.com/mbrt/gmailfilter/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 func TestImportActions(t *testing.T) {

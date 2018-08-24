@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
-	"github.com/mbrt/gmailfilter/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // Exporter exports Gmail filters into Gmail API objects

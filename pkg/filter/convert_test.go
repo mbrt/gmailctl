@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config"
 )
 
 func TestMatchFilter(t *testing.T) {

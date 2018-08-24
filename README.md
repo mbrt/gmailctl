@@ -1,6 +1,6 @@
 # gmailctl
-[![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailfilter)](https://goreportcard.com/report/github.com/mbrt/gmailfilter)
-[![Build Status](https://travis-ci.org/mbrt/gmailfilter.svg?branch=master)](https://travis-ci.org/mbrt/gmailfilter)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailctl)](https://goreportcard.com/report/github.com/mbrt/gmailctl)
+[![Build Status](https://travis-ci.org/mbrt/gmailctl.svg?branch=master)](https://travis-ci.org/mbrt/gmailctl)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
 It has a Yaml configuration file that aims to be more simple to write and
@@ -27,7 +27,7 @@ This project exists to combine:
 ## Usage
 
 ```
-go install github.com/mbrt/gmailfilter/cmd/gmailctl
+go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
 # edit the config file
 gmailctl apply -f config.yaml

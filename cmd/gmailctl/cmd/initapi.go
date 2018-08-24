@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mbrt/gmailfilter/pkg/api"
+	"github.com/mbrt/gmailctl/pkg/api"
 )
 
 func openAPI() (api.GmailAPI, error) {

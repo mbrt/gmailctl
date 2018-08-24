@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mbrt/gmailfilter/cmd/gmailctl/cmd"
+import "github.com/mbrt/gmailctl/cmd/gmailctl/cmd"
 
 func main() {
 	cmd.Execute()

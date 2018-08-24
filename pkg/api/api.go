@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	exportapi "github.com/mbrt/gmailfilter/pkg/export/api"
-	"github.com/mbrt/gmailfilter/pkg/filter"
+	exportapi "github.com/mbrt/gmailctl/pkg/export/api"
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 const gmailUser = "me"

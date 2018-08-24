@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailfilter/pkg/api"
+	"github.com/mbrt/gmailctl/pkg/api"
 )
 
 var (

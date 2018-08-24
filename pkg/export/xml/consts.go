@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config"
 )
 
 // Property values

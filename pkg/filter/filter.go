@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config"
 )
 
 // Filters is a list of filters created in Gmail.

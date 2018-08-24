@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mbrt/gmailfilter/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config"
 )
 
 // FromConfig translates a config into entries that map directly into Gmail filters
