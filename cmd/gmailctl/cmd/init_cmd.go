@@ -19,7 +19,9 @@ const (
 	credentialsMissingMsg = `The credentials are not initialized.
 
 To do so, head to https://console.developers.google.com
-1. Go to 'Enable API and services' and select Gmail;
+
+1. Create a new project if you don't have one
+1. Go to 'Enable API and services' and select Gmail
 2. Go to credentials and create a new one, by selecting 'Help me choose'
    2a. Select the Gmail API
    2b. Select 'Other UI'
@@ -56,7 +58,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 
 	// Flags and configuration settings
-	rootCmd.Flags().BoolVar(&initReset, "reset", false, "Reset the configuration.")
+	initCmd.Flags().BoolVar(&initReset, "reset", false, "Reset the configuration.")
 }
 
 func resetConfig() error {

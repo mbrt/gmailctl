@@ -26,6 +26,8 @@ This project exists to combine:
 
 ## Usage
 
+[![asciicast](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY.png)](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY)
+
 ```
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init

@@ -14,6 +14,7 @@ import (
 
 var (
 	applyFilename string
+	applyYes      bool
 )
 
 // applyCmd represents the apply command
@@ -29,7 +30,7 @@ By default apply uses the "config.yaml" file inside the config directory.`,
 		if applyFilename != "" {
 			f = applyFilename
 		}
-		if err := apply(f); err != nil {
+		if err := apply(f, !applyYes); err != nil {
 			fatal(err)
 		}
 	},
@@ -40,9 +41,10 @@ func init() {
 
 	// Flags and configuration settings
 	applyCmd.PersistentFlags().StringVarP(&applyFilename, "filename", "f", "", "configuration file")
+	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
 }
 
-func apply(path string) error {
+func apply(path string, interactive bool) error {
 	cfg, err := config.ParseFile(path)
 	if err != nil {
 		if config.IsNotFound(err) {
@@ -77,10 +79,11 @@ func apply(path string) error {
 	}
 
 	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
-	if !askYN("Do you want to apply them?") {
+	if interactive && !askYN("Do you want to apply them?") {
 		return nil
 	}
 
+	fmt.Println("Applying the changes...")
 	return updateFilters(gmailapi, diff)
 }
 
