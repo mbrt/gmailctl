@@ -18,13 +18,10 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gmailctl",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Declarative configuration for Gmail",
+	Long: `Gmailctl is a command line utility that allows you to manage
+your Gmail filters in a declarative way, making it easier
+to maintain and to understand.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
