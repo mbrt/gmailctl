@@ -119,8 +119,12 @@ func generateCriteria(filters config.Filters) Criteria {
 
 	// We need to combine the negated query with the eventual 'has' query
 	// if they are both present
-	if res.Query != "" && negated != "" {
-		res.Query = fmt.Sprintf("%s %s", res.Query, negated)
+	if negated != "" {
+		if res.Query == "" {
+			res.Query = negated
+		} else {
+			res.Query = fmt.Sprintf("%s %s", res.Query, negated)
+		}
 	}
 
 	return res

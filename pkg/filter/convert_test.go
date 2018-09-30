@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,6 +33,45 @@ func TestMatchFilter(t *testing.T) {
 		To:      "my@self.com",
 		Subject: `{important "not important"}`,
 		Query:   `{"what's wrong" alert}`,
+	}
+	assert.Equal(t, expected, crit)
+}
+
+func TestNotFilter(t *testing.T) {
+	// Test a single filter
+	filt := config.MatchFilters{
+		From:    []string{"foobar@mail.com", "baz@g.com"},
+		To:      []string{"my@self.com"},
+		Subject: []string{"important", "not important"},
+		Has:     []string{"what's wrong", "alert"},
+	}
+	crit := generateNegatedFilters(filt)
+	expected := strings.Join([]string{ // for readability
+		`-{from:{foobar@mail.com baz@g.com}}`,
+		`-{to:my@self.com}`,
+		`-{subject:{important "not important"}}`,
+		`-{"what's wrong" alert}`,
+	}, " ")
+	assert.Equal(t, expected, crit)
+}
+
+func TestCombineMatchAndNegated(t *testing.T) {
+	// Test combining a positive with a negative filter
+	filt := config.Filters{
+		CompositeFilters: config.CompositeFilters{
+			MatchFilters: config.MatchFilters{
+				From: []string{"*@mail.com"},
+				Has:  []string{"zumba"},
+			},
+			Not: config.MatchFilters{
+				From: []string{"baz@mail.com"},
+			},
+		},
+	}
+	crit := generateCriteria(filt)
+	expected := Criteria{
+		From:  "*@mail.com",
+		Query: "zumba -{from:baz@mail.com}",
 	}
 	assert.Equal(t, expected, crit)
 }
