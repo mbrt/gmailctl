@@ -223,7 +223,7 @@ rules:
         - mail-list
 ```
 
-## Comparison with exising projects
+## Comparison with existing projects
 
 [gmail-britta](https://github.com/antifuchs/gmail-britta) has similar
 motivations and is quite popular. The difference between that project and
