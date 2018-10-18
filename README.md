@@ -28,6 +28,8 @@ This project exists to combine:
 
 [![asciicast](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY.png)](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY)
 
+Setup `$GOPATH` which selects where go installs packages and add `bin` directory in `$GOPATH` directory to your `$PATH`, to make `gmailctl` command available.
+
 ```
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
