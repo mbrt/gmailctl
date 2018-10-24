@@ -77,7 +77,7 @@ With the help of this example, let's explain how rules evaluation works:
   # omitted actions
 ```
 
-1. If the filter of a rule matches, then it's applied. This means that every
+1. If the rule matches, then it's applied. This means that every
    rule is in OR with all the others. In the example, given an email, if the
    first filter matches, then its actions are applied; if the second also
    matches, then its actions are also applied.
@@ -85,6 +85,9 @@ With the help of this example, let's explain how rules evaluation works:
    This means that the filters inside a rule are in AND together. In the
    previous example, if only `filterA` matches, then the first rule is not
    applied. If both `filterA` and `filterB` match, then the rule also matches.
+3. Within filter listed values are in OR with each other. In this example in 
+   second rule, in `filterC` match on either `valueD` or `valueE` means that
+   filter matches.
 
 ### Filters
 The following simple filters are available:
