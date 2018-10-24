@@ -85,9 +85,8 @@ With the help of this example, let's explain how rules evaluation works:
    This means that the filters inside a rule are in AND together. In the
    previous example, if only `filterA` matches, then the first rule is not
    applied. If both `filterA` and `filterB` match, then the rule also matches.
-3. Within filter listed values are in OR with each other. In this example in 
-   second rule, in `filterC` match on either `valueD` or `valueE` means that
-   filter matches.
+3. Within filter the listed values are in OR with each other. In the second rule, 
+   `filterC` matches if either `valueD` or `valueE` are present.
 
 ### Filters
 The following simple filters are available:
