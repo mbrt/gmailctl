@@ -107,6 +107,17 @@ You can apply the special `not` operator to negate a match in this way:
 The rule will match if the email both is not directed to `foo@bar.com` and does
 not contain `Baz zorg` in the subject.
 
+### Actions
+
+A filter can perform following actions
+
+* archive
+* delete
+* mark as important
+* mark as read
+* categorize
+* apply label
+
 ### Constants
 A filter can refer to global constants specified in the first section by using
 the `consts` section inside the filter. All values inside the rule will be
