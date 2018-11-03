@@ -61,6 +61,7 @@ type Rule struct {
 type Filters struct {
 	CompositeFilters `yaml:",inline"`
 	Consts           CompositeFilters `yaml:"consts"`
+	Query            string           `yaml:"query"`
 }
 
 // CompositeFilters contains alternatively match or negation of matches.

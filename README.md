@@ -158,6 +158,20 @@ rules:
       archive: true
 ```
 
+### Custom query
+
+If the constraints imposed by the provided operators are not enough, it's
+possible to use a custom query, by using the
+[Gmail search syntax](https://support.google.com/mail/answer/7190?hl=en).
+
+```yaml
+  - filters:
+      query: "foo {bar baz} list:mylist@mail.com"
+    actions:
+      archive: true
+```
+
+
 ### Example
 
 This is a more "real world" example, taken from my configuration with scrambled

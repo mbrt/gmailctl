@@ -117,9 +117,9 @@ func generateCriteria(filters config.Filters) Criteria {
 	res := generateMatchFilters(filters.MatchFilters)
 	negated := generateNegatedFilters(filters.Not)
 
-	// We need to combine the negated query with the eventual 'has' query
-	// if they are both present
-	res.Query = joinAND(res.Query, negated)
+	// We need to combine the negated query, 'has' and possibly the
+	// custom query if they are all present into a single AND
+	res.Query = joinAND(res.Query, negated, filters.Query)
 
 	return res
 }
