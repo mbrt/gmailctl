@@ -26,13 +26,14 @@ func TestMatchFilter(t *testing.T) {
 		To:      []string{"my@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
+		List:    []string{"wow-list@l.com"},
 	}
 	crit = generateMatchFilters(filt)
 	expected = Criteria{
 		From:    "{foobar@mail.com baz@g.com}",
 		To:      "my@self.com",
 		Subject: `{important "not important"}`,
-		Query:   `{"what's wrong" alert}`,
+		Query:   `{"what's wrong" alert} list:wow-list@l.com`,
 	}
 	assert.Equal(t, expected, crit)
 }
@@ -44,6 +45,7 @@ func TestNotFilter(t *testing.T) {
 		To:      []string{"my@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
+		List:    []string{"wow-list@l.com"},
 	}
 	crit := generateNegatedFilters(filt)
 	expected := strings.Join([]string{ // for readability
@@ -51,6 +53,7 @@ func TestNotFilter(t *testing.T) {
 		`-{to:my@self.com}`,
 		`-{subject:{important "not important"}}`,
 		`-{"what's wrong" alert}`,
+		`-{list:wow-list@l.com}`,
 	}, " ")
 	assert.Equal(t, expected, crit)
 }

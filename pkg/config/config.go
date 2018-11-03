@@ -80,6 +80,7 @@ type MatchFilters struct {
 	To      []string `yaml:"to,omitempty"`
 	Subject []string `yaml:"subject,omitempty"`
 	Has     []string `yaml:"has,omitempty"`
+	List    []string `yaml:"list,omitempty"`
 }
 
 // Actions contains the actions to be applied to a set of emails.

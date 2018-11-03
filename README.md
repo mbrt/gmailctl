@@ -88,7 +88,7 @@ With the help of this example, let's explain how rules evaluation works:
    This means that the filters inside a rule are in AND together. In the
    previous example, if only `filterA` matches, then the first rule is not
    applied. If both `filterA` and `filterB` match, then the rule also matches.
-3. Within filter the listed values are in OR with each other. In the second rule, 
+3. Within filter the listed values are in OR with each other. In the second rule,
    `filterC` matches if either `valueD` or `valueE` are present.
 
 ### Filters
@@ -96,7 +96,8 @@ The following simple filters are available:
 * from
 * to
 * subject
-* has
+* has (contains one of the given values)
+* list (matches a mail list)
 
 You can apply the special `not` operator to negate a match in this way:
 
@@ -109,7 +110,7 @@ You can apply the special `not` operator to negate a match in this way:
           - Baz zorg
 ```
 
-The rule will match if the email both is not directed to `foo@bar.com` and does
+The rule will match if the email is both not directed to `foo@bar.com` and does
 not contain `Baz zorg` in the subject.
 
 ### Constants
@@ -121,6 +122,7 @@ filters of the positive case:
 * to
 * subject
 * has
+* list
 
 Example:
 
@@ -258,7 +260,7 @@ configuration, hoping it stays simpler to read and maintain, sacrificing complex
 scenarios handled instead by `gmail-britta` (like chaining), and provides the
 automatic update that will save you time while you are iterating through new
 versions of your filters.
-  
+
 ## Footnotes
 
 ### Footnote 1
