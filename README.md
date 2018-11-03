@@ -171,6 +171,42 @@ possible to use a custom query, by using the
       archive: true
 ```
 
+### Actions
+When a filter matches, all the actions specified in a rule are applied.
+
+The following boolean actions are available:
+* archive
+* delete
+* markImportant
+* markRead
+
+A boolean action should be specified with a `true` value. A `false` value
+is equivalent to no action.
+
+A category can be applied to an email, by using the `category` action. Gmail
+allows only one category per email and only the following categories are
+supported:
+* personal
+* social
+* updates
+* forums
+* promotions
+
+A list of labels can also be applied, by using the `labels` action.
+
+This example has one action for every type, to illustrate the usage:
+
+```yaml
+  - filters:
+      from:
+        - me@me.com
+    actions:
+      markImportant: true
+      category: updates
+      labels:
+        - me
+        - you
+```
 
 ### Example
 
