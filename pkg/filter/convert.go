@@ -174,7 +174,7 @@ func generateNegatedFilters(filters config.MatchFilters) string {
 	return strings.Join(clauses, " ")
 }
 
-func joinAND(a... string) string {
+func joinAND(a ...string) string {
 	if len(a) == 0 {
 		return ""
 	}
@@ -190,7 +190,7 @@ func joinAND(a... string) string {
 	return strings.Join(nonEmpty, " ")
 }
 
-func joinOR(a... string) string {
+func joinOR(a ...string) string {
 	if len(a) == 0 {
 		return ""
 	}
@@ -200,7 +200,7 @@ func joinOR(a... string) string {
 	return fmt.Sprintf("{%s}", strings.Join(quoteStrings(a...), " "))
 }
 
-func quoteStrings(a... string) []string {
+func quoteStrings(a ...string) []string {
 	res := make([]string, len(a))
 	for i, s := range a {
 		res[i] = quote(s)
