@@ -117,15 +117,9 @@ func generateCriteria(filters config.Filters) Criteria {
 	res := generateMatchFilters(filters.MatchFilters)
 	negated := generateNegatedFilters(filters.Not)
 
-	// We need to combine the negated query with the eventual 'has' query
-	// if they are both present
-	if negated != "" {
-		if res.Query == "" {
-			res.Query = negated
-		} else {
-			res.Query = fmt.Sprintf("%s %s", res.Query, negated)
-		}
-	}
+	// We need to combine the negated query, 'has' and possibly the
+	// custom query if they are all present into a single AND
+	res.Query = joinAND(res.Query, negated, filters.Query)
 
 	return res
 }
@@ -133,16 +127,20 @@ func generateCriteria(filters config.Filters) Criteria {
 func generateMatchFilters(filters config.MatchFilters) Criteria {
 	res := Criteria{}
 	if len(filters.From) > 0 {
-		res.From = joinOR(filters.From)
+		res.From = joinOR(filters.From...)
 	}
 	if len(filters.To) > 0 {
-		res.To = joinOR(filters.To)
+		res.To = joinOR(filters.To...)
 	}
 	if len(filters.Subject) > 0 {
-		res.Subject = joinOR(filters.Subject)
+		res.Subject = joinOR(filters.Subject...)
 	}
 	if len(filters.Has) > 0 {
-		res.Query = joinOR(filters.Has)
+		res.Query = joinOR(filters.Has...)
+	}
+	if len(filters.List) > 0 {
+		c := fmt.Sprintf("list:%s", joinOR(filters.List...))
+		res.Query = joinAND(res.Query, c)
 	}
 	return res
 }
@@ -150,19 +148,23 @@ func generateMatchFilters(filters config.MatchFilters) Criteria {
 func generateNegatedFilters(filters config.MatchFilters) string {
 	clauses := []string{}
 	if len(filters.From) > 0 {
-		c := fmt.Sprintf("-{from:%s}", joinOR(filters.From))
+		c := fmt.Sprintf("-{from:%s}", joinOR(filters.From...))
 		clauses = append(clauses, c)
 	}
 	if len(filters.To) > 0 {
-		c := fmt.Sprintf("-{to:%s}", joinOR(filters.To))
+		c := fmt.Sprintf("-{to:%s}", joinOR(filters.To...))
 		clauses = append(clauses, c)
 	}
 	if len(filters.Subject) > 0 {
-		c := fmt.Sprintf("-{subject:%s}", joinOR(filters.Subject))
+		c := fmt.Sprintf("-{subject:%s}", joinOR(filters.Subject...))
 		clauses = append(clauses, c)
 	}
 	if len(filters.Has) > 0 {
-		c := fmt.Sprintf("-%s", joinOR(filters.Has))
+		c := fmt.Sprintf("-%s", joinOR(filters.Has...))
+		clauses = append(clauses, c)
+	}
+	if len(filters.List) > 0 {
+		c := fmt.Sprintf("-{list:%s}", joinOR(filters.List...))
 		clauses = append(clauses, c)
 	}
 
@@ -172,17 +174,33 @@ func generateNegatedFilters(filters config.MatchFilters) string {
 	return strings.Join(clauses, " ")
 }
 
-func joinOR(a []string) string {
+func joinAND(a ...string) string {
+	if len(a) == 0 {
+		return ""
+	}
+	if len(a) == 1 {
+		return a[0]
+	}
+	nonEmpty := []string{}
+	for _, s := range a {
+		if len(s) > 0 {
+			nonEmpty = append(nonEmpty, s)
+		}
+	}
+	return strings.Join(nonEmpty, " ")
+}
+
+func joinOR(a ...string) string {
 	if len(a) == 0 {
 		return ""
 	}
 	if len(a) == 1 {
 		return quote(a[0])
 	}
-	return fmt.Sprintf("{%s}", strings.Join(quoteStrings(a), " "))
+	return fmt.Sprintf("{%s}", strings.Join(quoteStrings(a...), " "))
 }
 
-func quoteStrings(a []string) []string {
+func quoteStrings(a ...string) []string {
 	res := make([]string, len(a))
 	for i, s := range a {
 		res[i] = quote(s)
@@ -191,10 +209,14 @@ func quoteStrings(a []string) []string {
 }
 
 func quote(a string) string {
-	if strings.ContainsRune(a, ' ') {
+	if strings.ContainsRune(a, ' ') && !quoted(a) {
 		return fmt.Sprintf(`"%s"`, a)
 	}
 	return a
+}
+
+func quoted(a string) bool {
+	return len(a) > 0 && a[0] == '"' && a[len(a)-1] == '"'
 }
 
 func generateActions(actions config.Actions) []Action {

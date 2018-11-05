@@ -61,6 +61,7 @@ type Rule struct {
 type Filters struct {
 	CompositeFilters `yaml:",inline"`
 	Consts           CompositeFilters `yaml:"consts"`
+	Query            string           `yaml:"query"`
 }
 
 // CompositeFilters contains alternatively match or negation of matches.
@@ -80,6 +81,7 @@ type MatchFilters struct {
 	To      []string `yaml:"to,omitempty"`
 	Subject []string `yaml:"subject,omitempty"`
 	Has     []string `yaml:"has,omitempty"`
+	List    []string `yaml:"list,omitempty"`
 }
 
 // Actions contains the actions to be applied to a set of emails.

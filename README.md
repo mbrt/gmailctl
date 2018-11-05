@@ -88,15 +88,16 @@ With the help of this example, let's explain how rules evaluation works:
    This means that the filters inside a rule are in AND together. In the
    previous example, if only `filterA` matches, then the first rule is not
    applied. If both `filterA` and `filterB` match, then the rule also matches.
-3. Within filter the listed values are in OR with each other. In the second rule, 
-   `filterC` matches if either `valueD` or `valueE` are present.
+3. Within a filter, the listed values are in OR with each other. In the second
+   rule, `filterC` matches if either `valueD` or `valueE` are present.
 
 ### Filters
 The following simple filters are available:
 * from
 * to
 * subject
-* has
+* has (contains one of the given values)
+* list (matches a mail list)
 
 You can apply the special `not` operator to negate a match in this way:
 
@@ -109,7 +110,7 @@ You can apply the special `not` operator to negate a match in this way:
           - Baz zorg
 ```
 
-The rule will match if the email both is not directed to `foo@bar.com` and does
+The rule will match if the email is both not directed to `foo@bar.com` and does
 not contain `Baz zorg` in the subject.
 
 ### Constants
@@ -121,6 +122,7 @@ filters of the positive case:
 * to
 * subject
 * has
+* list
 
 Example:
 
@@ -154,6 +156,56 @@ rules:
             - pippo@hotmail.com
     actions:
       archive: true
+```
+
+### Custom query
+
+If the constraints imposed by the provided operators are not enough, it's
+possible to use a custom query, by using the
+[Gmail search syntax](https://support.google.com/mail/answer/7190?hl=en).
+
+```yaml
+  - filters:
+      query: "foo {bar baz} list:mylist@mail.com"
+    actions:
+      archive: true
+```
+
+### Actions
+When a filter matches, all the actions specified in a rule are applied.
+
+The following boolean actions are available:
+* archive
+* delete
+* markImportant
+* markRead
+
+A boolean action should be specified with a `true` value. A `false` value
+is equivalent to no action.
+
+A category can be applied to an email, by using the `category` action. Gmail
+allows only one category per email and only the following categories are
+supported:
+* personal
+* social
+* updates
+* forums
+* promotions
+
+A list of labels can also be applied, by using the `labels` action.
+
+This example has one action for every type, to illustrate the usage:
+
+```yaml
+  - filters:
+      from:
+        - me@me.com
+    actions:
+      markImportant: true
+      category: updates
+      labels:
+        - me
+        - you
 ```
 
 ### Example
@@ -258,7 +310,7 @@ configuration, hoping it stays simpler to read and maintain, sacrificing complex
 scenarios handled instead by `gmail-britta` (like chaining), and provides the
 automatic update that will save you time while you are iterating through new
 versions of your filters.
-  
+
 ## Footnotes
 
 ### Footnote 1

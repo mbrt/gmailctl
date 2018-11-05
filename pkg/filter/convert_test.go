@@ -26,13 +26,14 @@ func TestMatchFilter(t *testing.T) {
 		To:      []string{"my@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
+		List:    []string{"wow-list@l.com"},
 	}
 	crit = generateMatchFilters(filt)
 	expected = Criteria{
 		From:    "{foobar@mail.com baz@g.com}",
 		To:      "my@self.com",
 		Subject: `{important "not important"}`,
-		Query:   `{"what's wrong" alert}`,
+		Query:   `{"what's wrong" alert} list:wow-list@l.com`,
 	}
 	assert.Equal(t, expected, crit)
 }
@@ -44,6 +45,7 @@ func TestNotFilter(t *testing.T) {
 		To:      []string{"my@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
+		List:    []string{"wow-list@l.com"},
 	}
 	crit := generateNegatedFilters(filt)
 	expected := strings.Join([]string{ // for readability
@@ -51,6 +53,7 @@ func TestNotFilter(t *testing.T) {
 		`-{to:my@self.com}`,
 		`-{subject:{important "not important"}}`,
 		`-{"what's wrong" alert}`,
+		`-{list:wow-list@l.com}`,
 	}, " ")
 	assert.Equal(t, expected, crit)
 }
@@ -72,6 +75,28 @@ func TestCombineMatchAndNegated(t *testing.T) {
 	expected := Criteria{
 		From:  "*@mail.com",
 		Query: "zumba -{from:baz@mail.com}",
+	}
+	assert.Equal(t, expected, crit)
+}
+
+func TestCombineWithQuery(t *testing.T) {
+	// Test combining custom query with other filters
+	filt := config.Filters{
+		CompositeFilters: config.CompositeFilters{
+			MatchFilters: config.MatchFilters{
+				From: []string{"*@mail.com"},
+				List: []string{"list@mail.com"},
+			},
+			Not: config.MatchFilters{
+				From: []string{"baz@mail.com"},
+			},
+		},
+		Query: "foo {bar baz}",
+	}
+	crit := generateCriteria(filt)
+	expected := Criteria{
+		From:  "*@mail.com",
+		Query: "list:list@mail.com -{from:baz@mail.com} foo {bar baz}",
 	}
 	assert.Equal(t, expected, crit)
 }
