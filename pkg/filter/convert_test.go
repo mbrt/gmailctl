@@ -79,6 +79,21 @@ func TestCombineMatchAndNegated(t *testing.T) {
 	assert.Equal(t, expected, crit)
 }
 
+func TestList(t *testing.T) {
+	filt := config.Filters{
+		CompositeFilters: config.CompositeFilters{
+			MatchFilters: config.MatchFilters{
+				List: []string{"list@mail.com"},
+			},
+		},
+	}
+	crit := generateCriteria(filt)
+	expected := Criteria{
+		Query: "list:list@mail.com",
+	}
+	assert.Equal(t, expected, crit)
+}
+
 func TestCombineWithQuery(t *testing.T) {
 	// Test combining custom query with other filters
 	filt := config.Filters{
