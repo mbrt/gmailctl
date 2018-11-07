@@ -74,11 +74,16 @@ func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'has' clause")
 	}
+	list, err := resolveConsts(mf.List, consts)
+	if err != nil {
+		return mf, errors.Wrap(err, "error in resolving 'list' clause")
+	}
 	res := config.MatchFilters{
 		From:    from,
 		To:      to,
 		Subject: sub,
 		Has:     has,
+		List:    list,
 	}
 	return res, nil
 }
@@ -101,6 +106,7 @@ func joinMatchFilters(f1, f2 config.MatchFilters) config.MatchFilters {
 	res.To = joinFilter(f1.To, f2.To)
 	res.Subject = joinFilter(f1.Subject, f2.Subject)
 	res.Has = joinFilter(f1.Has, f2.Has)
+	res.List = joinFilter(f1.List, f2.List)
 	return res
 }
 
