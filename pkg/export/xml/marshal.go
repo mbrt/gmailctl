@@ -74,6 +74,10 @@ func (x xmlExporter) Export(author config.Author, filters filter.Filters, w io.W
 		return err
 	}
 	_, err = w.Write(out)
+	if err != nil {
+		return err
+	}
+	_, err = io.WriteString(w, "\n")
 	return err
 }
 
