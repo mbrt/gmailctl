@@ -33,7 +33,8 @@ func TestEmptyEntries(t *testing.T) {
     <name>Pippo Pluto</name>
     <email>pippo@mail.com</email>
   </author>
-</feed>`
+</feed>
+`
 	assert.Equal(t, expected, buf.String())
 }
 
@@ -87,7 +88,8 @@ func TestSomeEntries(t *testing.T) {
     <apps:property name="shouldTrash" value="true"></apps:property>
     <apps:property name="label" value="spam"></apps:property>
   </entry>
-</feed>`
+</feed>
+`
 	assert.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(buf.String()))
 }
 
