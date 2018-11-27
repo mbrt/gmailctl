@@ -69,11 +69,12 @@ func TestDiffOutput(t *testing.T) {
 	expected := `
 --- Original
 +++ Current
-@@ -1,5 +1,5 @@
+@@ -1,6 +1,6 @@
  * Criteria:
 -    from: someone@gmail.com
 +    from: {someone@gmail.com else@gmail.com}
    Actions:
+     mark as read
      categorize as: personal`
 	assert.Equal(t, strings.TrimSpace(fd.String()), strings.TrimSpace(expected))
 }
