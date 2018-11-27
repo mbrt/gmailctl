@@ -46,7 +46,7 @@ func (f Filter) String() string {
 	writeBool(&builder, "archive", f.Action.Archive)
 	writeBool(&builder, "delete", f.Action.Delete)
 	writeBool(&builder, "mark as important", f.Action.MarkImportant)
-	writeBool(&builder, "mark as read", f.Action.MarkImportant)
+	writeBool(&builder, "mark as read", f.Action.MarkRead)
 	writeParam(&builder, "categorize as", string(f.Action.Category))
 	writeParam(&builder, "apply label", f.Action.AddLabel)
 
