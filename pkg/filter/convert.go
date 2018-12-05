@@ -66,6 +66,10 @@ func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'to' clause")
 	}
+	cc, err := resolveConsts(mf.Cc, consts)
+	if err != nil {
+		return mf, errors.Wrap(err, "error in resolving 'cc' clause")
+	}
 	sub, err := resolveConsts(mf.Subject, consts)
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'subject' clause")
@@ -81,6 +85,7 @@ func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.
 	res := config.MatchFilters{
 		From:    from,
 		To:      to,
+		Cc:      cc,
 		Subject: sub,
 		Has:     has,
 		List:    list,
@@ -104,6 +109,7 @@ func joinMatchFilters(f1, f2 config.MatchFilters) config.MatchFilters {
 	res := config.MatchFilters{}
 	res.From = joinFilter(f1.From, f2.From)
 	res.To = joinFilter(f1.To, f2.To)
+	res.Cc = joinFilter(f1.Cc, f2.Cc)
 	res.Subject = joinFilter(f1.Subject, f2.Subject)
 	res.Has = joinFilter(f1.Has, f2.Has)
 	res.List = joinFilter(f1.List, f2.List)
@@ -148,6 +154,10 @@ func generateMatchFilters(filters config.MatchFilters) Criteria {
 		c := fmt.Sprintf("list:%s", joinOR(filters.List...))
 		res.Query = joinAND(res.Query, c)
 	}
+	if len(filters.Cc) > 0 {
+		c := fmt.Sprintf("cc:%s", joinOR(filters.Cc...))
+		res.Query = joinAND(res.Query, c)
+	}
 	return res
 }
 
@@ -159,6 +169,10 @@ func generateNegatedFilters(filters config.MatchFilters) string {
 	}
 	if len(filters.To) > 0 {
 		c := fmt.Sprintf("-{to:%s}", joinOR(filters.To...))
+		clauses = append(clauses, c)
+	}
+	if len(filters.Cc) > 0 {
+		c := fmt.Sprintf("-{cc:%s}", joinOR(filters.Cc...))
 		clauses = append(clauses, c)
 	}
 	if len(filters.Subject) > 0 {
