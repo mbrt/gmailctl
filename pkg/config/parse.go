@@ -16,7 +16,7 @@ func ParseFile(path string) (Config, error) {
 	}
 
 	var res Config
-	err = yaml.Unmarshal(b, &res)
+	err = yaml.UnmarshalStrict(b, &res)
 	return res, err
 }
 

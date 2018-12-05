@@ -23,7 +23,7 @@ rules:
       archive: true
 `)
 	var res Config
-	assert.Nil(t, yaml.Unmarshal(yml, &res))
+	assert.Nil(t, yaml.UnmarshalStrict(yml, &res))
 	filters := Filters{
 		CompositeFilters: CompositeFilters{
 			MatchFilters: MatchFilters{
@@ -45,4 +45,19 @@ rules:
 		},
 	}
 	assert.Equal(t, expected, res)
+}
+
+func TestParseUnknownField(t *testing.T) {
+	yml := []byte(`
+version: v1alpha1
+author:
+  name: MB
+  email: m@gmail.com
+rules:
+  - filters:
+      foobar:
+        - foobar@g.com
+`)
+	var res Config
+	assert.NotNil(t, yaml.UnmarshalStrict(yml, &res))
 }
