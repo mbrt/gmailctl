@@ -24,6 +24,7 @@ func TestMatchFilter(t *testing.T) {
 	filt = config.MatchFilters{
 		From:    []string{"foobar@mail.com", "baz@g.com"},
 		To:      []string{"my@self.com"},
+		Cc:      []string{"other@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
 		List:    []string{"wow-list@l.com"},
@@ -33,7 +34,7 @@ func TestMatchFilter(t *testing.T) {
 		From:    "{foobar@mail.com baz@g.com}",
 		To:      "my@self.com",
 		Subject: `{important "not important"}`,
-		Query:   `{"what's wrong" alert} list:wow-list@l.com`,
+		Query:   `{"what's wrong" alert} list:wow-list@l.com cc:other@self.com`,
 	}
 	assert.Equal(t, expected, crit)
 }
@@ -43,6 +44,7 @@ func TestNotFilter(t *testing.T) {
 	filt := config.MatchFilters{
 		From:    []string{"foobar@mail.com", "baz@g.com"},
 		To:      []string{"my@self.com"},
+		Cc:      []string{"other@self.com"},
 		Subject: []string{"important", "not important"},
 		Has:     []string{"what's wrong", "alert"},
 		List:    []string{"wow-list@l.com"},
@@ -51,6 +53,7 @@ func TestNotFilter(t *testing.T) {
 	expected := strings.Join([]string{ // for readability
 		`-{from:{foobar@mail.com baz@g.com}}`,
 		`-{to:my@self.com}`,
+		`-{cc:other@self.com}`,
 		`-{subject:{important "not important"}}`,
 		`-{"what's wrong" alert}`,
 		`-{list:wow-list@l.com}`,

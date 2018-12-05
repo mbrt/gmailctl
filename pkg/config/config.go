@@ -79,6 +79,7 @@ type CompositeFilters struct {
 type MatchFilters struct {
 	From    []string `yaml:"from,omitempty"`
 	To      []string `yaml:"to,omitempty"`
+	Cc      []string `yaml:"cc,omitempty"`
 	Subject []string `yaml:"subject,omitempty"`
 	Has     []string `yaml:"has,omitempty"`
 	List    []string `yaml:"list,omitempty"`
