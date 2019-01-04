@@ -36,6 +36,7 @@ func (c Config) Valid() error {
 			return errors.Wrap(err, "invalid filter")
 		}
 	}
+
 	return nil
 }
 
@@ -56,6 +57,8 @@ func (f NamedFilter) Valid(otherFilters map[string]struct{}) error {
 }
 
 type Filter struct {
+	RefName string `yaml:"name,omitempty"`
+
 	And []Filter `yaml:"and,omitempty"`
 	Or  []Filter `yaml:"or,omitempty"`
 	Not *Filter  `yaml:"not,omitempty"`
@@ -75,18 +78,13 @@ func (f Filter) Valid(filterNames map[string]struct{}) error {
 }
 
 type Rule struct {
-	Filter  FilterRef `yaml:"filter"`
-	Actions Actions   `yaml:"actions"`
+	Filter  Filter  `yaml:"filter"`
+	Actions Actions `yaml:"actions"`
 }
 
 func (r Rule) Valid(filterNames map[string]struct{}) error {
 	// TODO
 	return nil
-}
-
-type FilterRef struct {
-	Name      string `yaml:"name,omitempty"`
-	InlineDef Filter `yaml:",inline"`
 }
 
 type Actions = v1.Actions
