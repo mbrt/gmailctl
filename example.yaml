@@ -1,60 +1,50 @@
-version: v1alpha1
+version: v2alpha1
 author:
   name: Pippo Pluto
   email: pippo@gmail.com
 
-consts:
-  me:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
-  spam:
-    values:
-      - spammer@spam.com
+filters:
+  - name: me
+    query:
+      or:
+        - to: pippo@gmail.com
+        - to: pippo@hotmail.com
+  - name: spam
+    query:
+      or:
+        - from: spammer@spam.com
+        - subject: foo bar baz
+        - subject: I want to spam you
+        - has: buy this
+        - has: buy that
 
 rules:
-# important emails
-  - filters:
-      from:
-        - myalarm@myalarm.com
+  # important emails
+  - filter:
+      from: myalarm@myalarm.com
     actions:
       markImportant: true
       labels:
         - alarm
-# delete spammers
-  - filters:
-      subject:
-        - foo bar baz
-        - I want to spam you
+
+  # delete spammers
+  - filter:
+      name: spam
     actions:
       delete: true
+
+  # mail list
+  # archive unless directed to me
   - filters:
-      consts:
-        from:
-          - spam
-    actions:
-      delete: true
-  - filters:
-      has:
-        - buy this
-        - buy that
-    actions:
-      delete: true
-# mail list
-# archive unless directed to me
-  - filters:
-      from:
-        - interesting@maillist.com
-      consts:
-        not:
-          to:
-            - me
+      and:
+        - from: interesting@maillist.com
+        - not:
+            name: me
     actions:
       archive: true
-      markRead: true
+  # label all mail list messages
   - filters:
-      from:
-        - interesting@maillist.com
+      from: interesting@maillist.com
     actions:
       labels:
         - mail-list
