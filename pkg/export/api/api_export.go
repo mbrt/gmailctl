@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Exporter exports Gmail filters into Gmail API objects
@@ -95,17 +95,17 @@ func (de defaultExporter) exportAction(action filter.Action, lmap LabelMap) (*gm
 	}, nil
 }
 
-func (de defaultExporter) exportCategory(category config.Category) (string, error) {
+func (de defaultExporter) exportCategory(category gmail.Category) (string, error) {
 	switch category {
-	case config.CategoryPersonal:
+	case gmail.CategoryPersonal:
 		return labelIDCategoryPersonal, nil
-	case config.CategorySocial:
+	case gmail.CategorySocial:
 		return labelIDCategorySocial, nil
-	case config.CategoryUpdates:
+	case gmail.CategoryUpdates:
 		return labelIDCategoryUpdates, nil
-	case config.CategoryForums:
+	case gmail.CategoryForums:
 		return labelIDCategoryForums, nil
-	case config.CategoryPromotions:
+	case gmail.CategoryPromotions:
 		return labelIDCategoryPromotions, nil
 	}
 	return "", errors.Errorf("unknown category '%s'", category)

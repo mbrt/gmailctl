@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func TestNoDiff(t *testing.T) {
@@ -47,7 +47,7 @@ func TestDiffOutput(t *testing.T) {
 			},
 			Action: Action{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 	}
@@ -58,7 +58,7 @@ func TestDiffOutput(t *testing.T) {
 			},
 			Action: Action{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 	}
@@ -121,7 +121,7 @@ func TestDiffAddRemove(t *testing.T) {
 			},
 			Action: Action{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 		{

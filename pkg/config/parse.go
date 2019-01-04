@@ -5,17 +5,19 @@ import (
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 )
 
 // ParseFile takes a path and returns the parsed config file.
-func ParseFile(path string) (Config, error) {
+func ParseFile(path string) (cfgv1.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return Config{}, NotFoundError(err)
+		return cfgv1.Config{}, NotFoundError(err)
 	}
 
-	var res Config
+	var res cfgv1.Config
 	err = yaml.UnmarshalStrict(b, &res)
 	return res, err
 }

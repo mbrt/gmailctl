@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Importer imports Gmail API objects into filters
@@ -112,18 +112,18 @@ func (di defaultImporter) importRemoveLabels(res *filter.Action, removeLabelIDs 
 	return nil
 }
 
-func (di defaultImporter) importCategory(labelID string) config.Category {
+func (di defaultImporter) importCategory(labelID string) gmail.Category {
 	switch labelID {
 	case labelIDCategoryPersonal:
-		return config.CategoryPersonal
+		return gmail.CategoryPersonal
 	case labelIDCategorySocial:
-		return config.CategorySocial
+		return gmail.CategorySocial
 	case labelIDCategoryUpdates:
-		return config.CategoryUpdates
+		return gmail.CategoryUpdates
 	case labelIDCategoryForums:
-		return config.CategoryForums
+		return gmail.CategoryForums
 	case labelIDCategoryPromotions:
-		return config.CategoryPromotions
+		return gmail.CategoryPromotions
 	default:
 		return ""
 	}

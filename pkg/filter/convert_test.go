@@ -6,12 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func TestMatchFilter(t *testing.T) {
 	// Test a single filter
-	filt := config.MatchFilters{
+	filt := cfgv1.MatchFilters{
 		Subject: []string{"important", "not important"},
 	}
 	crit := generateMatchFilters(filt)
@@ -21,7 +22,7 @@ func TestMatchFilter(t *testing.T) {
 	assert.Equal(t, expected, crit)
 
 	// Test all the filters together
-	filt = config.MatchFilters{
+	filt = cfgv1.MatchFilters{
 		From:    []string{"foobar@mail.com", "baz@g.com"},
 		To:      []string{"my@self.com"},
 		Cc:      []string{"other@self.com"},
@@ -41,7 +42,7 @@ func TestMatchFilter(t *testing.T) {
 
 func TestNotFilter(t *testing.T) {
 	// Test a single filter
-	filt := config.MatchFilters{
+	filt := cfgv1.MatchFilters{
 		From:    []string{"foobar@mail.com", "baz@g.com"},
 		To:      []string{"my@self.com"},
 		Cc:      []string{"other@self.com"},
@@ -63,13 +64,13 @@ func TestNotFilter(t *testing.T) {
 
 func TestCombineMatchAndNegated(t *testing.T) {
 	// Test combining a positive with a negative filter
-	filt := config.Filters{
-		CompositeFilters: config.CompositeFilters{
-			MatchFilters: config.MatchFilters{
+	filt := cfgv1.Filters{
+		CompositeFilters: cfgv1.CompositeFilters{
+			MatchFilters: cfgv1.MatchFilters{
 				From: []string{"*@mail.com"},
 				Has:  []string{"zumba"},
 			},
-			Not: config.MatchFilters{
+			Not: cfgv1.MatchFilters{
 				From: []string{"baz@mail.com"},
 			},
 		},
@@ -83,9 +84,9 @@ func TestCombineMatchAndNegated(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	filt := config.Filters{
-		CompositeFilters: config.CompositeFilters{
-			MatchFilters: config.MatchFilters{
+	filt := cfgv1.Filters{
+		CompositeFilters: cfgv1.CompositeFilters{
+			MatchFilters: cfgv1.MatchFilters{
 				List: []string{"list@mail.com"},
 			},
 		},
@@ -99,13 +100,13 @@ func TestList(t *testing.T) {
 
 func TestCombineWithQuery(t *testing.T) {
 	// Test combining custom query with other filters
-	filt := config.Filters{
-		CompositeFilters: config.CompositeFilters{
-			MatchFilters: config.MatchFilters{
+	filt := cfgv1.Filters{
+		CompositeFilters: cfgv1.CompositeFilters{
+			MatchFilters: cfgv1.MatchFilters{
 				From: []string{"*@mail.com"},
 				List: []string{"list@mail.com"},
 			},
-			Not: config.MatchFilters{
+			Not: cfgv1.MatchFilters{
 				From: []string{"baz@mail.com"},
 			},
 		},
@@ -121,12 +122,12 @@ func TestCombineWithQuery(t *testing.T) {
 
 func TestActions(t *testing.T) {
 	// Test all the actions together
-	act := config.Actions{
+	act := cfgv1.Actions{
 		Archive:       true,
 		Delete:        true,
 		MarkImportant: true,
 		MarkRead:      true,
-		Category:      config.CategoryPersonal,
+		Category:      gmail.CategoryPersonal,
 		Labels:        []string{"label1", "label2"},
 	}
 	props := generateActions(act)
@@ -136,7 +137,7 @@ func TestActions(t *testing.T) {
 			Delete:        true,
 			MarkImportant: true,
 			MarkRead:      true,
-			Category:      config.CategoryPersonal,
+			Category:      gmail.CategoryPersonal,
 			AddLabel:      "label1",
 		},
 		{
@@ -148,15 +149,15 @@ func TestActions(t *testing.T) {
 
 func TestGenerateSingleEntry(t *testing.T) {
 	// Smoke test with a single entry as result
-	mf := config.MatchFilters{
+	mf := cfgv1.MatchFilters{
 		From: []string{"foobar@mail.com"},
 	}
-	actions := config.Actions{
+	actions := cfgv1.Actions{
 		Archive:  true,
 		MarkRead: true,
 	}
-	cfg := config.Config{
-		Rules: []config.Rule{{ /* single empty rule */ }},
+	cfg := cfgv1.Config{
+		Rules: []cfgv1.Rule{{ /* single empty rule */ }},
 	}
 	cfg.Rules[0].Filters.MatchFilters = mf
 	cfg.Rules[0].Actions = actions
@@ -179,21 +180,21 @@ func TestGenerateSingleEntry(t *testing.T) {
 
 func TestGenerateMultipleEntities(t *testing.T) {
 	// Smoke test with a single entry as result
-	mf := config.MatchFilters{
+	mf := cfgv1.MatchFilters{
 		From: []string{"foobar@mail.com"},
 		Has:  []string{"pippo", "pluto paperino"},
 	}
-	actions := config.Actions{
+	actions := cfgv1.Actions{
 		MarkRead: true,
 		Labels:   []string{"label1", "label2", "label3"},
 	}
-	config := config.Config{
-		Rules: []config.Rule{{ /* single empty rule */ }},
+	cfgv1 := cfgv1.Config{
+		Rules: []cfgv1.Rule{{ /* single empty rule */ }},
 	}
-	config.Rules[0].Filters.MatchFilters = mf
-	config.Rules[0].Actions = actions
+	cfgv1.Rules[0].Filters.MatchFilters = mf
+	cfgv1.Rules[0].Actions = actions
 
-	entries, err := FromConfig(config)
+	entries, err := FromConfig(cfgv1)
 	assert.Nil(t, err)
 	expected := Filters{
 		{
@@ -230,19 +231,19 @@ func TestGenerateMultipleEntities(t *testing.T) {
 
 func TestGenerateConsts(t *testing.T) {
 	// Test constants replacement
-	mf := config.MatchFilters{
+	mf := cfgv1.MatchFilters{
 		From: []string{"friends"},
 	}
-	actions := config.Actions{
+	actions := cfgv1.Actions{
 		MarkImportant: true,
 	}
-	cfg := config.Config{
-		Consts: config.Consts{
-			"friends": config.ConstValue{Values: []string{"a@b.com", "b@c.it"}},
-			"spam":    config.ConstValue{Values: []string{"a@spam.com"}},
-			"foo":     config.ConstValue{Values: []string{"useless"}},
+	cfg := cfgv1.Config{
+		Consts: cfgv1.Consts{
+			"friends": cfgv1.ConstValue{Values: []string{"a@b.com", "b@c.it"}},
+			"spam":    cfgv1.ConstValue{Values: []string{"a@spam.com"}},
+			"foo":     cfgv1.ConstValue{Values: []string{"useless"}},
 		},
-		Rules: []config.Rule{{ /* single empty rule */ }},
+		Rules: []cfgv1.Rule{{ /* single empty rule */ }},
 	}
 	cfg.Rules[0].Filters.Consts.MatchFilters = mf
 	cfg.Rules[0].Actions = actions
@@ -262,7 +263,7 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test multiple constants in the same clause
-	mf = config.MatchFilters{
+	mf = cfgv1.MatchFilters{
 		From: []string{"friends", "spam"},
 	}
 	cfg.Rules[0].Filters.Consts.MatchFilters = mf
@@ -281,7 +282,7 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test constants in multiple clauses
-	mf = config.MatchFilters{
+	mf = cfgv1.MatchFilters{
 		From: []string{"friends"},
 		To:   []string{"spam"},
 	}
@@ -302,7 +303,7 @@ func TestGenerateConsts(t *testing.T) {
 	assert.Equal(t, expected, entries)
 
 	// Test unknown constant
-	mf = config.MatchFilters{
+	mf = cfgv1.MatchFilters{
 		From: []string{"wtf"},
 	}
 	cfg.Rules[0].Filters.Consts.MatchFilters = mf

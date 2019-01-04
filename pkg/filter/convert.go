@@ -6,11 +6,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 )
 
 // FromConfig translates a config into entries that map directly into Gmail filters
-func FromConfig(cfg config.Config) (Filters, error) {
+func FromConfig(cfg cfgv1.Config) (Filters, error) {
 	res := Filters{}
 	for i, rule := range cfg.Rules {
 		entries, err := FromConfigRule(rule, cfg.Consts)
@@ -23,7 +23,7 @@ func FromConfig(cfg config.Config) (Filters, error) {
 }
 
 // FromConfigRule creates a set of filters based on a single config Rule
-func FromConfigRule(rule config.Rule, consts config.Consts) (Filters, error) {
+func FromConfigRule(rule cfgv1.Rule, consts cfgv1.Consts) (Filters, error) {
 	rule, err := resolveRuleConsts(rule, consts)
 	if err != nil {
 		return nil, errors.Wrap(err, "error resolving consts")
@@ -34,8 +34,8 @@ func FromConfigRule(rule config.Rule, consts config.Consts) (Filters, error) {
 }
 
 // resolveRuleConsts resolves the sections with consts with their respective values
-func resolveRuleConsts(cfg config.Rule, consts config.Consts) (config.Rule, error) {
-	res := config.Rule{
+func resolveRuleConsts(cfg cfgv1.Rule, consts cfgv1.Consts) (cfgv1.Rule, error) {
+	res := cfgv1.Rule{
 		// Actions don't need to be resolved
 		Actions: cfg.Actions,
 	}
@@ -57,7 +57,7 @@ func resolveRuleConsts(cfg config.Rule, consts config.Consts) (config.Rule, erro
 	return res, nil
 }
 
-func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.MatchFilters, error) {
+func resolveFiltersConsts(mf cfgv1.MatchFilters, consts cfgv1.Consts) (cfgv1.MatchFilters, error) {
 	from, err := resolveConsts(mf.From, consts)
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'from' clause")
@@ -82,7 +82,7 @@ func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.
 	if err != nil {
 		return mf, errors.Wrap(err, "error in resolving 'list' clause")
 	}
-	res := config.MatchFilters{
+	res := cfgv1.MatchFilters{
 		From:    from,
 		To:      to,
 		Cc:      cc,
@@ -93,7 +93,7 @@ func resolveFiltersConsts(mf config.MatchFilters, consts config.Consts) (config.
 	return res, nil
 }
 
-func resolveConsts(a []string, consts config.Consts) ([]string, error) {
+func resolveConsts(a []string, consts cfgv1.Consts) ([]string, error) {
 	res := []string{}
 	for _, s := range a {
 		resolved, ok := consts[s]
@@ -105,8 +105,8 @@ func resolveConsts(a []string, consts config.Consts) ([]string, error) {
 	return res, nil
 }
 
-func joinMatchFilters(f1, f2 config.MatchFilters) config.MatchFilters {
-	res := config.MatchFilters{}
+func joinMatchFilters(f1, f2 cfgv1.MatchFilters) cfgv1.MatchFilters {
+	res := cfgv1.MatchFilters{}
 	res.From = joinFilter(f1.From, f2.From)
 	res.To = joinFilter(f1.To, f2.To)
 	res.Cc = joinFilter(f1.Cc, f2.Cc)
@@ -123,7 +123,7 @@ func joinFilter(f1, f2 []string) []string {
 	return res
 }
 
-func generateCriteria(filters config.Filters) Criteria {
+func generateCriteria(filters cfgv1.Filters) Criteria {
 	// We can assume that all the consts have been resolved at this point
 	// so we can ignore the 'Consts' sections of the filter
 	res := generateMatchFilters(filters.MatchFilters)
@@ -136,7 +136,7 @@ func generateCriteria(filters config.Filters) Criteria {
 	return res
 }
 
-func generateMatchFilters(filters config.MatchFilters) Criteria {
+func generateMatchFilters(filters cfgv1.MatchFilters) Criteria {
 	res := Criteria{}
 	if len(filters.From) > 0 {
 		res.From = joinOR(filters.From...)
@@ -161,7 +161,7 @@ func generateMatchFilters(filters config.MatchFilters) Criteria {
 	return res
 }
 
-func generateNegatedFilters(filters config.MatchFilters) string {
+func generateNegatedFilters(filters cfgv1.MatchFilters) string {
 	clauses := []string{}
 	if len(filters.From) > 0 {
 		c := fmt.Sprintf("-{from:%s}", joinOR(filters.From...))
@@ -239,7 +239,7 @@ func quoted(a string) bool {
 	return len(a) > 0 && a[0] == '"' && a[len(a)-1] == '"'
 }
 
-func generateActions(actions config.Actions) []Action {
+func generateActions(actions cfgv1.Actions) []Action {
 	res := []Action{
 		{
 			Archive:       actions.Archive,

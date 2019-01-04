@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Filters is a list of filters created in Gmail.
@@ -59,7 +59,7 @@ type Action struct {
 	Delete        bool
 	MarkImportant bool
 	MarkRead      bool
-	Category      config.Category
+	Category      gmail.Category
 	AddLabel      string
 }
 
