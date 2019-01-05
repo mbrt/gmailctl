@@ -10,7 +10,7 @@ import (
 )
 
 // Version is the latest supported version.
-const Version = "v1alpha1"
+const Version = "v2alpha1"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
@@ -49,7 +49,7 @@ func (c Config) Valid() error {
 // inside rules.
 type NamedFilter struct {
 	Name  string     `yaml:"name"`
-	Query FilterNode `yaml:"filter"`
+	Query FilterNode `yaml:"query"`
 }
 
 // Valid returns an error if the configuration is invalid.

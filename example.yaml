@@ -35,7 +35,7 @@ rules:
 
   # mail list
   # archive unless directed to me
-  - filters:
+  - filter:
       and:
         - from: interesting@maillist.com
         - not:
@@ -43,7 +43,7 @@ rules:
     actions:
       archive: true
   # label all mail list messages
-  - filters:
+  - filter:
       from: interesting@maillist.com
     actions:
       labels:

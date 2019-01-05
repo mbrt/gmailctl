@@ -34,15 +34,13 @@ func convertRule(r v1.Rule) Rule {
 
 func convertFilter(f v1.Filters) FilterNode {
 	// All the filters at this level are in 'and'
-	res := FilterNode{
-		Query: f.Query,
-	}
+	res := convertMatchFilter(f.CompositeFilters.MatchFilters)
 	if op := convertMatchFilter(f.Not); !op.Empty() {
 		res = and(res, FilterNode{
 			Not: &op,
 		})
 	}
-	return and(res, convertMatchFilter(f.CompositeFilters.MatchFilters))
+	return and(res, FilterNode{Query: f.Query})
 }
 
 func convertMatchFilter(f v1.MatchFilters) FilterNode {
