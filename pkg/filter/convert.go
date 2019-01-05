@@ -12,6 +12,11 @@ import (
 // FromConfig translates a config into entries that map directly into Gmail filters
 func FromConfig(cfg cfgv1.Config) (Filters, error) {
 	res := Filters{}
+	cfg, err := cfgv1.ResolveConsts(cfg)
+	if err != nil {
+		return res, errors.Wrap(err, "error resolving consts")
+	}
+
 	for i, rule := range cfg.Rules {
 		entries, err := FromConfigRule(rule, cfg.Consts)
 		if err != nil {
@@ -24,103 +29,9 @@ func FromConfig(cfg cfgv1.Config) (Filters, error) {
 
 // FromConfigRule creates a set of filters based on a single config Rule
 func FromConfigRule(rule cfgv1.Rule, consts cfgv1.Consts) (Filters, error) {
-	rule, err := resolveRuleConsts(rule, consts)
-	if err != nil {
-		return nil, errors.Wrap(err, "error resolving consts")
-	}
 	criteria := generateCriteria(rule.Filters)
 	actions := generateActions(rule.Actions)
 	return combineCriteriaWithActions(criteria, actions), nil
-}
-
-// resolveRuleConsts resolves the sections with consts with their respective values
-func resolveRuleConsts(cfg cfgv1.Rule, consts cfgv1.Consts) (cfgv1.Rule, error) {
-	res := cfgv1.Rule{
-		// Actions don't need to be resolved
-		Actions: cfg.Actions,
-	}
-
-	// Resolve the consts
-	cm, err := resolveFiltersConsts(cfg.Filters.Consts.MatchFilters, consts)
-	if err != nil {
-		return res, err
-	}
-	ncm, err := resolveFiltersConsts(cfg.Filters.Consts.Not, consts)
-	if err != nil {
-		return res, err
-	}
-
-	// Join the non const configuration with the resolved one
-	res.Filters.MatchFilters = joinMatchFilters(cfg.Filters.MatchFilters, cm)
-	res.Filters.Not = joinMatchFilters(cfg.Filters.Not, ncm)
-
-	return res, nil
-}
-
-func resolveFiltersConsts(mf cfgv1.MatchFilters, consts cfgv1.Consts) (cfgv1.MatchFilters, error) {
-	from, err := resolveConsts(mf.From, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'from' clause")
-	}
-	to, err := resolveConsts(mf.To, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'to' clause")
-	}
-	cc, err := resolveConsts(mf.Cc, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'cc' clause")
-	}
-	sub, err := resolveConsts(mf.Subject, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'subject' clause")
-	}
-	has, err := resolveConsts(mf.Has, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'has' clause")
-	}
-	list, err := resolveConsts(mf.List, consts)
-	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'list' clause")
-	}
-	res := cfgv1.MatchFilters{
-		From:    from,
-		To:      to,
-		Cc:      cc,
-		Subject: sub,
-		Has:     has,
-		List:    list,
-	}
-	return res, nil
-}
-
-func resolveConsts(a []string, consts cfgv1.Consts) ([]string, error) {
-	res := []string{}
-	for _, s := range a {
-		resolved, ok := consts[s]
-		if !ok {
-			return nil, errors.Errorf("failed to resolve const '%s'", s)
-		}
-		res = append(res, resolved.Values...)
-	}
-	return res, nil
-}
-
-func joinMatchFilters(f1, f2 cfgv1.MatchFilters) cfgv1.MatchFilters {
-	res := cfgv1.MatchFilters{}
-	res.From = joinFilter(f1.From, f2.From)
-	res.To = joinFilter(f1.To, f2.To)
-	res.Cc = joinFilter(f1.Cc, f2.Cc)
-	res.Subject = joinFilter(f1.Subject, f2.Subject)
-	res.Has = joinFilter(f1.Has, f2.Has)
-	res.List = joinFilter(f1.List, f2.List)
-	return res
-}
-
-func joinFilter(f1, f2 []string) []string {
-	res := []string{}
-	res = append(res, f1...)
-	res = append(res, f2...)
-	return res
 }
 
 func generateCriteria(filters cfgv1.Filters) Criteria {

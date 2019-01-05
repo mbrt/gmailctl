@@ -1,6 +1,11 @@
 package v1alpha1
 
-import "github.com/mbrt/gmailctl/pkg/gmail"
+import (
+	"github.com/mbrt/gmailctl/pkg/gmail"
+)
+
+// Version is the latest supported version.
+const Version = "v1alpha1"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
