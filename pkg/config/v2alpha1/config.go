@@ -26,7 +26,7 @@ func (c Config) Valid() error {
 		return errors.Errorf("invalid version: %s", c.Version)
 	}
 
-	var filters NamesSet
+	filters := NamesSet{}
 	for _, f := range c.Filters {
 		if err := f.Valid(filters); err != nil {
 			return errors.Wrap(err, "invalid filter")
