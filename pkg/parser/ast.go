@@ -1,17 +1,22 @@
 package parser
 
+import "sort"
+
 const maxSimplifyPasses = 4
+
+// OperationType is the type of logical operator.
+type OperationType int
 
 // Logical operations.
 const (
-	OperationNone Operation = iota
-	OperationAND
-	OperationOR
+	OperationNone OperationType = iota
+	OperationAnd
+	OperationOr
 	OperationNot
 )
 
-// Operation is the type of logical operator.
-type Operation int
+// FunctionType is the type of a function.
+type FunctionType int
 
 // Functions.
 const (
@@ -24,16 +29,37 @@ const (
 	FunctionHas
 )
 
-// FunctionType is the type of a function.
-type FunctionType int
-
 // CriteriaAST is the abstract syntax tree of a filter criteria.
-type CriteriaAST interface{}
+type CriteriaAST interface {
+	// RootOperation returns the operation performed by the root node,
+	// or the grouping, if the root is a leaf.
+	RootOperation() OperationType
+	// RootOperation returns the function performed by the root node,
+	// if any.
+	RootFunction() FunctionType
+	// IsLeaf returns true if the root node is a leaf.
+	IsLeaf() bool
+}
 
 // Node is an AST node with children nodes. It can only be a logical operator.
 type Node struct {
-	Operation Operation
+	Operation OperationType
 	Children  []CriteriaAST
+}
+
+// RootOperation returns the operation performed by the root node.
+func (n *Node) RootOperation() OperationType {
+	return n.Operation
+}
+
+// RootFunction will always return 'none'.
+func (n *Node) RootFunction() FunctionType {
+	return FunctionNone
+}
+
+// IsLeaf will always return false.
+func (n *Node) IsLeaf() bool {
+	return false
 }
 
 // Leaf is an AST node with no children.
@@ -43,21 +69,49 @@ type Node struct {
 // an OR and from:(a b) is grouped with an AND.
 type Leaf struct {
 	Function FunctionType
-	Grouping Operation
+	Grouping OperationType
 	Args     []string
+}
+
+// RootOperation returns the grouping of the leaf.
+func (n *Leaf) RootOperation() OperationType {
+	return n.Grouping
+}
+
+// RootFunction returns the function of the leaf.
+func (n *Leaf) RootFunction() FunctionType {
+	return n.Function
+}
+
+// IsLeaf will always return true.
+func (n *Leaf) IsLeaf() bool {
+	return true
 }
 
 // SimplifyCriteria applies multiple simplifications to a criteria.
 func SimplifyCriteria(tree CriteriaAST) ([]CriteriaAST, error) {
-	// Do not start from zero, otherwise we would be done immediately
-	changes := 1
+	res, err := simplify(tree)
+	// We use maps, so the resulting tree is non-deterministic.
+	// To fix that we sort the trees.
+	sortTreeNodes(res)
+	return res, err
+}
+
+func simplify(tree CriteriaAST) ([]CriteriaAST, error) {
+	changes := 1 // Avoid stopping before the first round
+
+	// We want to apply the passes multiple times, because one
+	// simplification can unlock another. We can block when no
+	// further progress can be made.
 	for i := 0; changes > 0 && i < maxSimplifyPasses; i++ {
 		changes = logicalGrouping(tree)
 		changes += functionsGrouping(tree)
-		var c int
-		tree, c = removeRedundancy(tree)
+		newTree, c := removeRedundancy(tree)
 		changes += c
+		tree = newTree
 	}
+
+	// Only done as last.
 	return splitRootOr(tree), nil
 }
 
@@ -209,8 +263,38 @@ func simplifyNot(root *Node) (CriteriaAST, int) {
 
 func splitRootOr(tree CriteriaAST) []CriteriaAST {
 	root, ok := tree.(*Node)
-	if !ok || root.Operation != OperationOR {
+	if !ok || root.Operation != OperationOr {
 		return []CriteriaAST{tree}
 	}
 	return root.Children
+}
+
+func sortTreeNodes(nodes []CriteriaAST) {
+	// Recurse to individual nodes first
+	for _, child := range nodes {
+		sortTree(child)
+	}
+
+	sort.Slice(nodes, func(i, j int) bool {
+		// ordering will be:
+		// - leaves in grouping and function order, then
+		// - nodes in operation order
+		ni, nj := nodes[i], nodes[j]
+		if ni.IsLeaf() != nj.IsLeaf() {
+			return ni.IsLeaf()
+		}
+		// They are both either nodes or leaves,
+		// we can just compare first the operation and then the function
+		if ni.RootOperation() != nj.RootOperation() {
+			return ni.RootOperation() < nj.RootOperation()
+		}
+		return ni.RootFunction() < nj.RootFunction()
+	})
+}
+
+func sortTree(tree CriteriaAST) {
+	if root, ok := tree.(*Node); ok {
+		// Sort children recursively
+		sortTreeNodes(root.Children)
+	}
 }
