@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v2alpha1"
@@ -17,10 +19,6 @@ type Rule struct {
 // Note that the number of rules and their contents might be different than the
 // original, because symplifications will be performed on the data.
 func Parse(config cfg.Config) ([]Rule, error) {
-	if err := config.ValidSyntax(); err != nil {
-		return nil, errors.Wrap(err, "invalid config")
-	}
-
 	cmap, err := parseNamedFilters(config.Filters)
 	if err != nil {
 		return nil, err
@@ -55,7 +53,11 @@ func Parse(config cfg.Config) ([]Rule, error) {
 type namedCriteriaMap map[string]CriteriaAST
 
 func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error) {
-	// Since the config is valid, only one function will be present in this node.
+	if err := checkSyntax(f); err != nil {
+		return nil, err
+	}
+
+	// Since the node is valid, only one function will be present.
 	// This means that we can stop checking after the first valid field.
 	if f.RefName != "" {
 		return parseRefName(f.RefName, nmap)
@@ -83,6 +85,17 @@ func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error)
 	}
 
 	return nil, errors.New("empty filter node")
+}
+
+func checkSyntax(f cfg.FilterNode) error {
+	if fs := f.NonEmptyFields(); len(fs) != 1 {
+		if len(fs) == 0 {
+			return errors.New("empty filter node")
+		}
+		return errors.Errorf("multiple fields specified in the same filter node: %s",
+			strings.Join(fs, ","))
+	}
+	return nil
 }
 
 func parseRefName(name string, nmap namedCriteriaMap) (CriteriaAST, error) {

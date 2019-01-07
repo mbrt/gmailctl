@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	v1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 )
 
@@ -20,27 +18,6 @@ type Config struct {
 	Rules   []Rule        `yaml:"rules"`
 }
 
-// ValidSyntax returns an error if the configuration is invalid.
-func (c Config) ValidSyntax() error {
-	if c.Version != Version {
-		return errors.Errorf("invalid version: %s", c.Version)
-	}
-
-	for _, f := range c.Filters {
-		if err := f.ValidSyntax(); err != nil {
-			return errors.Wrap(err, "invalid filter")
-		}
-	}
-
-	for _, r := range c.Rules {
-		if err := r.ValidSyntax(); err != nil {
-			return errors.Wrap(err, "invalid rule")
-		}
-	}
-
-	return nil
-}
-
 // NamedFilter represents a filter with a name.
 //
 // A named filter can be referenced by other named filters and by filters
@@ -48,14 +25,6 @@ func (c Config) ValidSyntax() error {
 type NamedFilter struct {
 	Name  string     `yaml:"name"`
 	Query FilterNode `yaml:"query"`
-}
-
-// ValidSyntax returns an error if the configuration is invalid.
-func (f NamedFilter) ValidSyntax() error {
-	if f.Name == "" {
-		return errors.New("invalid empty filter name")
-	}
-	return f.Query.ValidSyntax()
 }
 
 // FilterNode represents a piece of a Gmail filter.
@@ -78,57 +47,6 @@ type FilterNode struct {
 	List    string `yaml:"list,omitempty"`
 	Has     string `yaml:"has,omitempty"`
 	Query   string `yaml:"query,omitempty"`
-}
-
-// ValidSyntax returns an error if the configuration is invalid.
-func (f FilterNode) ValidSyntax() error {
-	// Use reflection to minimize maintenance work.
-	var res []string
-
-	v := reflect.ValueOf(f)
-	t := reflect.TypeOf(f)
-
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		name := yamlTagName(t.Field(i).Tag)
-
-		switch field.Kind() {
-		case reflect.String:
-			if field.String() == "" {
-				continue
-			}
-		case reflect.Slice:
-			if field.Len() == 0 {
-				continue
-			}
-			for i = 0; i < field.Len(); i++ {
-				subfilter := field.Index(i).Interface().(FilterNode)
-				if err := subfilter.ValidSyntax(); err != nil {
-					return errors.Wrapf(err, "inside '%s'", name)
-				}
-			}
-		case reflect.Ptr:
-			if field.Pointer() == 0 {
-				continue
-			}
-			if err := field.Interface().(*FilterNode).ValidSyntax(); err != nil {
-				return errors.Wrapf(err, "inside '%s'", name)
-			}
-		}
-
-		res = append(res, name)
-	}
-
-	if len(res) > 1 {
-		return errors.Errorf("invalid multiple fields specified without a logical operator (and/or/not): %s",
-			strings.Join(res, ","))
-	}
-
-	if len(res) == 0 {
-		return errors.New("empty filter")
-	}
-
-	return nil
 }
 
 // NonEmptyFields returns the names of the fields with a value.
@@ -204,17 +122,6 @@ type Rule struct {
 	Actions Actions    `yaml:"actions"`
 }
 
-// ValidSyntax returns an error if the configuration is invalid.
-func (r Rule) ValidSyntax() error {
-	if err := r.Filter.ValidSyntax(); err != nil {
-		return errors.Wrap(err, "invalid filter in rule")
-	}
-	if r.Actions.Empty() {
-		return errors.New("no actions in rule")
-	}
-	return nil
-}
-
 // Author represents the owner of the gmail account.
 type Author v1.Author
 
@@ -225,9 +132,6 @@ type Actions v1.Actions
 func (a Actions) Empty() bool {
 	return reflect.DeepEqual(a, Actions{})
 }
-
-// NamesSet is a set of names
-type NamesSet map[string]struct{}
 
 func yamlTagName(t reflect.StructTag) string {
 	return strings.Split(t.Get("yaml"), ",")[0]
