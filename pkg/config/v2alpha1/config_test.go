@@ -24,7 +24,6 @@ func TestEmptyFilter(t *testing.T) {
 }
 
 func TestValidFilter(t *testing.T) {
-	fnames := NamesSet{"f": struct{}{}}
 	filters := []FilterNode{
 		{To: "me"},
 		{Cc: "me"},
@@ -35,26 +34,23 @@ func TestValidFilter(t *testing.T) {
 	}
 
 	for _, f := range filters {
-		if err := f.Valid(fnames); err != nil {
+		if err := f.ValidSyntax(); err != nil {
 			t.Errorf("expected filter '%+v' to be valid, got error: %v", f, err)
 		}
 	}
 }
 
 func TestInvalidFilter(t *testing.T) {
-	fnames := NamesSet{"f": struct{}{}}
 	filters := []FilterNode{
 		{},
 		{To: "me", Cc: "foo"},
 		{Not: &FilterNode{}},
 		{And: []FilterNode{}},
-		{And: []FilterNode{{To: "me"}}},
 		{To: "me", RefName: "foo"},
-		{RefName: "g"},
 	}
 
 	for _, f := range filters {
-		if err := f.Valid(fnames); err == nil {
+		if err := f.ValidSyntax(); err == nil {
 			t.Errorf("expected filter '%+v' to be invalid, got no error", f)
 		}
 	}

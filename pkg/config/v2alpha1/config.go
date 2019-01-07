@@ -20,22 +20,20 @@ type Config struct {
 	Rules   []Rule        `yaml:"rules"`
 }
 
-// Valid returns an error if the configuration is invalid.
-func (c Config) Valid() error {
+// ValidSyntax returns an error if the configuration is invalid.
+func (c Config) ValidSyntax() error {
 	if c.Version != Version {
 		return errors.Errorf("invalid version: %s", c.Version)
 	}
 
-	filters := NamesSet{}
 	for _, f := range c.Filters {
-		if err := f.Valid(filters); err != nil {
+		if err := f.ValidSyntax(); err != nil {
 			return errors.Wrap(err, "invalid filter")
 		}
-		filters[f.Name] = struct{}{}
 	}
 
 	for _, r := range c.Rules {
-		if err := r.Valid(filters); err != nil {
+		if err := r.ValidSyntax(); err != nil {
 			return errors.Wrap(err, "invalid rule")
 		}
 	}
@@ -52,18 +50,18 @@ type NamedFilter struct {
 	Query FilterNode `yaml:"query"`
 }
 
-// Valid returns an error if the configuration is invalid.
-func (f NamedFilter) Valid(otherFilters NamesSet) error {
+// ValidSyntax returns an error if the configuration is invalid.
+func (f NamedFilter) ValidSyntax() error {
 	if f.Name == "" {
 		return errors.New("invalid empty filter name")
 	}
-	return f.Query.Valid(otherFilters)
+	return f.Query.ValidSyntax()
 }
 
 // FilterNode represents a piece of a Gmail filter.
 //
 // The definition is recursive, as filters can be composed together
-// with the use of logical operators. For every filter node, only
+// with the use of logical operators. For every filter node, only one
 // operator can be specified. If you need to combine multiple queries
 // together, combine the nodes with 'And', 'Or' and 'Not'.
 type FilterNode struct {
@@ -82,10 +80,10 @@ type FilterNode struct {
 	Query   string `yaml:"query,omitempty"`
 }
 
-// Valid returns an error if the configuration is invalid.
-func (f FilterNode) Valid(filters NamesSet) error {
+// ValidSyntax returns an error if the configuration is invalid.
+func (f FilterNode) ValidSyntax() error {
 	// Use reflection to minimize maintenance work.
-	var nonEmpty []string
+	var res []string
 
 	v := reflect.ValueOf(f)
 	t := reflect.TypeOf(f)
@@ -103,12 +101,9 @@ func (f FilterNode) Valid(filters NamesSet) error {
 			if field.Len() == 0 {
 				continue
 			}
-			if field.Len() == 1 {
-				return errors.Errorf("%s: only one filter specified for binary operator", name)
-			}
 			for i = 0; i < field.Len(); i++ {
 				subfilter := field.Index(i).Interface().(FilterNode)
-				if err := subfilter.Valid(filters); err != nil {
+				if err := subfilter.ValidSyntax(); err != nil {
 					return errors.Wrapf(err, "inside '%s'", name)
 				}
 			}
@@ -116,29 +111,57 @@ func (f FilterNode) Valid(filters NamesSet) error {
 			if field.Pointer() == 0 {
 				continue
 			}
-			if err := field.Interface().(*FilterNode).Valid(filters); err != nil {
+			if err := field.Interface().(*FilterNode).ValidSyntax(); err != nil {
 				return errors.Wrapf(err, "inside '%s'", name)
 			}
 		}
 
-		nonEmpty = append(nonEmpty, name)
+		res = append(res, name)
 	}
 
-	// Check RefName explicitly
-	if _, ok := filters[f.RefName]; f.RefName != "" && !ok {
-		return errors.Errorf("invalid filter reference '%s', not found", f.RefName)
+	if len(res) > 1 {
+		return errors.Errorf("invalid multiple fields specified without a logical operator (and/or/not): %s",
+			strings.Join(res, ","))
 	}
 
-	if len(nonEmpty) > 1 {
-		return errors.Errorf("invalid multiple fields specified without combining operator (and/or/not): %s",
-			strings.Join(nonEmpty, ","))
-	}
-
-	if len(nonEmpty) == 0 {
+	if len(res) == 0 {
 		return errors.New("empty filter")
 	}
 
 	return nil
+}
+
+// NonEmptyFields returns the names of the fields with a value.
+func (f FilterNode) NonEmptyFields() []string {
+	// Use reflection to minimize maintenance work.
+	var res []string
+
+	v := reflect.ValueOf(f)
+	t := reflect.TypeOf(f)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		name := yamlTagName(t.Field(i).Tag)
+
+		switch field.Kind() {
+		case reflect.String:
+			if field.String() == "" {
+				continue
+			}
+		case reflect.Slice:
+			if field.Len() == 0 {
+				continue
+			}
+		case reflect.Ptr:
+			if field.Pointer() == 0 {
+				continue
+			}
+		}
+
+		res = append(res, name)
+	}
+
+	return res
 }
 
 // Empty returns true if all the fields are empty.
@@ -181,9 +204,9 @@ type Rule struct {
 	Actions Actions    `yaml:"actions"`
 }
 
-// Valid returns an error if the configuration is invalid.
-func (r Rule) Valid(filters NamesSet) error {
-	if err := r.Filter.Valid(filters); err != nil {
+// ValidSyntax returns an error if the configuration is invalid.
+func (r Rule) ValidSyntax() error {
+	if err := r.Filter.ValidSyntax(); err != nil {
 		return errors.Wrap(err, "invalid filter in rule")
 	}
 	if r.Actions.Empty() {
