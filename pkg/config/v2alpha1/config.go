@@ -141,7 +141,7 @@ func (f FilterNode) Valid(filters NamesSet) error {
 	return nil
 }
 
-// Empty returns true if the filter does not contain any action.
+// Empty returns true if all the fields are empty.
 func (f FilterNode) Empty() bool {
 	// Use reflection to minimize maintenance work.
 	count := 0
