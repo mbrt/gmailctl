@@ -133,7 +133,7 @@ func (x xmlExporter) criteriaProperties(c filter.Criteria) []xmlProperty {
 	return res
 }
 
-func (x xmlExporter) actionProperties(a filter.Action) ([]xmlProperty, error) {
+func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	res := []xmlProperty{}
 	res = x.appendBoolProperty(res, PropertyArchive, a.Archive)
 	res = x.appendBoolProperty(res, PropertyDelete, a.Delete)

@@ -150,8 +150,8 @@ func quoted(a string) bool {
 	return len(a) > 0 && a[0] == '"' && a[len(a)-1] == '"'
 }
 
-func generateActions(actions cfgv1.Actions) []Action {
-	res := []Action{
+func generateActions(actions cfgv1.Actions) []Actions {
+	res := []Actions{
 		{
 			Archive:       actions.Archive,
 			Delete:        actions.Delete,
@@ -168,14 +168,14 @@ func generateActions(actions cfgv1.Actions) []Action {
 			res[0].AddLabel = label
 		} else {
 			// All the subsequent labels need a separate action
-			res = append(res, Action{AddLabel: label})
+			res = append(res, Actions{AddLabel: label})
 		}
 	}
 
 	return res
 }
 
-func combineCriteriaWithActions(criteria Criteria, actions []Action) Filters {
+func combineCriteriaWithActions(criteria Criteria, actions []Actions) Filters {
 	// We have to duplicate the criteria for all the given actions
 	res := make(Filters, len(actions))
 	for i, action := range actions {

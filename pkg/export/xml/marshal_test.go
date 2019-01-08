@@ -44,7 +44,7 @@ func TestSomeEntries(t *testing.T) {
 	author := cfgv1.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				MarkImportant: true,
 			},
 			Criteria: filter.Criteria{
@@ -52,7 +52,7 @@ func TestSomeEntries(t *testing.T) {
 			},
 		},
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete:   true,
 				AddLabel: "spam",
 			},
@@ -99,7 +99,7 @@ func TestAllEntries(t *testing.T) {
 	author := cfgv1.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,

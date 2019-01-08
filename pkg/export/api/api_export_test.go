@@ -17,7 +17,7 @@ func emptyLabelMap() DefaultLabelMap {
 func TestExportActions(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,
@@ -56,7 +56,7 @@ func TestExportActions(t *testing.T) {
 func TestExportCriteria(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete: true,
 			},
 			Criteria: filter.Criteria{
@@ -102,7 +102,7 @@ func TestExportNoActions(t *testing.T) {
 func TestExportNoCriteria(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Category: gmail.CategoryForums,
 			},
 		},
@@ -114,7 +114,7 @@ func TestExportNoCriteria(t *testing.T) {
 func TestExportLabels(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Category: gmail.CategoryForums,
 				AddLabel: "MyLabel",
 			},
@@ -150,7 +150,7 @@ func TestExportLabels(t *testing.T) {
 	// Test not existing label
 	filters = filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				AddLabel: "NonExisting",
 			},
 			Criteria: filter.Criteria{

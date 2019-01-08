@@ -32,7 +32,7 @@ func TestImportActions(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,
@@ -67,7 +67,7 @@ func TestImportCriteria(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete: true,
 			},
 			Criteria: filter.Criteria{
@@ -106,7 +106,7 @@ func TestImportLabels(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, lmap)
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Category: gmail.CategoryForums,
 				AddLabel: "MyLabel",
 			},

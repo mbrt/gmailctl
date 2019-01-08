@@ -39,7 +39,7 @@ func TestParse(t *testing.T) {
 					),
 				),
 			),
-			Actions: cfg.Actions{
+			Actions: Actions{
 				Labels:  []string{"maillist"},
 				Archive: true,
 			},
@@ -53,32 +53,32 @@ func TestParse(t *testing.T) {
 					"list3",
 				),
 			),
-			Actions: cfg.Actions{MarkImportant: true},
+			Actions: Actions{MarkImportant: true},
 		},
 		{
 			Criteria: fn(FunctionFrom, OperationOr,
 				"spammer1", "spammer2",
 			),
-			Actions: cfg.Actions{Delete: true},
+			Actions: Actions{Delete: true},
 		},
 		{
 			Criteria: fn(FunctionTo, OperationOr,
 				"pippo+spammy@gmail.com",
 			),
-			Actions: cfg.Actions{Delete: true},
+			Actions: Actions{Delete: true},
 		},
 		{
 			Criteria: fn(FunctionSubject, OperationOr,
 				"spam mail",
 			),
-			Actions: cfg.Actions{Delete: true},
+			Actions: Actions{Delete: true},
 		},
 		{
 			Criteria: fn(FunctionHas, OperationOr,
 				"buy this thing",
 				"very important!!!",
 			),
-			Actions: cfg.Actions{Delete: true},
+			Actions: Actions{Delete: true},
 		},
 	}
 	got, err := Parse(conf)

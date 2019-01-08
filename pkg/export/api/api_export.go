@@ -58,7 +58,7 @@ func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.
 	}, nil
 }
 
-func (de defaultExporter) exportAction(action filter.Action, lmap LabelMap) (*gmailv1.FilterAction, error) {
+func (de defaultExporter) exportAction(action filter.Actions, lmap LabelMap) (*gmailv1.FilterAction, error) {
 	addlabels := []string{}
 	removelabels := []string{}
 

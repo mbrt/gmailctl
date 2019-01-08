@@ -131,7 +131,7 @@ func TestActions(t *testing.T) {
 		Labels:        []string{"label1", "label2"},
 	}
 	props := generateActions(act)
-	expected := []Action{
+	expected := []Actions{
 		{
 			Archive:       true,
 			Delete:        true,
@@ -169,7 +169,7 @@ func TestGenerateSingleEntry(t *testing.T) {
 			Criteria: Criteria{
 				From: "foobar@mail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				Archive:  true,
 				MarkRead: true,
 			},
@@ -202,7 +202,7 @@ func TestGenerateMultipleEntities(t *testing.T) {
 				From:  "foobar@mail.com",
 				Query: `{pippo "pluto paperino"}`,
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label1",
 			},
@@ -212,7 +212,7 @@ func TestGenerateMultipleEntities(t *testing.T) {
 				From:  "foobar@mail.com",
 				Query: `{pippo "pluto paperino"}`,
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label2",
 			},
 		},
@@ -221,7 +221,7 @@ func TestGenerateMultipleEntities(t *testing.T) {
 				From:  "foobar@mail.com",
 				Query: `{pippo "pluto paperino"}`,
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label3",
 			},
 		},
@@ -255,7 +255,7 @@ func TestGenerateConsts(t *testing.T) {
 			Criteria: Criteria{
 				From: "{a@b.com b@c.it}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -274,7 +274,7 @@ func TestGenerateConsts(t *testing.T) {
 			Criteria: Criteria{
 				From: "{a@b.com b@c.it a@spam.com}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -295,7 +295,7 @@ func TestGenerateConsts(t *testing.T) {
 				From: "{a@b.com b@c.it}",
 				To:   "a@spam.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},

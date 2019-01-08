@@ -11,8 +11,11 @@ import (
 // Rule is an intermediate representation of a Gmail filter.
 type Rule struct {
 	Criteria CriteriaAST
-	Actions  cfg.Actions
+	Actions  Actions
 }
+
+// Actions contains the actions to be applied to a set of emails.
+type Actions cfg.Actions
 
 // Parse parses config file rules into their intermediate representation.
 //
@@ -41,7 +44,7 @@ func Parse(config cfg.Config) ([]Rule, error) {
 		for _, c := range scrit {
 			res = append(res, Rule{
 				Criteria: c,
-				Actions:  rule.Actions,
+				Actions:  Actions(rule.Actions),
 			})
 		}
 	}
