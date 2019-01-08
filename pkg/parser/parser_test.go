@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config/v2alpha1"
+	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 )
 
 func readConfig(t *testing.T, path string) cfg.Config {

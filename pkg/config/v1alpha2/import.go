@@ -1,4 +1,4 @@
-package v2alpha1
+package v1alpha2
 
 import (
 	"github.com/pkg/errors"

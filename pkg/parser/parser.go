@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config/v2alpha1"
+	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 )
 
 // Rule is an intermediate representation of a Gmail filter.

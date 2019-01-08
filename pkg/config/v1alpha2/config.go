@@ -1,4 +1,4 @@
-package v2alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -8,7 +8,7 @@ import (
 )
 
 // Version is the latest supported version.
-const Version = "v2alpha1"
+const Version = "v1alpha2"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
