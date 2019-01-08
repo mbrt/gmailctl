@@ -24,7 +24,7 @@ func Parse(config cfg.Config) ([]Rule, error) {
 		return nil, err
 	}
 
-	var res []Rule
+	res := []Rule{}
 	for i, rule := range config.Rules {
 		crit, err := parseCriteria(rule.Filter, cmap)
 		if err != nil {

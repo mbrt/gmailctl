@@ -9,8 +9,8 @@ import (
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 )
 
-// ParseFile takes a path and returns the parsed config file.
-func ParseFile(path string) (cfgv1.Config, error) {
+// ReadFile takes a path and returns the parsed config file.
+func ReadFile(path string) (cfgv1.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {

@@ -45,7 +45,7 @@ func init() {
 }
 
 func apply(path string, interactive bool) error {
-	cfg, err := config.ParseFile(path)
+	cfg, err := config.ReadFile(path)
 	if err != nil {
 		if config.IsNotFound(err) {
 			return configurationError(err)
