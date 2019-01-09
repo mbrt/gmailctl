@@ -4,9 +4,6 @@ import "sort"
 
 const maxSimplifyPasses = 4
 
-// OperationType is the type of logical operator.
-type OperationType int
-
 // Logical operations.
 const (
 	OperationNone OperationType = iota
@@ -15,8 +12,21 @@ const (
 	OperationNot
 )
 
-// FunctionType is the type of a function.
-type FunctionType int
+// OperationType is the type of logical operator.
+type OperationType int
+
+func (t OperationType) String() string {
+	switch t {
+	case OperationNone:
+		return "<none>"
+	case OperationAnd:
+		return "and"
+	case OperationOr:
+		return "or"
+	default:
+		return "<unknown>"
+	}
+}
 
 // Functions.
 const (
@@ -28,6 +38,30 @@ const (
 	FunctionList
 	FunctionHas
 )
+
+// FunctionType is the type of a function.
+type FunctionType int
+
+func (f FunctionType) String() string {
+	switch f {
+	case FunctionNone:
+		return "<none>"
+	case FunctionFrom:
+		return "from"
+	case FunctionTo:
+		return "to"
+	case FunctionCc:
+		return "cc"
+	case FunctionSubject:
+		return "subject"
+	case FunctionList:
+		return "list"
+	case FunctionHas:
+		return "has"
+	default:
+		return "<unknown>"
+	}
+}
 
 // CriteriaAST is the abstract syntax tree of a filter criteria.
 type CriteriaAST interface {
