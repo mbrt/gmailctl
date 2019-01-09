@@ -8,9 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/export/xml"
-	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 var (
@@ -66,15 +64,10 @@ func export(inputPath, outputPath string) (err error) {
 	return exportWithOut(inputPath, out)
 }
 
-func exportWithOut(cfgPath string, out io.Writer) error {
-	cfg, err := config.ReadFile(cfgPath)
+func exportWithOut(path string, out io.Writer) error {
+	pres, err := parseConfig(path)
 	if err != nil {
-		return errors.Wrap(err, "cannot parse config file")
+		return err
 	}
-
-	filters, err := filter.FromConfig(cfg)
-	if err != nil {
-		return errors.Wrap(err, "error exporting local filters")
-	}
-	return xml.DefaultExporter().Export(cfg.Author, filters, out)
+	return xml.DefaultExporter().Export(pres.config.Author, pres.filters, out)
 }
