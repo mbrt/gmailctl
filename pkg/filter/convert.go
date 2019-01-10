@@ -82,13 +82,8 @@ func generateNode(node *parser.Node) (Criteria, error) {
 }
 
 func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
-	var query string
-	if leaf.Function == parser.FunctionQuery {
-		// Queries are interpreted verbatim
-		query = strings.Join(leaf.Args, " ")
-	} else {
-		query = joinEscaped(leaf.Args...)
-	}
+	needEscape := leaf.Function != parser.FunctionQuery
+	query := joinStrings(needEscape, leaf.Args...)
 	if len(leaf.Args) > 1 {
 		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
@@ -149,14 +144,8 @@ func generateNodeAsString(node *parser.Node) (string, error) {
 }
 
 func generateLeafAsString(leaf *parser.Leaf) (string, error) {
-	var query string
-	if leaf.Function == parser.FunctionQuery {
-		// Queries are interpreted verbatim
-		query = strings.Join(leaf.Args, " ")
-	} else {
-		query = joinEscaped(leaf.Args...)
-	}
-
+	needEscape := leaf.Function != parser.FunctionQuery
+	query := joinStrings(needEscape, leaf.Args...)
 	if len(leaf.Args) > 1 {
 		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
@@ -206,6 +195,13 @@ func joinQueries(f1, f2 string) string {
 		return f1
 	}
 	return fmt.Sprintf("%s %s", f1, f2)
+}
+
+func joinStrings(escape bool, a ...string) string {
+	if escape {
+		return joinEscaped(a...)
+	}
+	return strings.Join(a, " ")
 }
 
 func joinEscaped(a ...string) string {
