@@ -141,8 +141,7 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 		return FunctionHas, f.Has
 	}
 	if f.Query != "" {
-		// Query and Has are equivalent
-		return FunctionHas, f.Query
+		return FunctionQuery, f.Query
 	}
 	return FunctionNone, ""
 }
