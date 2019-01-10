@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func emptyLabelMap() DefaultLabelMap {
@@ -17,12 +17,12 @@ func emptyLabelMap() DefaultLabelMap {
 func TestExportActions(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,
 				MarkRead:      true,
-				Category:      config.CategoryUpdates,
+				Category:      gmail.CategoryUpdates,
 			},
 			Criteria: filter.Criteria{
 				From: "foo@bar.com",
@@ -56,7 +56,7 @@ func TestExportActions(t *testing.T) {
 func TestExportCriteria(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete: true,
 			},
 			Criteria: filter.Criteria{
@@ -102,8 +102,8 @@ func TestExportNoActions(t *testing.T) {
 func TestExportNoCriteria(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
-				Category: config.CategoryForums,
+			Action: filter.Actions{
+				Category: gmail.CategoryForums,
 			},
 		},
 	}
@@ -114,8 +114,8 @@ func TestExportNoCriteria(t *testing.T) {
 func TestExportLabels(t *testing.T) {
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
-				Category: config.CategoryForums,
+			Action: filter.Actions{
+				Category: gmail.CategoryForums,
 				AddLabel: "MyLabel",
 			},
 			Criteria: filter.Criteria{
@@ -150,7 +150,7 @@ func TestExportLabels(t *testing.T) {
 	// Test not existing label
 	filters = filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				AddLabel: "NonExisting",
 			},
 			Criteria: filter.Criteria{

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func TestNoDiff(t *testing.T) {
@@ -16,7 +16,7 @@ func TestNoDiff(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 			},
 		},
@@ -26,7 +26,7 @@ func TestNoDiff(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 			},
 		},
@@ -45,9 +45,9 @@ func TestDiffOutput(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 	}
@@ -56,9 +56,9 @@ func TestDiffOutput(t *testing.T) {
 			Criteria: Criteria{
 				From: "{someone@gmail.com else@gmail.com}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 	}
@@ -86,7 +86,7 @@ func someFilters() Filters {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label1",
 			},
 		},
@@ -95,7 +95,7 @@ func someFilters() Filters {
 			Criteria: Criteria{
 				To: "me@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},
@@ -105,7 +105,7 @@ func someFilters() Filters {
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -119,16 +119,16 @@ func TestDiffAddRemove(t *testing.T) {
 			Criteria: Criteria{
 				From: "{someone@gmail.com else@gmail.com}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
-				Category: config.CategoryPersonal,
+				Category: gmail.CategoryPersonal,
 			},
 		},
 		{
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -136,7 +136,7 @@ func TestDiffAddRemove(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label1",
 			},
 		},
@@ -158,7 +158,7 @@ func TestDiffReorder(t *testing.T) {
 			Criteria: Criteria{
 				To: "me@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},
@@ -167,7 +167,7 @@ func TestDiffReorder(t *testing.T) {
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -175,7 +175,7 @@ func TestDiffReorder(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label1",
 			},
 		},
@@ -194,7 +194,7 @@ func TestDiffModify(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label1",
 			},
 		},
@@ -202,7 +202,7 @@ func TestDiffModify(t *testing.T) {
 			Criteria: Criteria{
 				To: "{me@gmail.com you@gmail.com}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},
@@ -211,7 +211,7 @@ func TestDiffModify(t *testing.T) {
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -233,7 +233,7 @@ func TestDiffAdd(t *testing.T) {
 			Criteria: Criteria{
 				From: "someone@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				AddLabel: "label1",
 			},
 		},
@@ -241,7 +241,7 @@ func TestDiffAdd(t *testing.T) {
 			Criteria: Criteria{
 				To: "me@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},
@@ -250,7 +250,7 @@ func TestDiffAdd(t *testing.T) {
 			Criteria: Criteria{
 				To: "{me@gmail.com you@gmail.com}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},
@@ -259,7 +259,7 @@ func TestDiffAdd(t *testing.T) {
 			Criteria: Criteria{
 				Query: "-{foobar baz}",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkImportant: true,
 			},
 		},
@@ -281,7 +281,7 @@ func TestDiffRemove(t *testing.T) {
 			Criteria: Criteria{
 				To: "me@gmail.com",
 			},
-			Action: Action{
+			Action: Actions{
 				MarkRead: true,
 				AddLabel: "label2",
 			},

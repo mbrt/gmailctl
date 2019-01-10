@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Filters is a list of filters created in Gmail.
@@ -29,7 +29,7 @@ func (fs Filters) String() string {
 type Filter struct {
 	// ID is an optional identifier associated with a filter.
 	ID       string
-	Action   Action
+	Action   Actions
 	Criteria Criteria
 }
 
@@ -53,19 +53,19 @@ func (f Filter) String() string {
 	return builder.String()
 }
 
-// Action represents an action associated with a Gmail filter.
-type Action struct {
+// Actions represents an action associated with a Gmail filter.
+type Actions struct {
 	Archive       bool
 	Delete        bool
 	MarkImportant bool
 	MarkRead      bool
-	Category      config.Category
+	Category      gmail.Category
 	AddLabel      string
 }
 
 // Empty returns true if no action is specified.
-func (a Action) Empty() bool {
-	return a == Action{}
+func (a Actions) Empty() bool {
+	return a == Actions{}
 }
 
 // Criteria represents the filtering criteria associated with a Gmail filter.

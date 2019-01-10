@@ -1,29 +1,11 @@
-package config
+package v1alpha1
 
-// Categories supported by Gmail.
-const (
-	CategoryPersonal   Category = "personal"
-	CategorySocial              = "social"
-	CategoryUpdates             = "updates"
-	CategoryForums              = "forums"
-	CategoryPromotions          = "promotions"
+import (
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
-// Category is one of the smart categories in Gmail.
-type Category string
-
-// PossibleCategoryValues returns the list of possible values Category can assume.
-//
-// Keep in sync with the categories.
-func PossibleCategoryValues() []string {
-	return []string{
-		string(CategoryPersonal),
-		string(CategorySocial),
-		string(CategoryUpdates),
-		string(CategoryForums),
-		string(CategoryPromotions),
-	}
-}
+// Version is the latest supported version.
+const Version = "v1alpha1"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
@@ -87,10 +69,10 @@ type MatchFilters struct {
 
 // Actions contains the actions to be applied to a set of emails.
 type Actions struct {
-	Archive       bool     `yaml:"archive,omitempty"`
-	Delete        bool     `yaml:"delete,omitempty"`
-	MarkImportant bool     `yaml:"markImportant,omitempty"`
-	MarkRead      bool     `yaml:"markRead,omitempty"`
-	Category      Category `yaml:"category,omitempty"`
-	Labels        []string `yaml:"labels,omitempty"`
+	Archive       bool           `yaml:"archive,omitempty"`
+	Delete        bool           `yaml:"delete,omitempty"`
+	MarkImportant bool           `yaml:"markImportant,omitempty"`
+	MarkRead      bool           `yaml:"markRead,omitempty"`
+	Category      gmail.Category `yaml:"category,omitempty"`
+	Labels        []string       `yaml:"labels,omitempty"`
 }

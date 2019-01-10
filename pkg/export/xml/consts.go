@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Property values
@@ -32,21 +32,21 @@ const (
 	SmartLabelSocial       = "social"
 )
 
-func categoryToSmartLabel(cat config.Category) (string, error) {
+func categoryToSmartLabel(cat gmail.Category) (string, error) {
 	var smartl string
 	switch cat {
-	case config.CategoryPersonal:
+	case gmail.CategoryPersonal:
 		smartl = SmartLabelPersonal
-	case config.CategorySocial:
+	case gmail.CategorySocial:
 		smartl = SmartLabelSocial
-	case config.CategoryUpdates:
+	case gmail.CategoryUpdates:
 		smartl = SmartLabelNotification
-	case config.CategoryForums:
+	case gmail.CategoryForums:
 		smartl = SmartLabelGroup
-	case config.CategoryPromotions:
+	case gmail.CategoryPromotions:
 		smartl = SmartLabelPromo
 	default:
-		possib := config.PossibleCategoryValues()
+		possib := gmail.PossibleCategoryValues()
 		return "", errors.Errorf("unrecognized category '%s' (possible values: %s)",
 			cat, strings.Join(possib, ", "))
 	}

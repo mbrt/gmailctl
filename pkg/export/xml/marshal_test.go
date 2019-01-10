@@ -8,8 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func testNow() time.Time {
@@ -20,7 +21,7 @@ func testNow() time.Time {
 
 func TestEmptyEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
-	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	buf := new(bytes.Buffer)
 	err := exporter.Export(author, filter.Filters{}, buf)
 	assert.Nil(t, err)
@@ -40,10 +41,10 @@ func TestEmptyEntries(t *testing.T) {
 
 func TestSomeEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
-	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				MarkImportant: true,
 			},
 			Criteria: filter.Criteria{
@@ -51,7 +52,7 @@ func TestSomeEntries(t *testing.T) {
 			},
 		},
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete:   true,
 				AddLabel: "spam",
 			},
@@ -95,15 +96,15 @@ func TestSomeEntries(t *testing.T) {
 
 func TestAllEntries(t *testing.T) {
 	exporter := xmlExporter{now: testNow}
-	author := config.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,
 				MarkRead:      true,
-				Category:      config.CategoryPromotions,
+				Category:      gmail.CategoryPromotions,
 				AddLabel:      "MyLabel",
 			},
 			Criteria: filter.Criteria{

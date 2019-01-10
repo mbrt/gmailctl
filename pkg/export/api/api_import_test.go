@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 func TestImportActions(t *testing.T) {
@@ -32,12 +32,12 @@ func TestImportActions(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
 				MarkImportant: true,
 				MarkRead:      true,
-				Category:      config.CategoryUpdates,
+				Category:      gmail.CategoryUpdates,
 			},
 			Criteria: filter.Criteria{
 				From: "foo@bar.com",
@@ -67,7 +67,7 @@ func TestImportCriteria(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
+			Action: filter.Actions{
 				Delete: true,
 			},
 			Criteria: filter.Criteria{
@@ -106,8 +106,8 @@ func TestImportLabels(t *testing.T) {
 	imported, err := DefaulImporter().Import(filters, lmap)
 	expected := filter.Filters{
 		{
-			Action: filter.Action{
-				Category: config.CategoryForums,
+			Action: filter.Actions{
+				Category: gmail.CategoryForums,
 				AddLabel: "MyLabel",
 			},
 			Criteria: filter.Criteria{

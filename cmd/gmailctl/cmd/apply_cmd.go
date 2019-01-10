@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/api"
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
@@ -45,17 +44,9 @@ func init() {
 }
 
 func apply(path string, interactive bool) error {
-	cfg, err := config.ParseFile(path)
+	parseRes, err := parseConfig(path)
 	if err != nil {
-		if config.IsNotFound(err) {
-			return configurationError(err)
-		}
-		return errors.Wrap(err, "cannot parse config file")
-	}
-
-	newFilters, err := filter.FromConfig(cfg)
-	if err != nil {
-		return errors.Wrap(err, "error exporting local filters")
+		return err
 	}
 
 	gmailapi, err := openAPI()
@@ -68,7 +59,7 @@ func apply(path string, interactive bool) error {
 		return errors.Wrap(err, "cannot get filters from Gmail")
 	}
 
-	diff, err := filter.Diff(upstreamFilters, newFilters)
+	diff, err := filter.Diff(upstreamFilters, parseRes.filters)
 	if err != nil {
 		return errors.New("cannot compare upstream with local filters")
 	}

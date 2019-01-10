@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Importer imports Gmail API objects into filters
@@ -60,8 +60,8 @@ func (di defaultImporter) importFilter(gf *gmailv1.Filter, lmap LabelMap) (filte
 	}, nil
 }
 
-func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Action, error) {
-	res := filter.Action{}
+func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, error) {
+	res := filter.Actions{}
 	if err := di.importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
@@ -69,7 +69,7 @@ func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelM
 	return res, err
 }
 
-func (di defaultImporter) importAddLabels(res *filter.Action, addLabelIDs []string, lmap LabelMap) error {
+func (di defaultImporter) importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) error {
 	for _, labelID := range addLabelIDs {
 		category := di.importCategory(labelID)
 		if category != "" {
@@ -97,7 +97,7 @@ func (di defaultImporter) importAddLabels(res *filter.Action, addLabelIDs []stri
 	return nil
 }
 
-func (di defaultImporter) importRemoveLabels(res *filter.Action, removeLabelIDs []string) error {
+func (di defaultImporter) importRemoveLabels(res *filter.Actions, removeLabelIDs []string) error {
 	for _, labelID := range removeLabelIDs {
 		switch labelID {
 		case labelIDInbox:
@@ -112,18 +112,18 @@ func (di defaultImporter) importRemoveLabels(res *filter.Action, removeLabelIDs 
 	return nil
 }
 
-func (di defaultImporter) importCategory(labelID string) config.Category {
+func (di defaultImporter) importCategory(labelID string) gmail.Category {
 	switch labelID {
 	case labelIDCategoryPersonal:
-		return config.CategoryPersonal
+		return gmail.CategoryPersonal
 	case labelIDCategorySocial:
-		return config.CategorySocial
+		return gmail.CategorySocial
 	case labelIDCategoryUpdates:
-		return config.CategoryUpdates
+		return gmail.CategoryUpdates
 	case labelIDCategoryForums:
-		return config.CategoryForums
+		return gmail.CategoryForums
 	case labelIDCategoryPromotions:
-		return config.CategoryPromotions
+		return gmail.CategoryPromotions
 	default:
 		return ""
 	}

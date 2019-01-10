@@ -5,14 +5,14 @@ import (
 	"io"
 	"time"
 
-	"github.com/mbrt/gmailctl/pkg/config"
+	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // Exporter exports the given entries to the Gmail xml format.
 type Exporter interface {
 	// Export exports Gmail filters into the Gmail xml format.
-	Export(author config.Author, filters filter.Filters, w io.Writer) error
+	Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error
 }
 
 // DefaultExporter returns a default implementation of the XMLExporter interface.
@@ -60,7 +60,7 @@ type xmlExporter struct {
 	now nowFunc
 }
 
-func (x xmlExporter) Export(author config.Author, filters filter.Filters, w io.Writer) error {
+func (x xmlExporter) Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error {
 	doc, err := x.toXML(author, filters)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (x xmlExporter) Export(author config.Author, filters filter.Filters, w io.W
 	return err
 }
 
-func (x xmlExporter) toXML(author config.Author, filters filter.Filters) (xmlDoc, error) {
+func (x xmlExporter) toXML(author cfgv2.Author, filters filter.Filters) (xmlDoc, error) {
 	entries, err := x.entriesToXML(filters)
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",
@@ -133,7 +133,7 @@ func (x xmlExporter) criteriaProperties(c filter.Criteria) []xmlProperty {
 	return res
 }
 
-func (x xmlExporter) actionProperties(a filter.Action) ([]xmlProperty, error) {
+func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	res := []xmlProperty{}
 	res = x.appendBoolProperty(res, PropertyArchive, a.Archive)
 	res = x.appendBoolProperty(res, PropertyDelete, a.Delete)
