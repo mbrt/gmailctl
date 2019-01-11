@@ -11,17 +11,18 @@ import (
 
 // Property values
 const (
-	PropertyFrom          = "from"
-	PropertyTo            = "to"
-	PropertySubject       = "subject"
-	PropertyHas           = "hasTheWord"
-	PropertyMarkImportant = "shouldAlwaysMarkAsImportant"
-	PropertyApplyLabel    = "label"
-	PropertyApplyCategory = "smartLabelToApply"
-	PropertyDelete        = "shouldTrash"
-	PropertyArchive       = "shouldArchive"
-	PropertyMarkRead      = "shouldMarkAsRead"
-	PropertyMarkNotSpam   = "shouldNeverSpam"
+	PropertyFrom             = "from"
+	PropertyTo               = "to"
+	PropertySubject          = "subject"
+	PropertyHas              = "hasTheWord"
+	PropertyMarkImportant    = "shouldAlwaysMarkAsImportant"
+	PropertyMarkNotImportant = "shouldNeverMarkAsImportant"
+	PropertyApplyLabel       = "label"
+	PropertyApplyCategory    = "smartLabelToApply"
+	PropertyDelete           = "shouldTrash"
+	PropertyArchive          = "shouldArchive"
+	PropertyMarkRead         = "shouldMarkAsRead"
+	PropertyMarkNotSpam      = "shouldNeverSpam"
 )
 
 // SmartLabel values

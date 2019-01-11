@@ -229,12 +229,13 @@ func escape(a string) string {
 func generateActions(actions parser.Actions) ([]Actions, error) {
 	res := []Actions{
 		{
-			Archive:       actions.Archive,
-			Delete:        actions.Delete,
-			MarkImportant: actions.MarkImportant,
-			MarkRead:      actions.MarkRead,
-			Category:      actions.Category,
-			MarkNotSpam:   fromOptionalBool(actions.MarkSpam, false),
+			Archive:          actions.Archive,
+			Delete:           actions.Delete,
+			MarkImportant:    fromOptionalBool(actions.MarkImportant, true),
+			MarkNotImportant: fromOptionalBool(actions.MarkImportant, false),
+			MarkRead:         actions.MarkRead,
+			Category:         actions.Category,
+			MarkNotSpam:      fromOptionalBool(actions.MarkSpam, false),
 		},
 	}
 

@@ -104,6 +104,8 @@ func (di defaultImporter) importRemoveLabels(res *filter.Actions, removeLabelIDs
 			res.Archive = true
 		case labelIDUnread:
 			res.MarkRead = true
+		case labelIDImportant:
+			res.MarkNotImportant = true
 		case labelIDSpam:
 			res.MarkNotSpam = true
 		default:

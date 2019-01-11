@@ -26,6 +26,15 @@ func Import(cfg v1.Config) (Config, error) {
 }
 
 func convertRule(r v1.Rule) Rule {
+	// Optional parameters need to be set only if the original action was
+	// explicitly set.
+	onlyIfSet := func(a bool) *bool {
+		if a {
+			return &a
+		}
+		return nil
+	}
+
 	return Rule{
 		Filter: convertFilter(r.Filters),
 		// We need to explicitate the fields because they are not all
@@ -33,7 +42,7 @@ func convertRule(r v1.Rule) Rule {
 		Actions: Actions{
 			Archive:       r.Actions.Archive,
 			Delete:        r.Actions.Delete,
-			MarkImportant: r.Actions.MarkImportant,
+			MarkImportant: onlyIfSet(r.Actions.MarkImportant),
 			MarkRead:      r.Actions.MarkRead,
 			Category:      r.Actions.Category,
 			Labels:        r.Actions.Labels,

@@ -71,8 +71,7 @@ func TestExportCriteria(t *testing.T) {
 	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
-				AddLabelIds:    []string{labelIDTrash},
-				RemoveLabelIds: []string{},
+				AddLabelIds: []string{labelIDTrash},
 			},
 			Criteria: &gmailv1.FilterCriteria{
 				From:    "foo@bar.com",
@@ -136,7 +135,6 @@ func TestExportLabels(t *testing.T) {
 					labelIDCategoryForums,
 					"label1",
 				},
-				RemoveLabelIds: []string{},
 			},
 			Criteria: &gmailv1.FilterCriteria{
 				From: "foo@bar.com",

@@ -9,6 +9,10 @@ import (
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
+func boolptr(a bool) *bool {
+	return &a
+}
+
 func TestSimpleFilter(t *testing.T) {
 	rules := []parser.Rule{
 		{
@@ -138,7 +142,7 @@ func TestQuoting(t *testing.T) {
 				},
 			},
 			Actions: parser.Actions{
-				MarkImportant: true,
+				MarkImportant: boolptr(true),
 			},
 		},
 	}

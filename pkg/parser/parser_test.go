@@ -22,6 +22,10 @@ func readConfig(t *testing.T, path string) cfg.Config {
 	return res
 }
 
+func boolptr(a bool) *bool {
+	return &a
+}
+
 func TestParse(t *testing.T) {
 	conf := readConfig(t, "testdata/example.yaml")
 	expected := []Rule{
@@ -53,7 +57,7 @@ func TestParse(t *testing.T) {
 					"list3",
 				),
 			),
-			Actions: Actions{MarkImportant: true},
+			Actions: Actions{MarkImportant: boolptr(true)},
 		},
 		{
 			Criteria: fn(FunctionFrom, OperationOr,
