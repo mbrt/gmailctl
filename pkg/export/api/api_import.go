@@ -104,6 +104,8 @@ func (di defaultImporter) importRemoveLabels(res *filter.Actions, removeLabelIDs
 			res.Archive = true
 		case labelIDUnread:
 			res.MarkRead = true
+		case labelIDSpam:
+			res.MarkNotSpam = true
 		default:
 			// filters not added by us are not supported
 			return errors.Errorf("unupported label to remove '%s'", labelID)

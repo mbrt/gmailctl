@@ -74,6 +74,9 @@ func (de defaultExporter) exportAction(action filter.Actions, lmap LabelMap) (*g
 	if action.MarkRead {
 		removelabels = append(removelabels, labelIDUnread)
 	}
+	if action.MarkNotSpam {
+		removelabels = append(removelabels, labelIDSpam)
+	}
 	if action.Category != "" {
 		cat, err := de.exportCategory(action.Category)
 		if err != nil {

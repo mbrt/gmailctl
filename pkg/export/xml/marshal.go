@@ -139,6 +139,7 @@ func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	res = x.appendBoolProperty(res, PropertyDelete, a.Delete)
 	res = x.appendBoolProperty(res, PropertyMarkImportant, a.MarkImportant)
 	res = x.appendBoolProperty(res, PropertyMarkRead, a.MarkRead)
+	res = x.appendBoolProperty(res, PropertyMarkNotSpam, a.MarkNotSpam)
 	res = x.appendStringProperty(res, PropertyApplyLabel, a.AddLabel)
 
 	if a.Category != "" {

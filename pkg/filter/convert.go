@@ -27,7 +27,10 @@ func fromRule(rule parser.Rule) ([]Filter, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating criteria")
 	}
-	actions := generateActions(rule.Actions)
+	actions, err := generateActions(rule.Actions)
+	if err != nil {
+		return nil, errors.Wrap(err, "error generating actions")
+	}
 	return combineCriteriaWithActions(criteria, actions), nil
 }
 
@@ -223,7 +226,7 @@ func escape(a string) string {
 	return a
 }
 
-func generateActions(actions parser.Actions) []Actions {
+func generateActions(actions parser.Actions) ([]Actions, error) {
 	res := []Actions{
 		{
 			Archive:       actions.Archive,
@@ -231,11 +234,16 @@ func generateActions(actions parser.Actions) []Actions {
 			MarkImportant: actions.MarkImportant,
 			MarkRead:      actions.MarkRead,
 			Category:      actions.Category,
+			MarkNotSpam:   fromOptionalBool(actions.MarkSpam, false),
 		},
 	}
 
+	if fromOptionalBool(actions.MarkSpam, true) {
+		return nil, errors.New("Gmail filters don't allow to send messages to spam directly")
+	}
+
 	if len(actions.Labels) == 0 {
-		return res
+		return res, nil
 	}
 	// Since every action can contain a single lable only, we might need to
 	// produce multiple actions.
@@ -248,7 +256,16 @@ func generateActions(actions parser.Actions) []Actions {
 		res = append(res, Actions{AddLabel: label})
 	}
 
-	return res
+	return res, nil
+}
+
+// fromOptionalBool returns the value of the given option if present,
+// reversing its value if positive is false.
+func fromOptionalBool(opt *bool, positive bool) bool {
+	if opt == nil {
+		return false
+	}
+	return *opt == positive
 }
 
 func combineCriteriaWithActions(criteria Criteria, actions []Actions) Filters {

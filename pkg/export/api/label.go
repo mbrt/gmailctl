@@ -5,6 +5,7 @@ const (
 	labelIDTrash     = "TRASH"
 	labelIDImportant = "IMPORTANT"
 	labelIDUnread    = "UNREAD"
+	labelIDSpam      = "SPAM"
 
 	labelIDCategoryPersonal   = "CATEGORY_PERSONAL"
 	labelIDCategorySocial     = "CATEGORY_SOCIAL"

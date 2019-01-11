@@ -21,6 +21,7 @@ const (
 	PropertyDelete        = "shouldTrash"
 	PropertyArchive       = "shouldArchive"
 	PropertyMarkRead      = "shouldMarkAsRead"
+	PropertyMarkNotSpam   = "shouldNeverSpam"
 )
 
 // SmartLabel values

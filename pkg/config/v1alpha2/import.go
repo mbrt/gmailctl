@@ -27,8 +27,17 @@ func Import(cfg v1.Config) (Config, error) {
 
 func convertRule(r v1.Rule) Rule {
 	return Rule{
-		Filter:  convertFilter(r.Filters),
-		Actions: Actions(r.Actions),
+		Filter: convertFilter(r.Filters),
+		// We need to explicitate the fields because they are not all
+		// the same.
+		Actions: Actions{
+			Archive:       r.Actions.Archive,
+			Delete:        r.Actions.Delete,
+			MarkImportant: r.Actions.MarkImportant,
+			MarkRead:      r.Actions.MarkRead,
+			Category:      r.Actions.Category,
+			Labels:        r.Actions.Labels,
+		},
 	}
 }
 

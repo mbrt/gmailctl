@@ -46,6 +46,7 @@ func (f Filter) String() string {
 	writeBool(&builder, "archive", f.Action.Archive)
 	writeBool(&builder, "delete", f.Action.Delete)
 	writeBool(&builder, "mark as important", f.Action.MarkImportant)
+	writeBool(&builder, "never mark as spam", f.Action.MarkNotSpam)
 	writeBool(&builder, "mark as read", f.Action.MarkRead)
 	writeParam(&builder, "categorize as", string(f.Action.Category))
 	writeParam(&builder, "apply label", f.Action.AddLabel)
@@ -55,12 +56,13 @@ func (f Filter) String() string {
 
 // Actions represents an action associated with a Gmail filter.
 type Actions struct {
+	AddLabel      string
+	Category      gmail.Category
 	Archive       bool
 	Delete        bool
 	MarkImportant bool
 	MarkRead      bool
-	Category      gmail.Category
-	AddLabel      string
+	MarkNotSpam   bool
 }
 
 // Empty returns true if no action is specified.
