@@ -236,6 +236,7 @@ func generateActions(actions parser.Actions) ([]Actions, error) {
 			MarkRead:         actions.MarkRead,
 			Category:         actions.Category,
 			MarkNotSpam:      fromOptionalBool(actions.MarkSpam, false),
+			Star:             actions.Star,
 		},
 	}
 

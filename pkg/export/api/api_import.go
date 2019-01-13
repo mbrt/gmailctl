@@ -85,6 +85,8 @@ func (di defaultImporter) importAddLabels(res *filter.Actions, addLabelIDs []str
 			res.Delete = true
 		case labelIDImportant:
 			res.MarkImportant = true
+		case labelIDStar:
+			res.Star = true
 		default:
 			// it should be a label to add
 			labelName, ok := lmap.IDToName(labelID)

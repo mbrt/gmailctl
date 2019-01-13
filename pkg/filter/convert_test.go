@@ -207,3 +207,42 @@ func TestSplitActions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, got)
 }
+
+func TestActions(t *testing.T) {
+	rules := []parser.Rule{
+		{
+			Criteria: &parser.Leaf{
+				Function: parser.FunctionFrom,
+				Args:     []string{"a"},
+			},
+			Actions: parser.Actions{
+				Archive:       true,
+				Delete:        true,
+				MarkRead:      true,
+				Star:          true,
+				MarkSpam:      boolptr(false),
+				MarkImportant: boolptr(true),
+				Category:      gmail.CategoryForums,
+			},
+		},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{
+				From: "a",
+			},
+			Action: Actions{
+				Archive:       true,
+				Delete:        true,
+				MarkRead:      true,
+				Star:          true,
+				MarkNotSpam:   true,
+				MarkImportant: true,
+				Category:      gmail.CategoryForums,
+			},
+		},
+	}
+	got, err := FromRules(rules)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}

@@ -17,11 +17,13 @@ func TestImportActions(t *testing.T) {
 				AddLabelIds: []string{
 					labelIDTrash,
 					labelIDImportant,
+					labelIDStar,
 					labelIDCategoryUpdates,
 				},
 				RemoveLabelIds: []string{
 					labelIDInbox,
 					labelIDUnread,
+					labelIDSpam,
 				},
 			},
 			Criteria: &gmailv1.FilterCriteria{
@@ -35,8 +37,10 @@ func TestImportActions(t *testing.T) {
 			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
-				MarkImportant: true,
 				MarkRead:      true,
+				Star:          true,
+				MarkNotSpam:   true,
+				MarkImportant: true,
 				Category:      gmail.CategoryUpdates,
 			},
 			Criteria: filter.Criteria{

@@ -102,6 +102,9 @@ func (de defaultExporter) exportFlags(action filter.Actions, lops *labelOps) {
 	if action.MarkNotSpam {
 		lops.RemoveLabel(labelIDSpam)
 	}
+	if action.Star {
+		lops.AddLabel(labelIDStar)
+	}
 }
 
 func (de defaultExporter) exportCategory(category gmail.Category) (string, error) {

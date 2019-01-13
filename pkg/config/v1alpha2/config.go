@@ -128,16 +128,18 @@ type Author v1.Author
 
 // Actions contains the actions to be applied to a set of emails.
 type Actions struct {
-	Archive  bool           `yaml:"archive,omitempty"`
-	Delete   bool           `yaml:"delete,omitempty"`
-	MarkRead bool           `yaml:"markRead,omitempty"`
-	Category gmail.Category `yaml:"category,omitempty"`
-	Labels   []string       `yaml:"labels,omitempty"`
+	Archive  bool `yaml:"archive,omitempty"`
+	Delete   bool `yaml:"delete,omitempty"`
+	MarkRead bool `yaml:"markRead,omitempty"`
+	Star     bool `yaml:"star,omitempty"`
 
 	// MarkSpam can be used to disallow mails to be marked as spam.
 	// This however is not allowed to be set to true by Gmail.
 	MarkSpam      *bool `yaml:"markSpam,omitempty"`
 	MarkImportant *bool `yaml:"markImportant,omitempty"`
+
+	Category gmail.Category `yaml:"category,omitempty"`
+	Labels   []string       `yaml:"labels,omitempty"`
 }
 
 // Empty returns true if no actions are specified.

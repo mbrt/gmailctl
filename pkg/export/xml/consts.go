@@ -23,6 +23,7 @@ const (
 	PropertyArchive          = "shouldArchive"
 	PropertyMarkRead         = "shouldMarkAsRead"
 	PropertyMarkNotSpam      = "shouldNeverSpam"
+	PropertyStar             = "shouldStar"
 )
 
 // SmartLabel values

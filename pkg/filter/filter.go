@@ -49,6 +49,7 @@ func (f Filter) String() string {
 	writeBool(&builder, "never mark as important", f.Action.MarkNotImportant)
 	writeBool(&builder, "never mark as spam", f.Action.MarkNotSpam)
 	writeBool(&builder, "mark as read", f.Action.MarkRead)
+	writeBool(&builder, "star", f.Action.Star)
 	writeParam(&builder, "categorize as", string(f.Action.Category))
 	writeParam(&builder, "apply label", f.Action.AddLabel)
 
@@ -65,6 +66,7 @@ type Actions struct {
 	MarkNotImportant bool
 	MarkRead         bool
 	MarkNotSpam      bool
+	Star             bool
 }
 
 // Empty returns true if no action is specified.

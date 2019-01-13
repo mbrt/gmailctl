@@ -20,8 +20,10 @@ func TestExportActions(t *testing.T) {
 			Action: filter.Actions{
 				Archive:       true,
 				Delete:        true,
-				MarkImportant: true,
 				MarkRead:      true,
+				Star:          true,
+				MarkNotSpam:   true,
+				MarkImportant: true,
 				Category:      gmail.CategoryUpdates,
 			},
 			Criteria: filter.Criteria{
@@ -36,11 +38,13 @@ func TestExportActions(t *testing.T) {
 				AddLabelIds: []string{
 					labelIDTrash,
 					labelIDImportant,
+					labelIDStar,
 					labelIDCategoryUpdates,
 				},
 				RemoveLabelIds: []string{
 					labelIDInbox,
 					labelIDUnread,
+					labelIDSpam,
 				},
 			},
 			Criteria: &gmailv1.FilterCriteria{
@@ -50,7 +54,7 @@ func TestExportActions(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
-	assert.Equal(t, exported, expected)
+	assert.Equal(t, expected, exported)
 }
 
 func TestExportCriteria(t *testing.T) {
@@ -83,7 +87,7 @@ func TestExportCriteria(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
-	assert.Equal(t, exported, expected)
+	assert.Equal(t, expected, exported)
 }
 
 func TestExportNoActions(t *testing.T) {
@@ -143,7 +147,7 @@ func TestExportLabels(t *testing.T) {
 	}
 
 	assert.Nil(t, err)
-	assert.Equal(t, exported, expected)
+	assert.Equal(t, expected, exported)
 
 	// Test not existing label
 	filters = filter.Filters{
