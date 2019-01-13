@@ -267,8 +267,7 @@ func TestDiffAdd(t *testing.T) {
 
 	fd, err := Diff(old, new)
 	expected := FiltersDiff{
-		Added:   Filters{new[2]},
-		Removed: Filters{},
+		Added: Filters{new[2]},
 	}
 	assert.Nil(t, err)
 	assert.Equal(t, expected, fd)
@@ -290,7 +289,6 @@ func TestDiffRemove(t *testing.T) {
 
 	fd, err := Diff(old, new)
 	expected := FiltersDiff{
-		Added:   Filters{},
 		Removed: Filters{old[0], old[2]},
 	}
 
