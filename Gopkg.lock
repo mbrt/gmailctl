@@ -18,19 +18,23 @@
   revision = "62a607eb02243845670f25a61cbc2d394c1ede10"
 
 [[projects]]
+  branch = "master"
+  digest = "1:1983191f5aa4634cdc2d754550747e8e9bff69311ff09a5aae4ea4ef300c18d4"
+  name = "github.com/cpmech/gosl"
+  packages = [
+    "chk",
+    "io",
+    "utl",
+  ]
+  pruneopts = "UT"
+  revision = "442e9fffea0a0eeecf06dd35b1599491e9a8a6c4"
+
+[[projects]]
   digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "UT"
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
-
-[[projects]]
-  digest = "1:444b82bfe35c83bbcaf84e310fb81a1f9ece03edfed586483c869e2c046aef69"
-  name = "github.com/eapache/queue"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "44cc805cf13205b55f69e14bcb69867d1ae92f98"
   version = "v1.1.0"
 
 [[projects]]
@@ -183,7 +187,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/cnf/structhash",
-    "github.com/eapache/queue",
+    "github.com/cpmech/gosl/chk",
+    "github.com/cpmech/gosl/io",
+    "github.com/cpmech/gosl/utl",
     "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",

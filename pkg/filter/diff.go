@@ -2,19 +2,22 @@ package filter
 
 import (
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 
 	"github.com/cnf/structhash"
-	"github.com/eapache/queue"
 	"github.com/pmezard/go-difflib/difflib"
+
+	"github.com/mbrt/gmailctl/pkg/graph"
 )
 
 // Diff computes the diff between two lists of filters.
 //
 // To compute the diff, IDs are ignored, only the contents of the filters are actually considered.
 func Diff(upstream, local Filters) (FiltersDiff, error) {
+	// Computing the diff is very expensive, so we have to minimize the number of filters
+	// we have to analyze. To do so, we get rid of the filters that are exactly the same,
+	// by hashing them.
 	added, removed := changedFilters(upstream, local)
 	return NewMinimalFiltersDiff(added, removed), nil
 }
@@ -26,7 +29,9 @@ func Diff(upstream, local Filters) (FiltersDiff, error) {
 // travel salesman problem. Hopefully the number of filters is low enough to
 // make this not too slow and the approximation not too bad.
 func NewMinimalFiltersDiff(added, removed Filters) FiltersDiff {
-	reorderWithMaxFlow(added, removed)
+	if len(added) > 0 && len(removed) > 0 {
+		added, removed = reorderWithHungarian(added, removed)
+	}
 	return FiltersDiff{added, removed}
 }
 
@@ -140,154 +145,89 @@ func hashFilter(f Filter) hashedFilter {
 	return hashedFilter{h, f}
 }
 
-// reorderWithMaxFlow reorders the two lists to make them look as similar as
-// possible based on bipartite matching.
-func reorderWithMaxFlow(f1, f2 Filters) {
+// reorderWithHungarian reorders the two lists to make them look as similar as
+// possible based on the hungarian algorithm.
+//
+// See https://en.wikipedia.org/wiki/Hungarian_algorithm
+func reorderWithHungarian(f1, f2 Filters) (Filters, Filters) {
+	c := costMatrix(f1, f2)
+	mapping := hungarian(c)
+	return reorderWithMapping(f1, f2, mapping)
 }
 
-type graph []vertex
+func costMatrix(fs1, fs2 Filters) [][]float64 {
+	// Compute the strings only once at the beginning
+	ss1 := filterStrings(fs1)
+	ss2 := filterStrings(fs2)
 
-type edge struct {
-	Dest int
-	Cap  int
-	Flow int
-}
-
-type vertex struct {
-	ID       int
-	OutEdges []edge
-}
-
-type auxGraph []auxVertex
-
-type auxVertex struct {
-	ID int
-	// OutEdges maps dest to residual flow
-	OutEdges   map[int]int
-	PathParent int
-	Visited    bool
-}
-
-func maxFlow(g graph, src, dest int) {
-	aux := toAux(g)
-	auxMaxFlow(aux, src, dest)
-	copyFlow(aux, g)
-}
-
-func toAux(g graph) auxGraph {
-	var res auxGraph
-	for _, v := range g {
-		av := auxVertex{
-			ID:         v.ID,
-			PathParent: -1,
-			OutEdges:   map[int]int{},
+	var c [][]float64
+	for i, s1 := range ss1 {
+		c = append(c, nil)
+		for _, s2 := range ss2 {
+			c[i] = append(c[i], diffCost(s1, s2))
 		}
-		for _, e := range v.OutEdges {
-			av.OutEdges[e.Dest] = e.Cap
-		}
-		res = append(res, av)
+	}
+
+	return c
+}
+
+type filterLines []string
+
+func filterStrings(fs Filters) []filterLines {
+	var res []filterLines
+	for _, f := range fs {
+		res = append(res, difflib.SplitLines(f.String()))
 	}
 	return res
 }
 
-func auxMaxFlow(g auxGraph, src, dest int) {
-	for {
-		hasPath := findAugmentingPath(g, src, dest)
-		if !hasPath {
-			break
+func diffCost(s1, s2 filterLines) float64 {
+	m := difflib.NewMatcher(s1, s2)
+	// Ratio returns a measure of similarity between 0 and 1.
+	// We have to return a cost instead.
+	return 1 - m.Ratio()
+}
+
+func hungarian(c [][]float64) []int {
+	if len(c) == 0 {
+		return nil
+	}
+
+	var mnk graph.Munkres
+	mnk.Init(len(c), len(c[0]))
+	mnk.SetCostMatrix(c)
+	mnk.Run()
+	return mnk.Links
+}
+
+func reorderWithMapping(f1, f2 Filters, mapping []int) (Filters, Filters) {
+	var r1, r2 Filters
+
+	mappedF1 := map[int]struct{}{}
+	mappedF2 := map[int]struct{}{}
+
+	// mapping[i] = j means that filter1[i] is matched with filter2[j]
+	for i, j := range mapping {
+		if j < 0 {
+			continue
 		}
-		mfp := maxFlowPath(g, dest)
-		increaseFlow(g, dest, mfp)
-	}
-}
-
-func findAugmentingPath(g auxGraph, src, dest int) bool {
-	// Initialize visit
-	for i := range g {
-		g[i].Visited = false
+		r1 = append(r1, f1[i])
+		r2 = append(r2, f2[j])
+		mappedF1[i] = struct{}{}
+		mappedF2[j] = struct{}{}
 	}
 
-	q := queue.New()
-	q.Add(src)
-	g[src].PathParent = -1
-	g[src].Visited = true
-
-	for q.Length() > 0 {
-		currID := q.Remove().(int)
-		for dst := range g[currID].OutEdges {
-			dstv := &g[dst]
-			if dstv.Visited {
-				continue
-			}
-
-			dstv.PathParent = currID
-			dstv.Visited = true
-			if dst == dest {
-				return true
-			}
-
-			q.Add(dst)
-		}
-	}
-
-	return false
-}
-
-func maxFlowPath(g auxGraph, dest int) int {
-	max := math.MaxInt64
-	curr := &g[dest]
-
-	for curr.PathParent != -1 {
-		parent := &g[curr.PathParent]
-		resflow := parent.OutEdges[curr.ID]
-		if resflow < max {
-			max = resflow
-		}
-		curr = parent
-	}
-
-	return max
-}
-
-func increaseFlow(g auxGraph, dest, q int) {
-	curr := &g[dest]
-
-	for curr.PathParent != -1 {
-		decreaseFlowEdge(g, curr.PathParent, curr.ID, q)
-		increaseFlowEdge(g, curr.ID, curr.PathParent, q)
-		parent := &g[curr.PathParent]
-		curr = parent
-	}
-}
-
-func decreaseFlowEdge(g auxGraph, src, dest, q int) {
-	srcv := &g[src]
-	flow := srcv.OutEdges[dest]
-	flow -= q
-	if flow > 0 {
-		srcv.OutEdges[dest] = flow
-	} else {
-		delete(srcv.OutEdges, dest)
-	}
-}
-
-func increaseFlowEdge(g auxGraph, src, dest, q int) {
-	srcv := &g[src]
-	flow, ok := srcv.OutEdges[dest]
-	if ok {
-		srcv.OutEdges[dest] = flow + q
-	} else {
-		srcv.OutEdges[dest] = q
-	}
-}
-
-func copyFlow(aux auxGraph, g graph) {
-	for i := range g {
-		dstv := &g[i]
-		srcv := &aux[i]
-		for j, e := range dstv.OutEdges {
-			resFlow := srcv.OutEdges[e.Dest]
-			dstv.OutEdges[j].Flow = e.Cap - resFlow
+	// Add unmapped filters
+	for i, f := range f1 {
+		if _, ok := mappedF1[i]; !ok {
+			r1 = append(r1, f)
 		}
 	}
+	for i, f := range f2 {
+		if _, ok := mappedF2[i]; !ok {
+			r2 = append(r2, f)
+		}
+	}
+
+	return r1, r2
 }
