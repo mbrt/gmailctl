@@ -10,6 +10,9 @@ import (
 	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 )
 
+// LatestVersion points to the latest version of the config format.
+const LatestVersion = cfgv2.Version
+
 // ReadFile takes a path and returns the parsed config file.
 func ReadFile(path string) (cfgv2.Config, error) {
 	/* #nosec */

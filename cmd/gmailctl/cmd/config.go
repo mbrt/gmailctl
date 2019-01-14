@@ -25,6 +25,13 @@ func parseConfig(path string) (parseResult, error) {
 		return res, errors.Wrap(err, "syntax error in config file")
 	}
 
+	if res.config.Version != config.LatestVersion {
+		stderrPrintf("WARNING: Config file version '%s' is deprecated.\n",
+			res.config.Version)
+		stderrPrintf("  Please consider upgrading to version '%s'.\n\n",
+			config.LatestVersion)
+	}
+
 	rules, err := parser.Parse(res.config)
 	if err != nil {
 		return res, errors.Wrap(err, "cannot parse config file")
