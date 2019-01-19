@@ -118,8 +118,8 @@ the following common operators:
 * `list`: the mail is directed to the given mail list
 * `cc`: the mail has the given address as CC destination
 
-One more special function is given if you need to use less common operators[^1],
-or want to compose your query manually:
+One more special function is given if you need to use less common operators<sup
+id="a1">[1](#f1)</sup>, or want to compose your query manually:
 
 * `query`: passes the given contents verbatim to the Gmail filter, without
   escaping or interpreting the contents in any way.
@@ -293,7 +293,7 @@ this one are:
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailctl`)
 * `gmail-britta` allows to write complex chains of filters, but fails to provide
-  easy ways to write reasonably easy filters [^2].
+  easy ways to write reasonably easy filters <sup id="a2">[2](#f2)</sup>.
 * `gmail-britta` exports only to the Gmail XML format. You have to import the
   filters yourself by using the Gmail web interface, manually delete the filters
   you updated and import only the new ones. This process becomes tedious very
@@ -316,9 +316,10 @@ versions of your filters.
 
 ## Footnotes
 
-[^1]: See [Search operators you can use with Gmail](https://support.google.com/mail/answer/7190?hl=en).
+<b id="f1">1</b>: See [Search operators you can use with
+Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
 
-[^2]:
+<b id="f2">2</b>:
 
 Try to write the equivalent of this filter with `gmail-britta`:
 
@@ -399,3 +400,5 @@ rules:
       archive: true
       markRead: true
 ```
+
+[↩](#a2)
