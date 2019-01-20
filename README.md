@@ -41,8 +41,6 @@ This project then exists to provide to your Gmail filters:
 
 [![asciicast](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY.png)](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY)
 
-TODO
-
 Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly, including the `bin` subdirectory in your `$PATH`.
 
 ```
@@ -281,7 +279,55 @@ rules:
 
 ## Tips and tricks
 
-TODO
+### Chain filtering
+
+Gmail filters are all applied to a mail, if they match, in a non-specified
+order. So having some if-else alternative is pretty hard to encode. A way to
+simulate this with `gmailctl` is to declare a sequence of filters, where each
+one negates the previous alternatives.
+
+For example you want to:
+
+* mark the email as important if directed to you;
+* or if it's coming from a list of favourite addresses, label as interesting;
+* otherwise archive it.
+
+```yaml
+version: v1alpha2`
+filters:
+- name: directed
+  query:
+    to: myself@gmail.com
+- name: favourite
+  query:
+    or:
+    - from: foo@bar.com
+    - from: baz@bar.com
+    - list: wow@list.com
+rules:
+- filter:
+    name: directed
+  actions:
+    markImportant: true
+- filter:
+    and:
+    - name: favourite
+    # if directed it will be only marked as important
+    - not:
+        name: directed
+  actions:
+    labels:
+    - interesting
+- filter:
+    # all the rest (not directed, nor favourite)
+    and:
+    - not:
+        name: directed
+    - not:
+        name: favourite
+  actions:
+    archive: true
+```
 
 ## Comparison with existing projects
 
@@ -324,29 +370,21 @@ Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
 Try to write the equivalent of this filter with `gmail-britta`:
 
 ```yaml
-version: v1alpha1
-consts:
-  spammers:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
-  spamSubjects:
-    values:
-      - buy this
-      - buy my awesome product
+version: v1alpha2
+filters:
+- name: spam
+  query:
+    or:
+    - from: pippo@gmail.com
+    - from: pippo@hotmail.com
+    - subject: buy this
+    - subject: buy my awesome product
+
 rules:
-  - filters:
-      consts:
-        from:
-          - spammers
-    actions:
-      delete: true
-  - filters:
-      consts:
-        subject:
-          - spamSubjects
-    actions:
-      delete: true
+- filter:
+    name: spam
+  actions:
+    delete: true
 ```
 
 It becomes something like this:
@@ -376,29 +414,25 @@ puts(GmailBritta.filterset(:me => MY_EMAILS) do
      end.generate)
 ```
 
-Not the most readable configuration I would say. Note: You have also to make
-sure to quote correctly terms when they contain spaces.
+Not the most readable configuration I would say. Note: You also have to make
+sure to quote the terms correctly when they contain spaces.
 
 So what about this one?
 
 ```yaml
-version: v1alpha1
-consts:
-  friends:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
+version: v1alpha2
+filters:
+- name: fromFriends
+  query:
+    or:
+    - from: pippo@gmail.com
+    - from: pippo@hotmail.com
 rules:
-  - filters:
-      from:
-        - interesting@maillist.com
-      consts:
-        not:
-          from:
-            - friends
-    actions:
-      archive: true
-      markRead: true
+- filter:
+    and:
+    - from: interesting@maillist.com
+    - not:
+        name: fromFriends
 ```
 
 [↩](#a2)
