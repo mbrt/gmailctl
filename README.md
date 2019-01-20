@@ -293,7 +293,7 @@ For example you want to:
 * otherwise archive it.
 
 ```yaml
-version: v1alpha2`
+version: v1alpha2
 filters:
 - name: directed
   query:
