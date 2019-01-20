@@ -9,20 +9,33 @@ manage automatically your inbox.
 
 ## Motivation
 
-If you have Gmail and have (like me) have to maintain a lot of filters to apply
-labels, get rid of spam or categorize your emails, then you probably have (like
-me) a mess of filters that you don't even remember what they are intended to do
-and why.
+If you have Gmail and have (like me) to maintain a lot of filters, because you
+want to apply labels, get rid of spam or categorize your emails, then you
+probably have (like me) a very long list of messy filters. Then the day that you
+actually want to understand why a certain message got labeled in a certain way
+comes. You scroll through that horrible mess and you wish you could
+find-and-replace stuff, check the change before applying it, refactor some
+filters together... in a way treat them like you do with your code!
 
-Gmail has both an import export functionality for filters (in XML format) and
-powerful APIs that we can access to update our settings. Editing these XML files
-is pretty painful because the format is not human friendly. The Gmail query
-language is quite powerful but not easy to remember.
+Gmail allows to import and export filters in XML format. This can be used to
+maintain them in some better way... but dear Lord, no! Not by hand! That's what
+most other tools do: providing some kind of DSL that generate XML filters that
+can be imported in your settings... by hand [this is the approach of the popular
+[antifuchs/gmail-britta](https://github.com/antifuchs/gmail-britta) for
+example].
 
-This project exists to combine:
-1. maintainability
-2. powerful but declarative language
-3. quick updates to your settings
+Gmail happens to have also a neat API that we can use to automate the import
+step as well, so to eliminate all manual, slow tasks to be done with the Gmail
+settings.
+
+This project then exists to provide to your Gmail filters:
+
+1. Maintainability;
+2. An easy to understand, declarative, composable language;
+3. A builtin query simplifier, to keep the size of your filters down (Gmail has
+   a limit of 1500 chars per filter);
+4. Ability to review your changes before applying them;
+5. Automatic update of the settings (no manual import) in seconds.
 
 ## Usage
 
@@ -34,8 +47,8 @@ Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) corre
 go get github.com/mbrt/gmailctl/cmd/gmailctl
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
-# edit the config file
-gmailctl apply -f config.yaml
+# edit the config file in ~/.gmailctl/config.yaml
+gmailctl apply
 ```
 
 where `config.yaml` is the configuration file containing the filtering rules
@@ -43,241 +56,277 @@ where `config.yaml` is the configuration file containing the filtering rules
 setting up the Gmail APIs and update your settings without leaving your command
 line.
 
-**NOTE:** It's recommended to backup your current configuration before to
-applying a generated one. Your current filters will be wiped and replaced with
-the ones specified in the config file. Since bugs can happen in both code and
-configuration, always backup to avoid surprises.
+**NOTE:** It's recommended to backup your current configuration before to apply
+the generated one for the first time. Your current filters will be wiped and
+replaced with the ones specified in the config file. The diff you'll get during
+the first run will probably be pretty big, but from that point on, all changes
+should generate a small and simple to review diff.
 
 ## Configuration
 
 **NOTE:** The configuration format is still in alpha and might change in the
-future.
+future. If you are looking for the deprecated version `v1alpha1`, please refer
+to [docs/v1alpha1.md](docs/v1alpha1.md).
 
-The configuration contains two important sections:
-
-* `consts` that contains global constants that can be referenced later on by
-  rules.
-* `rules` that specify a set of filters that when match cause a set of actions
-  to happen.
-
-### Rule evaluation
-
-With the help of this example, let's explain how rules evaluation works:
+Simple example:
 
 ```yaml
-- filters:
-    filterA:
-      - valueA
-      - valueB
-    filterB:
-      - valueC
-  # omitted actions
-
-- filters:
-    filterC:
-      - valueD
-      - valueE
-  # omitted actions
+version: v1alpha2
+filters:
+  - name: me
+    query:
+      or:
+        - to: pippo@gmail.com
+        - to: pippo@hotmail.com
+rules:
+  - filter:
+      and:
+        - list: geeks@newsletter.com
+        - not:
+            name: me
+    actions:
+      archive: true
+      labels:
+        - news
 ```
 
-1. If the rule matches, then it's applied. This means that every
-   rule is in OR with all the others. In the example, given an email, if the
-   first filter matches, then its actions are applied; if the second also
-   matches, then its actions are also applied.
-2. Within a rule, all the filters have to match, in order for the rule to match.
-   This means that the filters inside a rule are in AND together. In the
-   previous example, if only `filterA` matches, then the first rule is not
-   applied. If both `filterA` and `filterB` match, then the rule also matches.
-3. Within a filter, the listed values are in OR with each other. In the second
-   rule, `filterC` matches if either `valueD` or `valueE` are present.
+The YAML configuration file contains two important sections:
 
-### Filters
-The following simple filters are available:
-* from
-* to
-* subject
-* has (contains one of the given values)
-* list (matches a mail list)
+* `filters` that contains named filters that can be called up by subsequent
+  filters or rules.
+* `rules` that specify a filter expression and a set of actions that will be
+  applied if the filter matches.
 
-You can apply the special `not` operator to negate a match in this way:
+We will see all the features of the configuration file in the following
+sections.
 
-```yaml
-  - filters:
-      not:
-        to:
-          - foo@bar.com
-        subject:
-          - Baz zorg
-```
+### Search operators
 
-The rule will match if the email is both not directed to `foo@bar.com` and does
-not contain `Baz zorg` in the subject.
+Search operators are the same as the ones you find in the Gmail filter
+interface:
 
-### Constants
-A filter can refer to global constants specified in the first section by using
-the `consts` section inside the filter. All values inside the rule will be
-replaced by the constants. Inside `consts` you can put again the same set of
-filters of the positive case:
-* from
-* to
-* subject
-* has
-* list
+* `from`: the mail comes from the given address
+* `to`: the mail is delivered to the given address
+* `subject`: the subject contains the given words
+* `has`: the mail contains the given words
+
+In addition to those visible in the Gmail interface, you can specify natively
+the following common operators:
+
+* `list`: the mail is directed to the given mail list
+* `cc`: the mail has the given address as CC destination
+
+One more special function is given if you need to use less common operators<sup
+id="a1">[1](#f1)</sup>, or want to compose your query manually:
+
+* `query`: passes the given contents verbatim to the Gmail filter, without
+  escaping or interpreting the contents in any way.
 
 Example:
 
 ```yaml
-version: v1alpha1
-consts:
-  friends:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
+version: v1alpha2
 rules:
-  - filters:
-      consts:
-        not:
-          from:
-            - friends
+  - filter:
+      subject: important mail
     actions:
-      archive: true
+      markImportant: true
+  - filter:
+      query: "dinner AROUND 5 friday has:spreadsheet"
+    actions:
+      delete: true
 ```
 
-is equivalent to:
+### Logic operators
+
+Filters can contain only one expression. If you want to combine multiple of them
+in the same rule, you have to use logic operators (and, or, not). These
+operators do what you expect:
+
+* `and`: is true only if all the sub-expressions are also true
+* `or`: is true if one or more sub-expressions are true
+* `not`: is true if the sub-expression is false.
+
+Example:
 
 ```yaml
-version: v1alpha1
+version: v1alpha2
 rules:
-  - filters:
-      consts:
-        not:
-          from:
-            - pippo@gmail.com
-            - pippo@hotmail.com
+  - filter:
+      or:
+        - from: foo
+        - and:
+            - list: bar
+            - not:
+                to: baz
     actions:
-      archive: true
+      markImportant: true
 ```
 
-### Custom query
+This composite filter marks the incoming mail as important if:
 
-If the constraints imposed by the provided operators are not enough, it's
-possible to use a custom query, by using the
-[Gmail search syntax](https://support.google.com/mail/answer/7190?hl=en).
+* the message comes from "foo", _or_
+* it is coming from the mailing list "bar" _and_ _not_ directed to "baz"
+
+### Named filters
+
+Filters can be named and referenced in other filters or rules. This allows
+reusing concepts and so avoid repetition.
+
+Example:
 
 ```yaml
-  - filters:
-      query: "foo {bar baz} list:mylist@mail.com"
+version: v1alpha2
+filters:
+  - name: toMe
+    query:
+      or:
+        - to: myself@gmail.com
+        - to: myself@yahoo.com
+  - name: notToMe
+    query:
+      not:
+        name: toMe
+
+rules:
+  - filter:
+      and:
+        - from: foobar
+        - name: notToMe
     actions:
-      archive: true
+      delete: true
+  - filter:
+      name: toMe
+    actions:
+      labels:
+        - directed
 ```
+
+In this example, two named filters are defined. The `toMe` filter gives a name
+to emails directed to myself@gmail.com or to myself@yahoo.com. The `notToMe`
+filter negates the `toMe` filter, with a `not` operator. Similarly, the two
+rules reference the two named filters above. The `name` reference is basically
+copying the definition of the filter in place.
+
+The example is effectively equivalent to this one:
+
+```yaml
+version: v1alpha2
+rules:
+  - filter:
+      and:
+        - from: foobar
+        # Was "name: notToMe"
+        - not:
+            # Inside "notToMe" there was "name: me", so its definition
+            # got replaced here
+            or:
+              - to: myself@gmail.com
+              - to: myself@yahoo.com
+    actions:
+      delete: true
+  - filter:
+      # Was "name: toMe"
+      or:
+        - to: myself@gmail.com
+        - to: myself@yahoo.com
+    actions:
+      labels:
+        - directed
+```
+
+Note that filters can reference only filters previously defined, to avoid cyclic
+dependencies.
 
 ### Actions
-When a filter matches, all the actions specified in a rule are applied.
 
-The following boolean actions are available:
-* archive
-* delete
-* markImportant
-* markRead
+Every rule is a composition of a filter and a set of actions. Those actions will
+be applied to all the incoming emails that pass the rule's filter. These actions
+are the same as the ones in the Gmail interface:
 
-A boolean action should be specified with a `true` value. A `false` value
-is equivalent to no action.
+* `archive: true`: the message will skip the inbox;
+* `delete: true`: the message will go directly to the trash can;
+* `markRead: true`: the message will be mark as read automatically;
+* `star: true`: star the message;
+* `markSpam: false`: do never mark these messages as spam. Note that setting this
+  field to `true` is _not_ supported by Gmail (I don't know why);
+* `markImportant: true`: always mark the message as important, overriding Gmail
+  heuristics;
+* `markImportant: false`: do never mark the message as important, overriding
+  Gmail heuristics;
+* `category: <CATEGORY>`: force the message into a specific category (supported
+  categories are "personal", "social", "updates", "forums", "promotions");
+* `labels: [list, of, labels]`: an array of labels to apply to the message. Note
+  that these labels have to be already present in your settings (they won't be
+  created automatically), and you can specify multiple labels (normally Gmail
+  allows to specify only one label per filter).
 
-A category can be applied to an email, by using the `category` action. Gmail
-allows only one category per email and only the following categories are
-supported:
-* personal
-* social
-* updates
-* forums
-* promotions
-
-A list of labels can also be applied, by using the `labels` action.
-
-This example has one action for every type, to illustrate the usage:
+Example:
 
 ```yaml
-  - filters:
-      from:
-        - me@me.com
+version: v1alpha2
+rules:
+  - filter:
+  - filter:
+      from: love@gmail.com
     actions:
       markImportant: true
-      category: updates
+      category: personal
       labels:
-        - me
-        - you
+        - family
+        - P1
 ```
 
-### Example
+## Tips and tricks
 
-This is a more "real world" example, taken from my configuration with scrambled
-values :)
+### Chain filtering
+
+Gmail filters are all applied to a mail, if they match, in a non-specified
+order. So having some if-else alternative is pretty hard to encode. A way to
+simulate this with `gmailctl` is to declare a sequence of filters, where each
+one negates the previous alternatives.
+
+For example you want to:
+
+* mark the email as important if directed to you;
+* or if it's coming from a list of favourite addresses, label as interesting;
+* otherwise archive it.
 
 ```yaml
-version: v1alpha1
-author:
-  name: Pippo Pluto
-  email: pippo@gmail.com
-
-consts:
-  me:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
-  spam:
-    values:
-      - spammer@spam.com
-
+version: v1alpha2`
+filters:
+- name: directed
+  query:
+    to: myself@gmail.com
+- name: favourite
+  query:
+    or:
+    - from: foo@bar.com
+    - from: baz@bar.com
+    - list: wow@list.com
 rules:
-# important emails
-  - filters:
-      from:
-        - myalarm@myalarm.com
-    actions:
-      markImportant: true
-      labels:
-        - alarm
-# delete spammers
-  - filters:
-  # here we need two rules because we want to apply them if the email matches
-  # one OR the other condition (blacklisted subject or blacklisted sender)
-      subject:
-        - foo bar baz
-        - I want to spam you
-    actions:
-      delete: true
-  - filters:
-      consts:
-        from:
-          - spam
-    actions:
-      delete: true
-  - filters:
-      has:
-        - buy this
-        - buy that
-    actions:
-      delete: true
-# mail list
-  - filters:
-  # archive unless directed to me
-      from:
-        - interesting@maillist.com
-      consts:
-        not:
-          to:
-            - me
-    actions:
-      archive: true
-      markRead: true
-
-  - filters:
-  # always apply the label (even if directed to me)
-      from:
-        - interesting@maillist.com
-    actions:
-      labels:
-        - mail-list
+- filter:
+    name: directed
+  actions:
+    markImportant: true
+- filter:
+    and:
+    - name: favourite
+    # if directed it will be only marked as important
+    - not:
+        name: directed
+  actions:
+    labels:
+    - interesting
+- filter:
+    # all the rest (not directed, nor favourite)
+    and:
+    - not:
+        name: directed
+    - not:
+        name: favourite
+  actions:
+    archive: true
 ```
 
 ## Comparison with existing projects
@@ -290,7 +339,7 @@ this one are:
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailctl`)
 * `gmail-britta` allows to write complex chains of filters, but fails to provide
-  easy ways to write reasonably easy filters [1](#footnote-1).
+  easy ways to write reasonably easy filters <sup id="a2">[2](#f2)</sup>.
 * `gmail-britta` exports only to the Gmail XML format. You have to import the
   filters yourself by using the Gmail web interface, manually delete the filters
   you updated and import only the new ones. This process becomes tedious very
@@ -313,34 +362,29 @@ versions of your filters.
 
 ## Footnotes
 
-### Footnote 1
+<b id="f1">1</b>: See [Search operators you can use with
+Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
+
+<b id="f2">2</b>:
 
 Try to write the equivalent of this filter with `gmail-britta`:
 
 ```yaml
-version: v1alpha1
-consts:
-  spammers:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
-  spamSubjects:
-    values:
-      - buy this
-      - buy my awesome product
+version: v1alpha2
+filters:
+- name: spam
+  query:
+    or:
+    - from: pippo@gmail.com
+    - from: pippo@hotmail.com
+    - subject: buy this
+    - subject: buy my awesome product
+
 rules:
-  - filters:
-      consts:
-        from:
-          - spammers
-    actions:
-      delete: true
-  - filters:
-      consts:
-        subject:
-          - spamSubjects
-    actions:
-      delete: true
+- filter:
+    name: spam
+  actions:
+    delete: true
 ```
 
 It becomes something like this:
@@ -370,27 +414,25 @@ puts(GmailBritta.filterset(:me => MY_EMAILS) do
      end.generate)
 ```
 
-Not the most readable configuration I would say. Note: You have also to make
-sure to quote correctly terms when they contain spaces.
+Not the most readable configuration I would say. Note: You also have to make
+sure to quote the terms correctly when they contain spaces.
 
 So what about this one?
 
 ```yaml
-version: v1alpha1
-consts:
-  friends:
-    values:
-      - pippo@gmail.com
-      - pippo@hotmail.com
+version: v1alpha2
+filters:
+- name: fromFriends
+  query:
+    or:
+    - from: pippo@gmail.com
+    - from: pippo@hotmail.com
 rules:
-  - filters:
-      from:
-        - interesting@maillist.com
-      consts:
-        not:
-          from:
-            - friends
-    actions:
-      archive: true
-      markRead: true
+- filter:
+    and:
+    - from: interesting@maillist.com
+    - not:
+        name: fromFriends
 ```
+
+[↩](#a2)

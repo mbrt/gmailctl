@@ -3,10 +3,10 @@ package gmail
 // Categories supported by Gmail.
 const (
 	CategoryPersonal   Category = "personal"
-	CategorySocial              = "social"
-	CategoryUpdates             = "updates"
-	CategoryForums              = "forums"
-	CategoryPromotions          = "promotions"
+	CategorySocial     Category = "social"
+	CategoryUpdates    Category = "updates"
+	CategoryForums     Category = "forums"
+	CategoryPromotions Category = "promotions"
 )
 
 // Category is one of the smart categories in Gmail.
