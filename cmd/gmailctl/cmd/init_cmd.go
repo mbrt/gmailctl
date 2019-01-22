@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,6 +32,31 @@ To do so, head to https://console.developers.google.com
 
 Documentation about Gmail API authorization can be found
 at: https://developers.google.com/gmail/api/auth/about-auth
+`
+
+	defaultConfig = `# NOTE: This is a simple example.
+# Please refer to https://github.com/mbrt/gmailctl#configuration for docs about
+# the config format. Don't forget to change the configuration before to apply it
+# to your own inbox!
+
+version: v1alpha2
+author:
+  # This is optional and used only if you want to export your filters
+  # with gmailctl export:
+  #
+  # name: YOUR NAME HERE
+  # email: YOUR.MAIL@gmail.com
+
+filters:
+  - name: toMe
+    query:
+      to: myself+foo@gmail.com
+
+rules:
+  - filter:
+      from: bar@gmail.com
+    actions:
+      markImportant: true
 `
 )
 
@@ -95,7 +121,8 @@ func continueConfig() error {
 	return nil
 }
 
-func handleCfgDir() error {
+func handleCfgDir() (err error) {
+	// Create the config dir
 	if _, err := os.Stat(cfgDir); err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -103,6 +130,26 @@ func handleCfgDir() error {
 		if err = os.MkdirAll(cfgDir, 0700); err != nil {
 			return err
 		}
+	}
+
+	// Create a default config file
+	cfgFile := path.Join(cfgDir, "config.yaml")
+	if _, err := os.Stat(cfgFile); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		f, err := os.Create(cfgFile)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			e := f.Close()
+			if err == nil {
+				err = e
+			}
+		}()
+		_, err = f.WriteString(defaultConfig)
+		return err
 	}
 	return nil
 }
