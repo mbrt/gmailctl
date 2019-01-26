@@ -23,15 +23,39 @@ func FromRules(rs []parser.Rule) (Filters, error) {
 }
 
 func fromRule(rule parser.Rule) ([]Filter, error) {
-	criteria, err := generateCriteria(rule.Criteria)
-	if err != nil {
-		return nil, errors.Wrap(err, "error generating criteria")
+	var crits []Criteria
+	for _, c := range splitRootOr(rule.Criteria) {
+		criteria, err := generateCriteria(c)
+		if err != nil {
+			return nil, errors.Wrap(err, "error generating criteria")
+		}
+		crits = append(crits, criteria)
 	}
+
 	actions, err := generateActions(rule.Actions)
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating actions")
 	}
-	return combineCriteriaWithActions(criteria, actions), nil
+
+	return combineCriteriasWithActions(crits, actions), nil
+}
+
+func splitRootOr(tree parser.CriteriaAST) []parser.CriteriaAST {
+	// Since Gmail filters are all applied when they match, we can reduce
+	// the size of a rule and make it more readable by splitting a single
+	// rule where wee have an OR as the top-level operation, with a set of
+	// rules, each a child of the original OR.
+	//
+	// Example: or(from:a to:b list:c) => archive
+	// can be rewritten with 3 rules:
+	// - from:a => archive
+	// - to:b => archive
+	// - list:c => archive
+	root, ok := tree.(*parser.Node)
+	if !ok || root.Operation != parser.OperationOr {
+		return []parser.CriteriaAST{tree}
+	}
+	return root.Children
 }
 
 func generateCriteria(crit parser.CriteriaAST) (Criteria, error) {
@@ -270,14 +294,18 @@ func fromOptionalBool(opt *bool, positive bool) bool {
 	return *opt == positive
 }
 
-func combineCriteriaWithActions(criteria Criteria, actions []Actions) Filters {
-	// We have to duplicate the criteria for all the given actions
-	res := make(Filters, len(actions))
-	for i, action := range actions {
-		res[i] = Filter{
-			Criteria: criteria,
-			Action:   action,
+func combineCriteriasWithActions(criterias []Criteria, actions []Actions) Filters {
+	// We have to make a Cartesian product of criterias and actions
+	var res Filters
+
+	for _, c := range criterias {
+		for _, a := range actions {
+			res = append(res, Filter{
+				Criteria: c,
+				Action:   a,
+			})
 		}
 	}
+
 	return res
 }

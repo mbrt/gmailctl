@@ -22,21 +22,21 @@ func TestSimplify(t *testing.T) {
 		),
 	)
 
-	expected := []CriteriaAST{
+	expected := or(
 		and(
 			fn(FunctionList, OperationAnd, "f", "d"),
 			fn(FunctionFrom, OperationAnd, "e"),
 		),
 		fn(FunctionSubject, OperationOr, "c"),
 		fn(FunctionFrom, OperationOr, "a", "b"),
-	}
+	)
 	got, err := SimplifyCriteria(expr)
 	assert.Nil(t, err)
 
 	// Maps make the children sorting pseudo-random. We have to sort
 	// the trees to be able to find make it deterministic.
-	sortTreeNodes(expected)
-	sortTreeNodes(got)
+	sortTree(expected)
+	sortTree(got)
 	assert.Equal(t, expected, got)
 
 }
