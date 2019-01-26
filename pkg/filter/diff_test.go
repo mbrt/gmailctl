@@ -67,8 +67,8 @@ func TestDiffOutput(t *testing.T) {
 	assert.Nil(t, err)
 
 	expected := `
---- Original
-+++ Current
+--- Current
++++ TO BE APPLIED
 @@ -1,6 +1,6 @@
  * Criteria:
 -    from: someone@gmail.com

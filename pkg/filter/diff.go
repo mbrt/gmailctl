@@ -50,8 +50,8 @@ func (f FiltersDiff) String() string {
 	s, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
 		A:        difflib.SplitLines(f.Removed.String()),
 		B:        difflib.SplitLines(f.Added.String()),
-		FromFile: "Original",
-		ToFile:   "Current",
+		FromFile: "Current",
+		ToFile:   "TO BE APPLIED",
 		Context:  5,
 	})
 	if err != nil {

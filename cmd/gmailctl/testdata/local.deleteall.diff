@@ -1,0 +1,40 @@
+--- Current
++++ TO BE APPLIED
+@@ -1,37 +1 @@
+-* Criteria:
+-    to: myalias@gmail.com
+-    query: list:{list1 list2 list3}
+-  Actions:
+-    mark as important
+ 
+-* Criteria:
+-    from: {spammer1 spammer2}
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    query: {"buy this thing" "very important!!!"}
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
+-  Actions:
+-    apply label: onemorelabel
+-
+-* Criteria:
+-    subject: "spam mail"
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
+-  Actions:
+-    archive
+-    apply label: maillist
+-
+-* Criteria:
+-    to: pippo+spammy@gmail.com
+-  Actions:
+-    delete
+-
