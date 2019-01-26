@@ -18,8 +18,7 @@ var (
 var diffCmd = &cobra.Command{
 	Use:   "diff",
 	Short: "Shows a diff between the local configuaration and Gmail settings",
-	Long: `
-The diff command shows the difference between the local
+	Long: `The diff command shows the difference between the local
 configuration and the current Gmail settings of your account.
 
 By default diff uses the "config.yaml" file inside the config directory.`,

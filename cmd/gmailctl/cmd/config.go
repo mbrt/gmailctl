@@ -11,6 +11,7 @@ import (
 
 type parseResult struct {
 	config  cfgv2.Config
+	rules   []parser.Rule
 	filters filter.Filters
 }
 
@@ -32,12 +33,12 @@ func parseConfig(path string) (parseResult, error) {
 			config.LatestVersion)
 	}
 
-	rules, err := parser.Parse(res.config)
+	res.rules, err = parser.Parse(res.config)
 	if err != nil {
 		return res, errors.Wrap(err, "cannot parse config file")
 	}
 
-	res.filters, err = filter.FromRules(rules)
+	res.filters, err = filter.FromRules(res.rules)
 	if err != nil {
 		return res, errors.Wrap(err, "error exporting to filters")
 	}

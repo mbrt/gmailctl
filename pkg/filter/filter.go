@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/mbrt/gmailctl/pkg/gmail"
@@ -21,8 +22,7 @@ func (fs Filters) String() string {
 		w.WriteString(f.String())
 	}
 
-	str, _ := w.Result()
-	return str
+	return w.String()
 }
 
 // Filter matches 1:1 a filter created on Gmail.
@@ -53,8 +53,7 @@ func (f Filter) String() string {
 	w.WriteParam("categorize as", string(f.Action.Category))
 	w.WriteParam("apply label", f.Action.AddLabel)
 
-	str, _ := w.Result()
-	return str
+	return w.String()
 }
 
 // Actions represents an action associated with a Gmail filter.
@@ -86,6 +85,26 @@ type Criteria struct {
 // Empty returns true if no criteria is specified.
 func (c Criteria) Empty() bool {
 	return c == Criteria{}
+}
+
+// ToGmailSearch returns the equivalent query in Gmail search syntax.
+func (c Criteria) ToGmailSearch() string {
+	var res []string
+
+	if c.From != "" {
+		res = append(res, fmt.Sprintf("from:%s", c.From))
+	}
+	if c.To != "" {
+		res = append(res, fmt.Sprintf("to:%s", c.To))
+	}
+	if c.Subject != "" {
+		res = append(res, fmt.Sprintf("subject:%s", c.To))
+	}
+	if c.Query != "" {
+		res = append(res, c.Query)
+	}
+
+	return strings.Join(res, " ")
 }
 
 // Label contains information about a Gmail label.
@@ -133,6 +152,10 @@ func (w *writer) WriteRune(a rune) {
 	_, w.err = w.b.WriteRune(a)
 }
 
-func (w *writer) Result() (string, error) {
-	return w.b.String(), w.err
+func (w *writer) String() string {
+	return w.b.String()
+}
+
+func (w *writer) Err() error {
+	return w.err
 }
