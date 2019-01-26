@@ -13,7 +13,7 @@ import (
 func FromRules(rs []parser.Rule) (Filters, error) {
 	res := Filters{}
 	for i, rule := range rs {
-		filters, err := fromRule(rule)
+		filters, err := FromRule(rule)
 		if err != nil {
 			return res, errors.Wrap(err, fmt.Sprintf("error generating rule #%d", i))
 		}
@@ -22,19 +22,28 @@ func FromRules(rs []parser.Rule) (Filters, error) {
 	return res, nil
 }
 
-func fromRule(rule parser.Rule) ([]Filter, error) {
-	criteria, err := generateCriteria(rule.Criteria)
-	if err != nil {
-		return nil, errors.Wrap(err, "error generating criteria")
+// FromRule translates a rule into entries that map directly into Gmail filters.
+func FromRule(rule parser.Rule) ([]Filter, error) {
+	var crits []Criteria
+	for _, c := range splitRootOr(rule.Criteria) {
+		criteria, err := GenerateCriteria(c)
+		if err != nil {
+			return nil, errors.Wrap(err, "error generating criteria")
+		}
+		crits = append(crits, criteria)
 	}
+
 	actions, err := generateActions(rule.Actions)
 	if err != nil {
 		return nil, errors.Wrap(err, "error generating actions")
 	}
-	return combineCriteriaWithActions(criteria, actions), nil
+
+	return combineCriteriasWithActions(crits, actions), nil
 }
 
-func generateCriteria(crit parser.CriteriaAST) (Criteria, error) {
+// GenerateCriteria translates a rule criteria into an entry that maps
+// directly into Gmail filters.
+func GenerateCriteria(crit parser.CriteriaAST) (Criteria, error) {
 	if node, ok := crit.(*parser.Node); ok {
 		return generateNode(node)
 	}
@@ -62,7 +71,7 @@ func generateNode(node *parser.Node) (Criteria, error) {
 	case parser.OperationAnd:
 		res := Criteria{}
 		for _, child := range node.Children {
-			crit, err := generateCriteria(child)
+			crit, err := GenerateCriteria(child)
 			if err != nil {
 				return res, err
 			}
@@ -226,6 +235,24 @@ func escape(a string) string {
 	return a
 }
 
+func splitRootOr(tree parser.CriteriaAST) []parser.CriteriaAST {
+	// Since Gmail filters are all applied when they match, we can reduce
+	// the size of a rule and make it more readable by splitting a single
+	// rule where wee have an OR as the top-level operation, with a set of
+	// rules, each a child of the original OR.
+	//
+	// Example: or(from:a to:b list:c) => archive
+	// can be rewritten with 3 rules:
+	// - from:a => archive
+	// - to:b => archive
+	// - list:c => archive
+	root, ok := tree.(*parser.Node)
+	if !ok || root.Operation != parser.OperationOr {
+		return []parser.CriteriaAST{tree}
+	}
+	return root.Children
+}
+
 func generateActions(actions parser.Actions) ([]Actions, error) {
 	res := []Actions{
 		{
@@ -270,14 +297,18 @@ func fromOptionalBool(opt *bool, positive bool) bool {
 	return *opt == positive
 }
 
-func combineCriteriaWithActions(criteria Criteria, actions []Actions) Filters {
-	// We have to duplicate the criteria for all the given actions
-	res := make(Filters, len(actions))
-	for i, action := range actions {
-		res[i] = Filter{
-			Criteria: criteria,
-			Action:   action,
+func combineCriteriasWithActions(criterias []Criteria, actions []Actions) Filters {
+	// We have to make a Cartesian product of criterias and actions
+	var res Filters
+
+	for _, c := range criterias {
+		for _, a := range actions {
+			res = append(res, Filter{
+				Criteria: c,
+				Action:   a,
+			})
 		}
 	}
+
 	return res
 }

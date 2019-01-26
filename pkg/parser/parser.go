@@ -39,14 +39,10 @@ func Parse(config cfg.Config) ([]Rule, error) {
 			return nil, errors.Wrapf(err, "error simplifying criteria for rule #%d", i)
 		}
 
-		// The criteria can be split in multiple ones. In that case we just need
-		// to apply the same actions for all of them.
-		for _, c := range scrit {
-			res = append(res, Rule{
-				Criteria: c,
-				Actions:  Actions(rule.Actions),
-			})
-		}
+		res = append(res, Rule{
+			Criteria: scrit,
+			Actions:  Actions(rule.Actions),
+		})
 	}
 
 	return res, nil

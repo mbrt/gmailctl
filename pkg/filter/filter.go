@@ -11,18 +11,18 @@ import (
 type Filters []Filter
 
 func (fs Filters) String() string {
-	builder := strings.Builder{}
+	w := writer{}
 
 	first := true
 	for _, f := range fs {
 		if !first {
-			assertNoErr(builder.WriteRune('\n'))
+			w.WriteRune('\n')
 		}
 		first = false
-		assertNoErr(builder.WriteString(f.String()))
+		w.WriteString(f.String())
 	}
 
-	return builder.String()
+	return w.String()
 }
 
 // Filter matches 1:1 a filter created on Gmail.
@@ -34,26 +34,26 @@ type Filter struct {
 }
 
 func (f Filter) String() string {
-	builder := strings.Builder{}
+	w := writer{}
 
-	assertNoErr(builder.WriteString("* Criteria:\n"))
-	writeParam(&builder, "from", f.Criteria.From)
-	writeParam(&builder, "to", f.Criteria.To)
-	writeParam(&builder, "subject", f.Criteria.Subject)
-	writeParam(&builder, "query", f.Criteria.Query)
+	w.WriteString("* Criteria:\n")
+	w.WriteParam("from", f.Criteria.From)
+	w.WriteParam("to", f.Criteria.To)
+	w.WriteParam("subject", f.Criteria.Subject)
+	w.WriteParam("query", f.Criteria.Query)
 
-	assertNoErr(builder.WriteString("  Actions:\n"))
-	writeBool(&builder, "archive", f.Action.Archive)
-	writeBool(&builder, "delete", f.Action.Delete)
-	writeBool(&builder, "mark as important", f.Action.MarkImportant)
-	writeBool(&builder, "never mark as important", f.Action.MarkNotImportant)
-	writeBool(&builder, "never mark as spam", f.Action.MarkNotSpam)
-	writeBool(&builder, "mark as read", f.Action.MarkRead)
-	writeBool(&builder, "star", f.Action.Star)
-	writeParam(&builder, "categorize as", string(f.Action.Category))
-	writeParam(&builder, "apply label", f.Action.AddLabel)
+	w.WriteString("  Actions:\n")
+	w.WriteBool("archive", f.Action.Archive)
+	w.WriteBool("delete", f.Action.Delete)
+	w.WriteBool("mark as important", f.Action.MarkImportant)
+	w.WriteBool("never mark as important", f.Action.MarkNotImportant)
+	w.WriteBool("never mark as spam", f.Action.MarkNotSpam)
+	w.WriteBool("mark as read", f.Action.MarkRead)
+	w.WriteBool("star", f.Action.Star)
+	w.WriteParam("categorize as", string(f.Action.Category))
+	w.WriteParam("apply label", f.Action.AddLabel)
 
-	return builder.String()
+	return w.String()
 }
 
 // Actions represents an action associated with a Gmail filter.
@@ -87,32 +87,75 @@ func (c Criteria) Empty() bool {
 	return c == Criteria{}
 }
 
+// ToGmailSearch returns the equivalent query in Gmail search syntax.
+func (c Criteria) ToGmailSearch() string {
+	var res []string
+
+	if c.From != "" {
+		res = append(res, fmt.Sprintf("from:%s", c.From))
+	}
+	if c.To != "" {
+		res = append(res, fmt.Sprintf("to:%s", c.To))
+	}
+	if c.Subject != "" {
+		res = append(res, fmt.Sprintf("subject:%s", c.To))
+	}
+	if c.Query != "" {
+		res = append(res, c.Query)
+	}
+
+	return strings.Join(res, " ")
+}
+
 // Label contains information about a Gmail label.
 type Label struct {
 	ID   string
 	Name string
 }
 
-func writeParam(b *strings.Builder, name, value string) {
-	if value != "" {
-		assertNoErr(b.WriteString("    "))
-		assertNoErr(b.WriteString(name))
-		assertNoErr(b.WriteString(": "))
-		assertNoErr(b.WriteString(value))
-		assertNoErr(b.WriteRune('\n'))
-	}
+type writer struct {
+	b   strings.Builder
+	err error
 }
 
-func writeBool(b *strings.Builder, name string, value bool) {
-	if value {
-		assertNoErr(b.WriteString("    "))
-		assertNoErr(b.WriteString(name))
-		assertNoErr(b.WriteRune('\n'))
+func (w *writer) WriteParam(name, value string) {
+	if value == "" {
+		return
 	}
+	w.WriteString("    ")
+	w.WriteString(name)
+	w.WriteString(": ")
+	w.WriteString(value)
+	w.WriteRune('\n')
 }
 
-func assertNoErr(a interface{}, err error) {
-	if err != nil {
-		panic(fmt.Sprint("unexpected error", err))
+func (w *writer) WriteBool(name string, value bool) {
+	if !value {
+		return
 	}
+	w.WriteString("    ")
+	w.WriteString(name)
+	w.WriteRune('\n')
+}
+
+func (w *writer) WriteString(a string) {
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.b.WriteString(a)
+}
+
+func (w *writer) WriteRune(a rune) {
+	if w.err != nil {
+		return
+	}
+	_, w.err = w.b.WriteRune(a)
+}
+
+func (w *writer) String() string {
+	return w.b.String()
+}
+
+func (w *writer) Err() error {
+	return w.err
 }

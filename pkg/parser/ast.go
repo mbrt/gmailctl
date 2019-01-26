@@ -126,15 +126,15 @@ func (n *Leaf) IsLeaf() bool {
 }
 
 // SimplifyCriteria applies multiple simplifications to a criteria.
-func SimplifyCriteria(tree CriteriaAST) ([]CriteriaAST, error) {
+func SimplifyCriteria(tree CriteriaAST) (CriteriaAST, error) {
 	res, err := simplify(tree)
 	// We use maps, so the resulting tree is non-deterministic.
 	// To fix that we sort the trees.
-	sortTreeNodes(res)
+	sortTree(res)
 	return res, err
 }
 
-func simplify(tree CriteriaAST) ([]CriteriaAST, error) {
+func simplify(tree CriteriaAST) (CriteriaAST, error) {
 	changes := 1 // Avoid stopping before the first round
 
 	// We want to apply the passes multiple times, because one
@@ -148,8 +148,7 @@ func simplify(tree CriteriaAST) ([]CriteriaAST, error) {
 		tree = newTree
 	}
 
-	// Only done as last.
-	return splitRootOr(tree), nil
+	return tree, nil
 }
 
 func logicalGrouping(tree CriteriaAST) int {
@@ -296,14 +295,6 @@ func simplifyNot(root *Node) (CriteriaAST, int) {
 	}
 
 	return child.Children[0], 1
-}
-
-func splitRootOr(tree CriteriaAST) []CriteriaAST {
-	root, ok := tree.(*Node)
-	if !ok || root.Operation != OperationOr {
-		return []CriteriaAST{tree}
-	}
-	return root.Children
 }
 
 func sortTreeNodes(nodes []CriteriaAST) {
