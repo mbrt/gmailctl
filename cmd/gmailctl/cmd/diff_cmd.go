@@ -61,6 +61,6 @@ func diff(path string) error {
 		return errors.New("cannot compare upstream with local filters")
 	}
 
-	fmt.Println(diff)
+	fmt.Print(diff)
 	return nil
 }

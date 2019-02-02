@@ -39,7 +39,7 @@ This project then exists to provide to your Gmail filters:
 
 ## Usage
 
-[![asciicast](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY.png)](https://asciinema.org/a/BU00aXIcZV9bYWRko7i7LnugY)
+[![asciicast](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx.svg)](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx)
 
 Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly, including the `bin` subdirectory in your `$PATH`.
 
@@ -328,6 +328,29 @@ rules:
   actions:
     archive: true
 ```
+
+### Directly to me
+
+If you need to match emails that are to you directly, (i.e. you are not in CC,
+or BCC, but only in the TO field), then the default Gmail filter `to:
+mymail@gmail.com` is not what you are looking for. This filter in fact
+misleadingly matches all the recipient fields (TO, CC, BCC). To make this work
+the intended way we have to pull out this trick:
+
+```yaml
+version: v1alpha2
+filters:
+- name: directlyToMe
+  query:
+    and:
+    - to: mymail@gmail.com
+    - not:
+        cc: mymail@gmail.com
+```
+
+So, from all emails where your mail is a recipient, we remove the ones where
+your mail is in the CC field. Note that we don't need to remove BCC emails,
+because no mail matches that filter.
 
 ## Comparison with existing projects
 

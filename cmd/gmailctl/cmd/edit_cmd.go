@@ -101,8 +101,7 @@ func edit(path string) error {
 			continue
 		}
 
-		// Swap the configuration files. Since these two can be in different
-		// filesystems, we need to rewrite the file, instead of a simple rename.
+		// Swap the configuration files.
 		return moveFile(tmpPath, path)
 	}
 }
@@ -189,7 +188,7 @@ func applyEdited(path string, gmailapi api.GmailAPI) error {
 		return errUnchanged
 	}
 
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
 	if !askYN("Do you want to apply them?") {
 		return errUnchanged
 	}
