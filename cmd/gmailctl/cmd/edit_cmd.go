@@ -101,12 +101,28 @@ func edit(path string) error {
 			continue
 		}
 
-		// Swap the configuration files
-		if err = os.Rename(tmpPath, path); err != nil {
-			return err
-		}
-		return nil
+		// Swap the configuration files. Since these two can be in different
+		// filesystems, we need to rewrite the file, instead of a simple rename.
+		return moveFile(tmpPath, path)
 	}
+}
+
+func moveFile(from, to string) error {
+	// Swap the configuration files. Since these two can be in different
+	// filesystems, we need to rewrite the file, instead of a simple rename.
+	b, err := ioutil.ReadFile(from)
+	if err != nil {
+		return err
+	}
+	f, err := os.OpenFile(to, os.O_RDWR|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(b)
+	if err != nil {
+		return err
+	}
+	return os.Remove(from)
 }
 
 func copyToTmp(path string) (string, error) {
