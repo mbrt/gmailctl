@@ -15,7 +15,10 @@ install:
 
 script:
   - go test ./...
-  - ./bin/golangci-lint run --skip-dirs=pkg/graph
+  - >
+    ./bin/golangci-lint run --skip-dirs=pkg/graph
+    --enable=golint --enable=gosec --enable=unconvert
+    --enable=misspell
 
 notifications:
   email:

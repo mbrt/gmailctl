@@ -47,8 +47,8 @@ Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) corre
 go get github.com/mbrt/gmailctl/cmd/gmailctl
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
-# edit the config file in ~/.gmailctl/config.yaml
-gmailctl apply
+gmailctl edit
+# edit the config file and confirm the changes
 ```
 
 where `config.yaml` is the configuration file containing the filtering rules

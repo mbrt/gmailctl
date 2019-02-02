@@ -38,7 +38,7 @@ func FromRule(rule parser.Rule) ([]Filter, error) {
 		return nil, errors.Wrap(err, "error generating actions")
 	}
 
-	return combineCriteriasWithActions(crits, actions), nil
+	return combineCriteriaWithActions(crits, actions), nil
 }
 
 // GenerateCriteria translates a rule criteria into an entry that maps
@@ -297,11 +297,11 @@ func fromOptionalBool(opt *bool, positive bool) bool {
 	return *opt == positive
 }
 
-func combineCriteriasWithActions(criterias []Criteria, actions []Actions) Filters {
-	// We have to make a Cartesian product of criterias and actions
+func combineCriteriaWithActions(criteria []Criteria, actions []Actions) Filters {
+	// We have to make a Cartesian product of criteria and actions
 	var res Filters
 
-	for _, c := range criterias {
+	for _, c := range criteria {
 		for _, a := range actions {
 			res = append(res, Filter{
 				Criteria: c,
