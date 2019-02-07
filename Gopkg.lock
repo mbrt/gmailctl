@@ -46,6 +46,18 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:3c5f5fc950ba4a220b02388e40f2ff6d386e5464efa402288427cc7bccb475de"
+  name = "github.com/google/go-jsonnet"
+  packages = [
+    ".",
+    "ast",
+    "parser",
+  ]
+  pruneopts = "UT"
+  revision = "493c45a403d25435774370ddfa6363906a65c23c"
+  version = "v0.12.1"
+
+[[projects]]
   branch = "master"
   digest = "1:d1971637b21871ec2033a44ca87c99c5608a7340cb34ec75fab8d2ab503276c9"
   name = "github.com/hashicorp/errwrap"
@@ -190,6 +202,7 @@
     "github.com/cpmech/gosl/chk",
     "github.com/cpmech/gosl/io",
     "github.com/cpmech/gosl/utl",
+    "github.com/google/go-jsonnet",
     "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",
