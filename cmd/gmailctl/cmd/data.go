@@ -1,4 +1,4 @@
-//go:generate go run ../../../vendor/github.com/go-bindata/go-bindata/go-bindata -pkg cmd ../../../gmailctl.libsonnet
+//go:generate go run ../../../vendor/github.com/go-bindata/go-bindata/go-bindata -pkg cmd ../../../gmailctl.libsonnet ../../../default-config.jsonnet
 
 package cmd
 
