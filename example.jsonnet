@@ -1,4 +1,7 @@
+// Import the standard library
+local lib = import 'gmailctl.libsonnet';
 
+// Some useful variables on top
 local me = 'pippo@gmail.com';
 local spam = {
   or: [
@@ -10,40 +13,16 @@ local spam = {
   ]
 };
 
-// chainFilters is a utility function that given a list of rules
-// it returns a list of rules that can be interpreted as a chain
-// of "if elsif elsif".
-// The result is basically a list of filters where each element
-// is the original one, plus the negation of all the previous
-// conditions.
-local chainFilters(fs) =
-  // utility that given a rule it returns its negated filter.
-  local negate(r) = {not: r.filter};
-  // recursive that goes trough all elements of arr
-  local aux(arr, i, negated, running) =
-    if i >= std.length(arr) then
-      running
-    else
-      // the new rule is an AND of:
-      // - the negation of all the previous rules
-      // - the current rule
-      local newr = {
-        filter: {
-          and: negated + [arr[i].filter]
-        },
-        actions: arr[i].actions,
-      };
-      aux(arr, i + 1, negated + [negate(arr[i])], running + [newr]) tailstrict;
-
-  aux(fs, 1, [negate(fs[0])], [fs[0]]);
-
+// The actual configuration
 {
-  version: 'v1alpha3',
+  // Mandatory header
+  version: 'v1alpha2',
   author: {
     name: 'Pippo Pluto',
     email: me,
   },
 
+  // The list of Gmail filter rules.
   rules: [
     {
       filter: {
@@ -61,7 +40,14 @@ local chainFilters(fs) =
       }
     },
   ]
-  + chainFilters([
+
+  // Chained filters. These are applied in order: the first that
+  // matches stops the evaluation of the following ones.
+  //
+  // For example, if an email is directed to me and is coming from
+  // the list 'foobar@list.com', following the chain, it will be
+  // marked as important, but the 'mylist' label will _not_ be added.
+  + lib.chainFilters([
     {
       filter: {
         to: me,
@@ -70,6 +56,7 @@ local chainFilters(fs) =
         markImportant: true,
       },
     },
+    // else if...
     {
       filter: {
         cc: me,
@@ -78,6 +65,7 @@ local chainFilters(fs) =
         archive: true,
       },
     },
+    // else if...
     {
       filter: {
         list: 'foobar@list.com',
