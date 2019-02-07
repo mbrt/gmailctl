@@ -82,7 +82,7 @@ func GmailctlLibsonnet() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../../../gmailctl.libsonnet", size: 1138, mode: os.FileMode(420), modTime: time.Unix(1549574432, 0)}
+	info := bindataFileInfo{name: "../../../gmailctl.libsonnet", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -102,7 +102,7 @@ func DefaultConfigJsonnet() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../../../default-config.jsonnet", size: 834, mode: os.FileMode(420), modTime: time.Unix(1549577715, 0)}
+	info := bindataFileInfo{name: "../../../default-config.jsonnet", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
