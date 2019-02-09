@@ -28,9 +28,20 @@ local chainFilters(fs) =
       };
       aux(arr, i + 1, negated + [negate(arr[i])], running + [newr]) tailstrict;
 
+  if std.length(fs) == 0 then [] else
   aux(fs, 1, [negate(fs[0])], [fs[0]]);
+
+// directlyTo matches only email where the recipient is in the 'TO'
+// field, not the 'CC' or 'BCC' ones.
+local directlyTo(recipient) = {
+  and: [
+    {to: recipient},
+    {not: {cc: recipient}},
+  ]
+};
 
 // Exported functions
 {
   chainFilters: chainFilters,
+  directlyTo: directlyTo,
 }
