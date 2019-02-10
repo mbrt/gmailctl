@@ -38,12 +38,35 @@
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:cc2ca3cb5d06a0c295f59afb86c74b303f00217c5fe3b328ad05172f59e6c3a7"
+  name = "github.com/go-bindata/go-bindata"
+  packages = [
+    ".",
+    "go-bindata",
+  ]
+  pruneopts = "UT"
+  revision = "5ebd2c033d84e12a7f4aae4483d98ec7dde53b66"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:15042ad3498153684d09f393bbaec6b216c8eec6d61f63dff711de7d64ed8861"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:3c5f5fc950ba4a220b02388e40f2ff6d386e5464efa402288427cc7bccb475de"
+  name = "github.com/google/go-jsonnet"
+  packages = [
+    ".",
+    "ast",
+    "parser",
+  ]
+  pruneopts = "UT"
+  revision = "493c45a403d25435774370ddfa6363906a65c23c"
+  version = "v0.12.1"
 
 [[projects]]
   branch = "master"
@@ -190,6 +213,8 @@
     "github.com/cpmech/gosl/chk",
     "github.com/cpmech/gosl/io",
     "github.com/cpmech/gosl/utl",
+    "github.com/go-bindata/go-bindata/go-bindata",
+    "github.com/google/go-jsonnet",
     "github.com/hashicorp/go-multierror",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",

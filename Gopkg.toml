@@ -1,3 +1,5 @@
+required = ["github.com/go-bindata/go-bindata/go-bindata"]
+
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.1"

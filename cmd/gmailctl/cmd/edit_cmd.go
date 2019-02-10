@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -47,12 +47,12 @@ make it match your desired state.
 The edior to be used can be overridded with the $EDITOR
 environment variable.
 
-By default edit uses the "config.yaml" file inside the config
-directory.`,
+By default edit uses the configuration file inside the config
+directory [config.(yaml|jsonnet)].`,
 	Run: func(cmd *cobra.Command, args []string) {
-		f := path.Join(cfgDir, "config.yaml")
-		if applyFilename != "" {
-			f = applyFilename
+		f := editFilename
+		if f == "" {
+			f = configFilenameFromDir(cfgDir)
 		}
 		if err := edit(f); err != nil {
 			fatal(err)
@@ -130,7 +130,8 @@ func copyToTmp(path string) (string, error) {
 		return "", config.NotFoundError(err)
 	}
 
-	tmp, err := ioutil.TempFile("", "gmailctl-*.yaml")
+	// Use the same extension as the original file (yaml | jsonnet)
+	tmp, err := ioutil.TempFile("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
 	if err != nil {
 		return "", errors.Wrap(err, "cannot create tmp file")
 	}

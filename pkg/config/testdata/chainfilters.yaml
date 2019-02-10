@@ -1,0 +1,34 @@
+version: v1alpha2
+rules:
+- filter:
+    and:
+    - to: pippo@gmail.com
+    - not:
+        cc: pippo@gmail.com
+  actions:
+    markImportant: true
+- filter:
+    cc: pippo@gmail.com
+  actions:
+    archive: true
+- filter:
+    to: pippo@gmail.com
+  actions:
+    markImportant: true
+- filter:
+    and:
+    - not:
+        to: pippo@gmail.com
+    - cc: pippo@gmail.com
+  actions:
+    archive: true
+- filter:
+    and:
+    - not:
+        to: pippo@gmail.com
+    - not:
+        cc: pippo@gmail.com
+    - list: foobar@list.com
+  actions:
+    labels:
+    - mylist

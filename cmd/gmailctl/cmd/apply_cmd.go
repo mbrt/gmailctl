@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -23,11 +22,12 @@ var applyCmd = &cobra.Command{
 	Long: `The apply command applies minimal changes to your Gmail settings
 to make them match your local configuration file.
 
-By default apply uses the "config.yaml" file inside the config directory.`,
+By default apply uses the configuration file inside the config
+directory [config.(yaml|jsonnet)].`,
 	Run: func(cmd *cobra.Command, args []string) {
-		f := path.Join(cfgDir, "config.yaml")
-		if applyFilename != "" {
-			f = applyFilename
+		f := applyFilename
+		if f == "" {
+			f = configFilenameFromDir(cfgDir)
 		}
 		if err := apply(f, !applyYes); err != nil {
 			fatal(err)

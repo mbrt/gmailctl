@@ -1,8 +1,11 @@
 package config
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 
+	"github.com/google/go-jsonnet"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
@@ -20,21 +23,44 @@ func ReadFile(path string) (cfgv2.Config, error) {
 	if err != nil {
 		return cfgv2.Config{}, NotFoundError(err)
 	}
+	if filepath.Ext(path) == ".jsonnet" {
+		return readJsonnet(path, b)
+	}
+	return readYaml(b)
+}
 
+func readJsonnet(path string, buf []byte) (cfgv2.Config, error) {
 	var res cfgv2.Config
-	version, err := readVersion(b)
+	vm := jsonnet.MakeVM()
+	jstr, err := vm.EvaluateSnippet(path, string(buf))
+	if err != nil {
+		return res, errors.Wrap(err, "invalid jsonnet")
+	}
+	err = json.Unmarshal([]byte(jstr), &res)
+	if err != nil {
+		return res, err
+	}
+	if res.Version != cfgv2.Version {
+		return res, errors.Errorf("unsupported version '%s'", res.Version)
+	}
+	return res, nil
+}
+
+func readYaml(buf []byte) (cfgv2.Config, error) {
+	var res cfgv2.Config
+	version, err := readVersion(buf)
 	if err != nil {
 		return res, errors.Wrap(err, "error parsing the config version")
 	}
 
 	switch version {
 	case cfgv2.Version:
-		err = yaml.UnmarshalStrict(b, &res)
+		err = yaml.UnmarshalStrict(buf, &res)
 		return res, err
 
 	case cfgv1.Version:
 		var v1 cfgv1.Config
-		err = yaml.UnmarshalStrict(b, &v1)
+		err = yaml.UnmarshalStrict(buf, &v1)
 		if err != nil {
 			return res, errors.Wrap(err, "error parsing v1alpha1 config")
 		}

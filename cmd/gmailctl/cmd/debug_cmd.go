@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"net/url"
-	"path"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -24,11 +23,12 @@ var debugCmd = &cobra.Command{
 with handy URLs to Gmail search that can be used to test that the
 filter applies to the intended emails.
 
-By default debug uses the "config.yaml" file inside the config directory.`,
+By default debug uses the configuration file inside the config
+directory [config.(yaml|jsonnet)].`,
 	Run: func(cmd *cobra.Command, args []string) {
-		f := path.Join(cfgDir, "config.yaml")
-		if debugFilename != "" {
-			f = debugFilename
+		f := debugFilename
+		if f == "" {
+			f = configFilenameFromDir(cfgDir)
 		}
 		if err := debug(f); err != nil {
 			fatal(err)

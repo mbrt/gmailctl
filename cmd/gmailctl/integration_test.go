@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfg "github.com/mbrt/gmailctl/pkg/config"
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
@@ -28,10 +28,9 @@ func read(t *testing.T, path string) []byte {
 	return b
 }
 
-func readConfig(t *testing.T, path string) cfg.Config {
-	b := read(t, path)
-	var res cfg.Config
-	if err := yaml.UnmarshalStrict(b, &res); err != nil {
+func readConfig(t *testing.T, path string) cfgv1.Config {
+	res, err := cfg.ReadFile(path)
+	if err != nil {
 		t.Fatal(err)
 	}
 	return res
@@ -52,8 +51,10 @@ func globPaths(t *testing.T, pattern string) []string {
 }
 
 func allTestPaths(t *testing.T) testPaths {
+	local := globPaths(t, "testdata/local.*.yaml")
+	local = append(local, globPaths(t, "testdata/local.*.jsonnet")...)
 	tp := testPaths{
-		locals: globPaths(t, "testdata/local.*.yaml"),
+		locals: local,
 		diffs:  globPaths(t, "testdata/local.*.diff"),
 	}
 	if len(tp.locals) != len(tp.diffs) {

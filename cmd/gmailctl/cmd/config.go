@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"os"
+	"path"
+
 	"github.com/pkg/errors"
 
 	"github.com/mbrt/gmailctl/pkg/config"
@@ -13,6 +16,14 @@ type parseResult struct {
 	config  cfgv2.Config
 	rules   []parser.Rule
 	filters filter.Filters
+}
+
+func configFilenameFromDir(cfgDir string) string {
+	f := path.Join(cfgDir, "config.yaml")
+	if stat, err := os.Stat(f); err == nil && !stat.IsDir() {
+		return f
+	}
+	return path.Join(cfgDir, "config.jsonnet")
 }
 
 func parseConfig(path string) (parseResult, error) {

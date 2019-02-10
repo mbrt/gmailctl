@@ -33,31 +33,6 @@ To do so, head to https://console.developers.google.com
 Documentation about Gmail API authorization can be found
 at: https://developers.google.com/gmail/api/auth/about-auth
 `
-
-	defaultConfig = `# NOTE: This is a simple example.
-# Please refer to https://github.com/mbrt/gmailctl#configuration for docs about
-# the config format. Don't forget to change the configuration before to apply it
-# to your own inbox!
-
-version: v1alpha2
-author:
-  # This is optional and used only if you want to export your filters
-  # with gmailctl export:
-  #
-  # name: YOUR NAME HERE
-  # email: YOUR.MAIL@gmail.com
-
-filters:
-  - name: toMe
-    query:
-      to: myself+foo@gmail.com
-
-rules:
-  - filter:
-      from: bar@gmail.com
-    actions:
-      markImportant: true
-`
 )
 
 // initCmd represents the init command
@@ -132,13 +107,32 @@ func handleCfgDir() (err error) {
 		}
 	}
 
-	// Create a default config file
-	cfgFile := path.Join(cfgDir, "config.yaml")
-	if _, err := os.Stat(cfgFile); err != nil {
+	// Handle legacy yaml configuration
+	if hasYamlConfig(cfgDir) {
+		return nil
+	}
+
+	// Create default config files
+	cfgFile := path.Join(cfgDir, "config.jsonnet")
+	if err := createDefault(cfgFile, defaultConfig()); err != nil {
+		return err
+	}
+	libFile := path.Join(cfgDir, "gmailctl.libsonnet")
+	return createDefault(libFile, gmailctlLib())
+}
+
+func hasYamlConfig(cfgDir string) bool {
+	path := path.Join(cfgDir, "config.yaml")
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func createDefault(path, contents string) (err error) {
+	if _, err := os.Stat(path); err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		f, err := os.Create(cfgFile)
+		f, err := os.Create(path)
 		if err != nil {
 			return err
 		}
@@ -148,7 +142,7 @@ func handleCfgDir() (err error) {
 				err = e
 			}
 		}()
-		_, err = f.WriteString(defaultConfig)
+		_, err = f.WriteString(contents)
 		return err
 	}
 	return nil
