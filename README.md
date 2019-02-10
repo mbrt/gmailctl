@@ -3,9 +3,9 @@
 [![Build Status](https://travis-ci.org/mbrt/gmailctl.svg?branch=master)](https://travis-ci.org/mbrt/gmailctl)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
-It has a Yaml configuration file that aims to be more simple to write and
-maintain than using the Gmail web interface, to categorize, label, archive and
-manage automatically your inbox.
+It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be more
+simple to write and maintain than using the Gmail web interface, to categorize,
+label, archive and manage automatically your inbox.
 
 ## Motivation
 
@@ -51,10 +51,9 @@ gmailctl edit
 # edit the config file and confirm the changes
 ```
 
-where `config.yaml` is the configuration file containing the filtering rules
-(see [Configuration](#configuration)). The utility will guide you through
-setting up the Gmail APIs and update your settings without leaving your command
-line.
+See [Configuration](#configuration) for the configuration file format. The
+utility will guide you through setting up the Gmail APIs and update your
+settings without leaving your command line.
 
 **NOTE:** It's recommended to backup your current configuration before to apply
 the generated one for the first time. Your current filters will be wiped and
@@ -68,34 +67,64 @@ should generate a small and simple to review diff.
 future. If you are looking for the deprecated version `v1alpha1`, please refer
 to [docs/v1alpha1.md](docs/v1alpha1.md).
 
+For the configuration file, both YAML and Jsonnet are supported. The YAML format
+is kept for retro-compatibility, it can be more readable but also much less
+flexible. The Jsonnet version is very powerful and also comes with a utility
+library that helps you write some more complex filters.
+
+For the documentation on the YAML version, please refer to
+[docs/v1alpha2-yaml.md](docs/v1alpha2-yaml.md).
+
+Jsonnet is a very powerful configuration language, derived from JSON, adding
+functionality such as comments, variables, references, arithmetic and logic
+operations, functions, conditionals, importing other files, parametrizations and
+so on. For more details on the language, please refer to [the official
+tutorial](https://jsonnet.org/learning/tutorial.html).
+
 Simple example:
 
-```yaml
-version: v1alpha2
-filters:
-  - name: me
-    query:
-      or:
-        - to: pippo@gmail.com
-        - to: pippo@hotmail.com
-rules:
-  - filter:
-      and:
-        - list: geeks@newsletter.com
-        - not:
-            name: me
-    actions:
-      archive: true
-      labels:
-        - news
+```jsonnet
+// Local variables help reuse config fragments
+local me = {
+  or: [
+    { to: 'pippo@gmail.com' },
+    { to: 'pippo@hotmail.com' },
+  ],
+};
+
+// The exported configuration starts here
+{
+  version: 'v1alpha2',
+  // Optional author information (used in exports).
+  author: {
+    name: 'Pippo Pluto,
+    email: 'pippo@gmail.com'
+  },
+  rules: [
+    {
+      filter: {
+        and: [
+          { list: 'geeks@newsletter.com' },
+          { not: me },  // Reference to the local variable 'me'
+        ],
+      },
+      actions: {
+        archive: true,
+        labels: ['news'],
+      },
+    },
+  ],
+}
 ```
 
-The YAML configuration file contains two important sections:
+The Jsonnet configuration file contains mandatory version information, optional
+author metadata and a list of rules. Rules specify a filter expression and a set
+of actions that will be applied if the filter matches.
 
-* `filters` that contains named filters that can be called up by subsequent
-  filters or rules.
-* `rules` that specify a filter expression and a set of actions that will be
-  applied if the filter matches.
+Filter operators are prefix of the operands they apply to. In the example above,
+the filter applies to emails that come from the mail list 'geeks@newsletter.com'
+AND the recipient is not 'me' (which can be 'pippo@gmail.com' OR
+'pippo@hotmail.com').
 
 We will see all the features of the configuration file in the following
 sections.
@@ -124,17 +153,26 @@ id="a1">[1](#f1)</sup>, or want to compose your query manually:
 
 Example:
 
-```yaml
-version: v1alpha2
-rules:
-  - filter:
-      subject: important mail
-    actions:
-      markImportant: true
-  - filter:
-      query: "dinner AROUND 5 friday has:spreadsheet"
-    actions:
-      delete: true
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: { subject: 'important mail' },
+      actions: {
+        markImportant: true,
+      },
+    },
+    {
+      filter: {
+        query: 'dinner AROUND 5 friday has:spreadsheet',
+      },
+      actions: {
+        delete: true,
+      },
+    },
+  ],
+}
 ```
 
 ### Logic operators
@@ -149,18 +187,28 @@ operators do what you expect:
 
 Example:
 
-```yaml
-version: v1alpha2
-rules:
-  - filter:
-      or:
-        - from: foo
-        - and:
-            - list: bar
-            - not:
-                to: baz
-    actions:
-      markImportant: true
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        or: [
+          { from: 'foo' },
+          {
+            and: [
+              { list: 'bar' },
+              { not: { to: 'baz' } },
+            ],
+          },
+        ],
+      },
+      actions: {
+        markImportant: true,
+      },
+    },
+  ],
+}
 ```
 
 This composite filter marks the incoming mail as important if:
@@ -168,47 +216,93 @@ This composite filter marks the incoming mail as important if:
 * the message comes from "foo", _or_
 * it is coming from the mailing list "bar" _and_ _not_ directed to "baz"
 
-### Named filters
+### Reusing filters
 
-Filters can be named and referenced in other filters or rules. This allows
-reusing concepts and so avoid repetition.
+Filters can be named and referenced in other filters. This allows reusing
+concepts and so avoid repetition. Note that this is not a gmailctl functionality
+but comes directly from the fact that we rely on Jsonnet.
 
 Example:
 
 ```yaml
-version: v1alpha2
-filters:
-  - name: toMe
-    query:
-      or:
-        - to: myself@gmail.com
-        - to: myself@yahoo.com
-  - name: notToMe
-    query:
-      not:
-        name: toMe
+local toMe = {
+  or: [
+    { to: 'myself@gmail.com' },
+    { to: 'myself@yahoo.com' },
+  ],
+};
+local notToMe = { not: toMe };
 
-rules:
-  - filter:
-      and:
-        - from: foobar
-        - name: notToMe
-    actions:
-      delete: true
-  - filter:
-      name: toMe
-    actions:
-      labels:
-        - directed
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        and: [
+          { from: 'foobar' },
+          notToMe,
+        ],
+      },
+      actions: {
+        delete: true,
+      },
+    },
+    {
+      filter: toMe,
+      actions: {
+        labels: ['directed'],
+      },
+    },
+  ],
+}
 ```
 
 In this example, two named filters are defined. The `toMe` filter gives a name
-to emails directed to myself@gmail.com or to myself@yahoo.com. The `notToMe`
+to emails directed to 'myself@gmail.com' or to 'myself@yahoo.com'. The `notToMe`
 filter negates the `toMe` filter, with a `not` operator. Similarly, the two
 rules reference the two named filters above. The `name` reference is basically
 copying the definition of the filter in place.
 
 The example is effectively equivalent to this one:
+
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        and: [
+          { from: 'foobar' },
+          {
+            not: {
+              or: [
+                { to: 'myself@gmail.com' },
+                { to: 'myself@yahoo.com' },
+              ],
+            },
+          },
+        ],
+      },
+      actions: {
+        delete: true,
+      },
+    },
+    {
+      filter: {
+        or: [
+          { to: 'myself@gmail.com' },
+          { to: 'myself@yahoo.com' },
+        ],
+      },
+      actions: {
+        labels: ['directed'],
+      },
+    },
+  ],
+}
+```
+
+Or in YAML:
 
 ```yaml
 version: v1alpha2
@@ -235,9 +329,6 @@ rules:
         - directed
 ```
 
-Note that filters can reference only filters previously defined, to avoid cyclic
-dependencies.
-
 ### Actions
 
 Every rule is a composition of a filter and a set of actions. Those actions will
@@ -263,68 +354,116 @@ are the same as the ones in the Gmail interface:
 
 Example:
 
-```yaml
-version: v1alpha2
-rules:
-  - filter:
-  - filter:
-      from: love@gmail.com
-    actions:
-      markImportant: true
-      category: personal
-      labels:
-        - family
-        - P1
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: { from: 'love@gmail.com' },
+      actions: {
+        markImportant: true,
+        category: 'personal',
+        labels: ['family', 'P1'],
+      },
+    },
+  ],
+}
 ```
 
 ## Tips and tricks
 
 ### Chain filtering
 
-Gmail filters are all applied to a mail, if they match, in a non-specified
-order. So having some if-else alternative is pretty hard to encode. A way to
-simulate this with `gmailctl` is to declare a sequence of filters, where each
-one negates the previous alternatives.
+Gmail filters are _all_ applied to a mail, if they match, in a non-specified
+order. So having some if-else alternative is pretty hard to encode by hand. For
+example sometimes you get interesting stuff from a mail list, but also a lot of
+garbage too. So, to put some emails with certain contents in one label and the
+rest somewhere else, you'd have to make multiple filters. Gmail filters however
+lack if-else constructs, so a way to simulate that is to declare a sequence of
+filters, where each one negates the previous alternatives.
 
 For example you want to:
 
 * mark the email as important if directed to you;
 * or if it's coming from a list of favourite addresses, label as interesting;
-* otherwise archive it.
+* of if it's directed to a certain alias, archive it.
+
+Luckily you don't have to do that by hand, thanks to the utility library coming
+with `gmailctl`. There's a `chainFilters` function that does exactly that: takes
+a list of rules and chains them together, so if the first matches, the others
+are not applied, otherwise the second is checked, and so on...
+
+```jsonnet
+// Import the standard library
+local lib = import 'gmailctl.libsonnet';
+
+local favourite = {
+  or: [
+    { from: 'foo@bar.com' },
+    { from: 'baz@bar.com' },
+    { list: 'wow@list.com' },
+  ],
+};
+
+{
+  version: 'v1alpha2',
+  rules: [
+           // ... Other filters applied in any order
+         ]
+
+         // And a chain of filters
+         + lib.chainFilters([
+           // All directed emails will be marked as important
+           {
+             filter: { to: 'myself@gmail.com' },
+             actions: { markImportant: true },
+           },
+           // Otherwise, if they come from interesting senders, apply a label
+           {
+             filter: favourite,
+             actions: { labels: ['interesting'] },
+           },
+           // Otherwise, if they are directed to my spam alias, archive
+           {
+             filter: { to: 'myself+spam@gmail.com' },
+             actions: { archive: true },
+           },
+         ]),
+}
+```
+
+This is equivalent to this YAML configuration:
 
 ```yaml
 version: v1alpha2
-filters:
-- name: directed
-  query:
-    to: myself@gmail.com
-- name: favourite
-  query:
-    or:
-    - from: foo@bar.com
-    - from: baz@bar.com
-    - list: wow@list.com
 rules:
 - filter:
-    name: directed
+    to: myself@gmail.com
   actions:
     markImportant: true
+
 - filter:
     and:
-    - name: favourite
-    # if directed it will be only marked as important
     - not:
-        name: directed
+        to: myself@gmail.com
+    - or:
+      - from: foo@bar.com
+      - from: baz@bar.com
+      - list: wow@list.com
   actions:
     labels:
     - interesting
+  
 - filter:
-    # all the rest (not directed, nor favourite)
     and:
     - not:
-        name: directed
+        to: myself@gmail.com
     - not:
-        name: favourite
+        or:
+        - from: foo@bar.com
+        - from: baz@bar.com
+        - list: wow@list.com
+    - to: myself+spam@gmail.com
   actions:
     archive: true
 ```
@@ -334,23 +473,39 @@ rules:
 If you need to match emails that are to you directly, (i.e. you are not in CC,
 or BCC, but only in the TO field), then the default Gmail filter `to:
 mymail@gmail.com` is not what you are looking for. This filter in fact
-misleadingly matches all the recipient fields (TO, CC, BCC). To make this work
+(surprisingly) matches all the recipient fields (TO, CC, BCC). To make this work
 the intended way we have to pull out this trick:
 
-```yaml
-version: v1alpha2
-filters:
-- name: directlyToMe
-  query:
-    and:
-    - to: mymail@gmail.com
-    - not:
-        cc: mymail@gmail.com
+```jsonnet
+local directlyTo(recipient) = {
+  and: [
+    { to: recipient },
+    { not: { cc: recipient } },
+  ],
+};
 ```
 
 So, from all emails where your mail is a recipient, we remove the ones where
 your mail is in the CC field. Note that we don't need to remove BCC emails,
 because no mail matches that filter.
+
+This trick is conveniently provided by the `gmailctl` library, so you can use it
+for example in this way:
+
+```jsonnet
+// Import the standard library
+local lib = import 'gmailctl.libsonnet';
+local me = 'pippo@gmail.com';
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: lib.directlyTo(me),
+      actions: { markImportant: true },
+    },
+  ],
+}
+```
 
 ## Comparison with existing projects
 
@@ -358,11 +513,12 @@ because no mail matches that filter.
 motivations and is quite popular. The difference between that project and
 this one are:
 
-* `gmail-britta` uses a custom DSL (versus YAML in `gmailctl`)
+* `gmail-britta` uses a custom DSL (versus Jsonnet in `gmailctl`)
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailctl`)
-* `gmail-britta` allows to write complex chains of filters, but fails to provide
-  easy ways to write reasonably easy filters <sup id="a2">[2](#f2)</sup>.
+* `gmail-britta` allows to write complex chains of filters, but they feel very
+  hardcoded and fails to provide easy ways to write reasonably easy filters <sup
+  id="a2">[2](#f2)</sup>.
 * `gmail-britta` exports only to the Gmail XML format. You have to import the
   filters yourself by using the Gmail web interface, manually delete the filters
   you updated and import only the new ones. This process becomes tedious very
@@ -371,17 +527,16 @@ this one are:
   changes and update the filters by using the Gmail APIs, without you having to
   do anything manually.
 * `gmailctl` tries to workaround certain limitations in Gmail (like applying
-  multiple labels with the same filter) `gmail-britta` tries to workaround
-  others (chain filtering).
-* chain filtering is not supported in `gmailctl` by design. The declarative
-  nature of the configuration makes it that every rule that matches is applied,
-  just like Gmail does.
+  multiple labels with the same filter) and provide a generic query language to
+  Gmail, `gmail-britta` focuses on writing chain filtering and archiving in very
+  few lines.
 
 In short `gmailctl` takes the declarative approach to Gmail filters
-configuration, hoping it stays simpler to read and maintain, sacrificing complex
-scenarios handled instead by `gmail-britta` (like chaining), and provides the
-automatic update that will save you time while you are iterating through new
-versions of your filters.
+configuration, hoping it stays simpler to read and maintain, doesn't attempt to
+simplify complex scenarios with shortcuts (again, hoping the configuration
+becomes more readable) and provides automatic and fast updates to the filters
+that will save you time while you are iterating through new versions of your
+filters.
 
 ## Footnotes
 
@@ -392,22 +547,24 @@ Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
 
 Try to write the equivalent of this filter with `gmail-britta`:
 
-```yaml
-version: v1alpha2
-filters:
-- name: spam
-  query:
-    or:
-    - from: pippo@gmail.com
-    - from: pippo@hotmail.com
-    - subject: buy this
-    - subject: buy my awesome product
-
-rules:
-- filter:
-    name: spam
-  actions:
-    delete: true
+```jsonnet
+local spam = {
+  or: [
+    { from: 'pippo@gmail.com' },
+    { from: 'pippo@hotmail.com' },
+    { subject: 'buy this' },
+    { subject: 'buy that' },
+  ],
+};
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: spam,
+      actions: { delete: true },
+    },
+  ],
+}
 ```
 
 It becomes something like this:
@@ -421,7 +578,7 @@ It becomes something like this:
 require 'rubygems'
 require 'gmail-britta'
 
-SPAM_EMAILS = %w{pippo@gmail.com pippo@hotmail.com}
+SPAM_EMAILS = %w{foo@gmail.com bar@hotmail.com}
 SPAM_SUBJECTS = ['"buy this"', '"buy my awesome product"']
 
 puts(GmailBritta.filterset(:me => MY_EMAILS) do
@@ -440,22 +597,35 @@ puts(GmailBritta.filterset(:me => MY_EMAILS) do
 Not the most readable configuration I would say. Note: You also have to make
 sure to quote the terms correctly when they contain spaces.
 
-So what about this one?
+So what about nesting expressions?
 
-```yaml
-version: v1alpha2
-filters:
-- name: fromFriends
-  query:
-    or:
-    - from: pippo@gmail.com
-    - from: pippo@hotmail.com
-rules:
-- filter:
-    and:
-    - from: interesting@maillist.com
-    - not:
-        name: fromFriends
+```jsonnet
+local me = 'pippo@gmail.com';
+local spam = {
+  or: [
+    { from: 'foo@gmail.com' },
+    { from: 'bar@hotmail.com' },
+    { subject: 'buy this' },
+    { subject: 'buy that' },
+  ],
+};
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        and: [
+          { to: me },
+          { from: 'friend@mail.com' },
+          { not: spam },
+        ],
+      },
+      actions: { delete: true },
+    },
+  ],
+}
 ```
+
+The reality is that you have to manually build the Gmail expressions yourself.
 
 [↩](#a2)

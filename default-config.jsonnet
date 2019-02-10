@@ -9,7 +9,7 @@ local lib = import 'gmailctl.libsonnet';
 // Some useful variables on top
 // TODO: Put your email here
 local me = 'YOUR.EMAIL@gmail.com';
-local toMe = {to: me};
+local toMe = { to: me };
 
 
 // The actual configuration
@@ -38,5 +38,5 @@ local toMe = {to: me};
         labels: ['foo'],
       },
     },
-  ]
+  ],
 }
