@@ -3,7 +3,6 @@ package cmd
 import (
 	"io"
 	"os"
-	"path"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -12,8 +11,8 @@ import (
 )
 
 var (
-	configFilename string
-	configOutput   string
+	exportFilename string
+	exportOutput   string
 )
 
 // exportCmd represents the export command
@@ -23,13 +22,15 @@ var exportCmd = &cobra.Command{
 	Long: `Export exports filters into the native Gmail XML format.
 This allows to import them from within the Gmail settings or to share
 them with other people.
-`,
+
+By default export uses the configuration file inside the config
+directory [config.(yaml|jsonnet)].`,
 	Run: func(cmd *cobra.Command, args []string) {
-		f := path.Join(cfgDir, "config.yaml")
-		if configFilename != "" {
-			f = configFilename
+		f := exportFilename
+		if f == "" {
+			f = configFilenameFromDir(cfgDir)
 		}
-		if err := export(f, configOutput); err != nil {
+		if err := export(f, exportOutput); err != nil {
 			fatal(err)
 		}
 	},
@@ -39,8 +40,8 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 
 	// Flags and configuration settings
-	exportCmd.PersistentFlags().StringVarP(&configFilename, "filename", "f", "", "configuration file")
-	exportCmd.PersistentFlags().StringVarP(&configOutput, "output", "o", "", "output file (defaut to stdout)")
+	exportCmd.PersistentFlags().StringVarP(&exportFilename, "filename", "f", "", "configuration file")
+	exportCmd.PersistentFlags().StringVarP(&exportOutput, "output", "o", "", "output file (defaut to stdout)")
 }
 
 func export(inputPath, outputPath string) (err error) {

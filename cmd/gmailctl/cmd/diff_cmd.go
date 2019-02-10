@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,11 +20,12 @@ var diffCmd = &cobra.Command{
 	Long: `The diff command shows the difference between the local
 configuration and the current Gmail settings of your account.
 
-By default diff uses the "config.yaml" file inside the config directory.`,
+By default diff uses the configuration file inside the config
+directory [config.(yaml|jsonnet)].`,
 	Run: func(cmd *cobra.Command, args []string) {
-		f := path.Join(cfgDir, "config.yaml")
-		if diffFilename != "" {
-			f = diffFilename
+		f := diffFilename
+		if f == "" {
+			f = configFilenameFromDir(cfgDir)
 		}
 		if err := diff(f); err != nil {
 			fatal(err)
