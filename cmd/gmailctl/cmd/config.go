@@ -26,10 +26,10 @@ func configFilenameFromDir(cfgDir string) string {
 	return path.Join(cfgDir, "config.jsonnet")
 }
 
-func parseConfig(path string) (parseResult, error) {
+func parseConfig(path, originalPath string) (parseResult, error) {
 	var res parseResult
 	var err error
-	res.config, err = config.ReadFile(path)
+	res.config, err = config.ReadFile(path, originalPath)
 	if err != nil {
 		if config.IsNotFound(err) {
 			return res, configurationError(err)

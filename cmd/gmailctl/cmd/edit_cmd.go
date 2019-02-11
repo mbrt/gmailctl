@@ -88,7 +88,7 @@ func edit(path string) error {
 			// Don't retry if the editor was aborted
 			return err
 		}
-		if err = applyEdited(tmpPath, gmailapi); err != nil {
+		if err = applyEdited(tmpPath, path, gmailapi); err != nil {
 			if errors.Cause(err) == errUnchanged {
 				// Aborted. Don't ask to retry
 				return nil
@@ -172,8 +172,8 @@ func spawnEditor(path string) error {
 	return errors.New("no suitable editor found")
 }
 
-func applyEdited(path string, gmailapi api.GmailAPI) error {
-	parseRes, err := parseConfig(path)
+func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
+	parseRes, err := parseConfig(path, originalPath)
 	if err != nil {
 		return err
 	}

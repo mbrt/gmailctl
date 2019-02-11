@@ -29,7 +29,7 @@ func read(t *testing.T, path string) []byte {
 }
 
 func readConfig(t *testing.T, path string) cfgv1.Config {
-	res, err := cfg.ReadFile(path)
+	res, err := cfg.ReadFile(path, "")
 	if err != nil {
 		t.Fatal(err)
 	}

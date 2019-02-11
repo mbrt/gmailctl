@@ -66,7 +66,7 @@ func export(inputPath, outputPath string) (err error) {
 }
 
 func exportWithOut(path string, out io.Writer) error {
-	pres, err := parseConfig(path)
+	pres, err := parseConfig(path, "")
 	if err != nil {
 		return err
 	}
