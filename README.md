@@ -224,7 +224,7 @@ but comes directly from the fact that we rely on Jsonnet.
 
 Example:
 
-```yaml
+```jsonnet
 local toMe = {
   or: [
     { to: 'myself@gmail.com' },
