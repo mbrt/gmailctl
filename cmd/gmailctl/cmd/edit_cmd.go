@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -152,7 +153,10 @@ func spawnEditor(path string) error {
 	editors = append(editors, defaultEditors...)
 
 	for _, editor := range editors {
-		cmd := exec.Command(editor, path)
+		// $EDITOR may contain arguments, so we need to split
+		// them away from the actual editor command.
+		cmdargs := append(strings.Split(editor, " "), path)
+		cmd := exec.Command(cmdargs[0], cmdargs[1:]...)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
