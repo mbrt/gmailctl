@@ -17,13 +17,22 @@ import (
 const LatestVersion = cfgv2.Version
 
 // ReadFile takes a path and returns the parsed config file.
-func ReadFile(path string) (cfgv2.Config, error) {
+//
+// If the config file needs to have access to additional libraries,
+// their location can be specified with cfgDirs.
+func ReadFile(path, libPath string) (cfgv2.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return cfgv2.Config{}, NotFoundError(err)
 	}
 	if filepath.Ext(path) == ".jsonnet" {
+		// We pass the libPath to jsonnet, because that is the hint
+		// to the libraries location. If no library is specified,
+		// we use the original file location.
+		if libPath != "" {
+			return readJsonnet(libPath, b)
+		}
 		return readJsonnet(path, b)
 	}
 	return readYaml(b)

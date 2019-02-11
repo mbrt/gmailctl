@@ -47,7 +47,7 @@ func TestJsonnetLib(t *testing.T) {
 		jfile := tps.jsonnets[i]
 
 		t.Run(jfile, func(t *testing.T) {
-			jparsed, err := ReadFile(jfile)
+			jparsed, err := ReadFile(jfile, "")
 			assert.Nil(t, err)
 
 			yfile := tps.yamls[i]
@@ -59,7 +59,7 @@ func TestJsonnetLib(t *testing.T) {
 				assert.Nil(t, err)
 			} else {
 				// Test them
-				yparsed, err := ReadFile(yfile)
+				yparsed, err := ReadFile(yfile, "")
 				assert.Nil(t, err)
 				assert.Equal(t, yparsed, jparsed)
 			}
