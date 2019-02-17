@@ -34,7 +34,7 @@ var (
 )
 
 const abortHelp = `The original configuration is unchanged.
-Please find a temporary backup of your file at: %s`
+A temporary backup of your configuration has been saved at: %s`
 
 // editCmd represents the apply command
 var editCmd = &cobra.Command{
@@ -178,6 +178,9 @@ func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
 		return err
 	}
 
+	// This forces labels to be re-fetched, in case something has changed
+	// between edit retries.
+	_, _ = gmailapi.LabelMap()
 	upstreamFilters, err := gmailapi.ListFilters()
 	if err != nil {
 		return errors.Wrap(err, "cannot get filters from Gmail")
