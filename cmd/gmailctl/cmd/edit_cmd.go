@@ -181,12 +181,12 @@ func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
 	// This forces labels to be re-fetched, in case something has changed
 	// between edit retries.
 	_, _ = gmailapi.LabelMap()
-	upstreamFilters, err := gmailapi.ListFilters()
+	upstream, err := upstreamFilters(gmailapi)
 	if err != nil {
-		return errors.Wrap(err, "cannot get filters from Gmail")
+		return err
 	}
 
-	diff, err := filter.Diff(upstreamFilters, parseRes.filters)
+	diff, err := filter.Diff(upstream, parseRes.filters)
 	if err != nil {
 		return errors.New("cannot compare upstream with local filters")
 	}

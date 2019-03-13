@@ -141,3 +141,46 @@ func TestImportLabels(t *testing.T) {
 	_, err = DefaulImporter().Import(filters, lmap)
 	assert.NotNil(t, err)
 }
+
+func TestImportBad(t *testing.T) {
+	// Importing filters with missing pieces doesn't cause crashes.
+	filters := []*gmailv1.Filter{
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds: []string{labelIDTrash},
+			},
+			Criteria: nil,
+		},
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds: []string{labelIDTrash},
+			},
+			Criteria: &gmailv1.FilterCriteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
+	assert.NotNil(t, err)
+	assert.Len(t, imported, 1)
+
+	filters = []*gmailv1.Filter{
+		{
+			Action: nil,
+			Criteria: &gmailv1.FilterCriteria{
+				From: "foo@bar.com",
+			},
+		},
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds: []string{labelIDTrash},
+			},
+			Criteria: &gmailv1.FilterCriteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+	imported, err = DefaulImporter().Import(filters, emptyLabelMap())
+	assert.NotNil(t, err)
+	assert.Len(t, imported, 1)
+}
