@@ -54,12 +54,12 @@ func apply(path string, interactive bool) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstreamFilters, err := gmailapi.ListFilters()
+	upstream, err := upstreamFilters(gmailapi)
 	if err != nil {
-		return errors.Wrap(err, "cannot get filters from Gmail")
+		return err
 	}
 
-	diff, err := filter.Diff(upstreamFilters, parseRes.filters)
+	diff, err := filter.Diff(upstream, parseRes.filters)
 	if err != nil {
 		return errors.New("cannot compare upstream with local filters")
 	}

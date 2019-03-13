@@ -62,6 +62,9 @@ func (di defaultImporter) importFilter(gf *gmailv1.Filter, lmap LabelMap) (filte
 
 func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, error) {
 	res := filter.Actions{}
+	if action == nil {
+		return res, errors.New("empty action")
+	}
 	if err := di.importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
@@ -135,11 +138,14 @@ func (di defaultImporter) importCategory(labelID string) gmail.Category {
 	}
 }
 
-func (di defaultImporter) importCriteria(action *gmailv1.FilterCriteria) (filter.Criteria, error) {
+func (di defaultImporter) importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
+	if criteria == nil {
+		return filter.Criteria{}, errors.New("empty criteria")
+	}
 	return filter.Criteria{
-		From:    action.From,
-		To:      action.To,
-		Subject: action.Subject,
-		Query:   action.Query,
+		From:    criteria.From,
+		To:      criteria.To,
+		Subject: criteria.Subject,
+		Query:   criteria.Query,
 	}, nil
 }
