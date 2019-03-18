@@ -31,6 +31,7 @@ var (
 
 	errAbort     = errors.New("edit aborted")
 	errUnchanged = errors.New("unchanged")
+	errRetry     = errors.New("retry")
 )
 
 const abortHelp = `The original configuration is unchanged.
@@ -85,13 +86,21 @@ func edit(path string) error {
 
 	for {
 		if err = spawnEditor(tmpPath); err != nil {
-			// Don't retry if the editor was aborted
+			// Don't retry if the editor was aborted.
+			// Try to cleanup the file
+			_ = os.Remove(tmpPath)
 			return err
 		}
 		if err = applyEdited(tmpPath, path, gmailapi); err != nil {
 			if errors.Cause(err) == errUnchanged {
-				// Aborted. Don't ask to retry
-				return nil
+				// Unchanged, but move the file anyways (it could be a refactoring)
+				return moveFile(tmpPath, path)
+			}
+			if errors.Cause(err) == errAbort {
+				return UserError(err, fmt.Sprintf(abortHelp, tmpPath))
+			}
+			if errors.Cause(err) == errRetry {
+				continue
 			}
 
 			stderrPrintf("Error applying configuration: %v\n", err)
@@ -102,6 +111,7 @@ func edit(path string) error {
 			continue
 		}
 
+		// All good
 		// Swap the configuration files.
 		return moveFile(tmpPath, path)
 	}
@@ -196,9 +206,15 @@ func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
 		return errUnchanged
 	}
 
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
-	if !askYN("Do you want to apply them?") {
-		return errUnchanged
+	fmt.Printf("You are going to apply the following changes to your filters:\n\n%s", diff)
+
+	switch askOptions("Do you want to apply them?", []string{"yes", "no (continue editing)", "abort"}) {
+	case 0:
+		break
+	case 1:
+		return errRetry
+	default:
+		return errAbort
 	}
 
 	fmt.Println("Applying the changes...")
