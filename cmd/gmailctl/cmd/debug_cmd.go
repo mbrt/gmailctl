@@ -80,6 +80,6 @@ func debug(path string) error {
 func toGmailURL(s string) string {
 	return fmt.Sprintf(
 		"https://mail.google.com/mail/u/0/#search/%s",
-		url.PathEscape(s),
+		url.QueryEscape(s),
 	)
 }
