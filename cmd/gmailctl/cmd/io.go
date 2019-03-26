@@ -1,22 +1,21 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
 )
 
 func askYN(prompt string) bool {
+	r := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Printf("%s [y/N]: ", prompt)
-		var choice string
-		if _, err := fmt.Scanln(&choice); err == nil {
-			switch strings.ToLower(choice) {
+		if choice, err := r.ReadString('\n'); err == nil {
+			switch strings.ToLower(strings.TrimSuffix(choice, "\n")) {
 			case "y", "yes":
 				return true
-			case "n", "no":
-				return false
-			default:
+			case "n", "no", "": // empty string defaults to 'no'
 				return false
 			}
 		}
