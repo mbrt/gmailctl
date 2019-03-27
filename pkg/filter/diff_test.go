@@ -295,3 +295,30 @@ func TestDiffRemove(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, fd)
 }
+
+func TestDuplicate(t *testing.T) {
+	old := Filters{}
+	new := Filters{
+		{
+			Criteria: Criteria{
+				From: "someone@gmail.com",
+			},
+			Action: Actions{
+				MarkRead: true,
+			},
+		},
+		{
+			Criteria: Criteria{
+				From: "someone@gmail.com",
+			},
+			Action: Actions{
+				MarkRead: true,
+			},
+		},
+	}
+
+	fd, err := Diff(old, new)
+	assert.Nil(t, err)
+	// Only one of the two identical filters is present
+	assert.Equal(t, new[1:], fd.Added)
+}

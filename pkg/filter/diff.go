@@ -66,7 +66,7 @@ func changedFilters(upstream, local Filters) (added, removed Filters) {
 	hlocal := newHashedFilters(local)
 
 	i, j := 0, 0
-	for i < len(upstream) && j < len(local) {
+	for i < len(hupstream) && j < len(hlocal) {
 		ups := hupstream[i]
 		loc := hlocal[j]
 		cmp := strings.Compare(ups.hash, loc.hash)
@@ -88,12 +88,12 @@ func changedFilters(upstream, local Filters) (added, removed Filters) {
 	}
 
 	// Consume all upstream that are not present in local
-	for ; i < len(upstream); i++ {
+	for ; i < len(hupstream); i++ {
 		removed = append(removed, hupstream[i].filter)
 	}
 
 	// Consume all local that are not present upstream
-	for ; j < len(local); j++ {
+	for ; j < len(hlocal); j++ {
 		added = append(added, hlocal[j].filter)
 	}
 
@@ -120,13 +120,20 @@ func (hs hashedFilters) Swap(i, j int) {
 }
 
 func newHashedFilters(fs Filters) hashedFilters {
-	res := make(hashedFilters, len(fs))
-
-	for i, f := range fs {
-		res[i] = hashFilter(f)
+	// Remove duplicates while creating the filters
+	// Gmail doesn't support them, so we might as well do it here.
+	uniqueFs := map[string]Filter{}
+	for _, f := range fs {
+		hf := hashFilter(f)
+		uniqueFs[hf.hash] = f
 	}
+
 	// By sorting we can compare two instances by going element-by-element
 	// in order
+	res := hashedFilters{}
+	for h, f := range uniqueFs {
+		res = append(res, hashedFilter{h, f})
+	}
 	sort.Sort(res)
 
 	return res
