@@ -21,6 +21,7 @@ import (
 var update = flag.Bool("update", false, "update .diff files")
 
 func read(t *testing.T, path string) []byte {
+	t.Helper()
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -29,6 +30,7 @@ func read(t *testing.T, path string) []byte {
 }
 
 func readConfig(t *testing.T, path string) cfgv1.Config {
+	t.Helper()
 	res, err := cfg.ReadFile(path, "")
 	if err != nil {
 		t.Fatal(err)
@@ -42,6 +44,7 @@ type testPaths struct {
 }
 
 func globPaths(t *testing.T, pattern string) []string {
+	t.Helper()
 	fs, err := filepath.Glob(pattern)
 	if err != nil {
 		t.Fatal(err)
@@ -51,6 +54,7 @@ func globPaths(t *testing.T, pattern string) []string {
 }
 
 func allTestPaths(t *testing.T) testPaths {
+	t.Helper()
 	local := globPaths(t, "testdata/local.*.yaml")
 	local = append(local, globPaths(t, "testdata/local.*.jsonnet")...)
 	tp := testPaths{
