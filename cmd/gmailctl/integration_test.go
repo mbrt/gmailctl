@@ -14,6 +14,7 @@ import (
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/parser"
+	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
 // update is useful to regenerate the diff files, whenever necessary.
@@ -77,7 +78,7 @@ func cfgPathToFilters(t *testing.T, path string) (filter.Filters, error) {
 	return filter.FromRules(rules)
 }
 
-func TestIntegration(t *testing.T) {
+func TestIntegrationDiff(t *testing.T) {
 	remoteFilt, err := cfgPathToFilters(t, "testdata/remote.yaml")
 	assert.Nil(t, err)
 	tps := allTestPaths(t)
@@ -108,6 +109,33 @@ func TestIntegration(t *testing.T) {
 				expectedDiff := read(t, diffFile)
 				assert.Equal(t, string(expectedDiff), diff.String())
 			}
+		})
+	}
+}
+
+func TestIntegrationImport(t *testing.T) {
+	tps := allTestPaths(t)
+
+	for i := 0; i < len(tps.locals); i++ {
+		local := tps.locals[i]
+
+		t.Run(local, func(t *testing.T) {
+			locFilt, err := cfgPathToFilters(t, local)
+			assert.Nil(t, err)
+
+			// Import
+			config, err := rimport.Import(locFilt)
+			assert.Nil(t, err)
+			// Generate
+			rules, err := parser.Parse(config)
+			assert.Nil(t, err)
+			newFilt, err := filter.FromRules(rules)
+			assert.Nil(t, err)
+
+			// Re-generating imported filters should not cause any diff
+			diff, err := filter.Diff(newFilt, locFilt)
+			assert.Nil(t, err)
+			assert.Equal(t, "", diff.String())
 		})
 	}
 }

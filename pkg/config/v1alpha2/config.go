@@ -81,6 +81,9 @@ func (f FilterNode) NonEmptyFields() []string {
 			if field.Pointer() == 0 {
 				continue
 			}
+		case reflect.Bool:
+			// Ignore the 'Raw' marker
+			continue
 		}
 
 		res = append(res, name)
@@ -112,6 +115,9 @@ func (f FilterNode) Empty() bool {
 			if field.Pointer() == 0 {
 				continue
 			}
+		case reflect.Bool:
+			// Ignore the 'Raw' marker
+			continue
 		}
 
 		count++

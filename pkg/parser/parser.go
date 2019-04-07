@@ -80,6 +80,7 @@ func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error)
 			Function: fn,
 			Grouping: OperationNone,
 			Args:     []string{arg},
+			IsRaw:    f.IsRaw,
 		}, nil
 	}
 
@@ -87,14 +88,26 @@ func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error)
 }
 
 func checkSyntax(f cfg.FilterNode) error {
-	if fs := f.NonEmptyFields(); len(fs) != 1 {
+	fs := f.NonEmptyFields()
+	if len(fs) != 1 {
 		if len(fs) == 0 {
 			return errors.New("empty filter node")
 		}
 		return errors.Errorf("multiple fields specified in the same filter node: %s",
 			strings.Join(fs, ","))
 	}
-	return nil
+	if !f.IsRaw {
+		return nil
+	}
+
+	// Check that 'isRaw' is used correctly
+	allowed := []string{"from", "to", "subject"}
+	for _, s := range allowed {
+		if fs[0] == s {
+			return nil
+		}
+	}
+	return errors.Errorf("'isRaw' can be used only with fields %s", strings.Join(allowed, ", "))
 }
 
 func parseRefName(name string, nmap namedCriteriaMap) (CriteriaAST, error) {

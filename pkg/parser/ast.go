@@ -108,6 +108,7 @@ type Leaf struct {
 	Function FunctionType
 	Grouping OperationType
 	Args     []string
+	IsRaw    bool
 }
 
 // RootOperation returns the grouping of the leaf.
@@ -215,6 +216,7 @@ func functionsGrouping(tree CriteriaAST) int {
 	// and(foo:x bar:y foo:z) => and(foo:(x z) bar:z)
 	newChildren := []CriteriaAST{}
 	functions := map[FunctionType][]string{}
+	rawFunctions := map[FunctionType]bool{}
 	for _, child := range root.Children {
 		leaf, ok := child.(*Leaf)
 		if !ok || (len(leaf.Args) > 1 && leaf.Grouping != root.Operation) {
@@ -224,14 +226,20 @@ func functionsGrouping(tree CriteriaAST) int {
 			continue
 		}
 		functions[leaf.Function] = append(functions[leaf.Function], leaf.Args...)
+		// When grouping preserve the 'raw' modifier.
+		if leaf.IsRaw {
+			rawFunctions[leaf.Function] = true
+		}
 	}
 
 	// Re-construct the grouped children
 	for ft, args := range functions {
+		_, raw := rawFunctions[ft]
 		newChildren = append(newChildren, &Leaf{
 			Function: ft,
 			Grouping: root.Operation,
 			Args:     args,
+			IsRaw:    raw,
 		})
 		count++
 	}

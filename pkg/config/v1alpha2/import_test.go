@@ -57,10 +57,7 @@ func testFiles(t *testing.T, version string) []string {
 func TestConvert(t *testing.T) {
 	v1files := testFiles(t, "v1")
 	v2files := testFiles(t, "v2")
-
-	if l1, l2 := len(v1files), len(v2files); l1 != l2 {
-		t.Fatalf("len(v1files) = %d, want %d", l1, l2)
-	}
+	assert.Len(t, v1files, len(v2files))
 
 	for i := 0; i < len(v1files); i++ {
 		t.Run(v1files[i], func(t *testing.T) {
