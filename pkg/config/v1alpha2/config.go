@@ -48,6 +48,12 @@ type FilterNode struct {
 	List    string `yaml:"list,omitempty"`
 	Has     string `yaml:"has,omitempty"`
 	Query   string `yaml:"query,omitempty"`
+
+	// IsRaw specifies that no escaping should be done to the given
+	// parameters.
+	//
+	// Only allowed in combination with 'From', 'To' or 'Subject'.
+	IsRaw bool `yaml:"isRaw,omitempty"`
 }
 
 // NonEmptyFields returns the names of the fields with a value.
