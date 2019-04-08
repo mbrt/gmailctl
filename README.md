@@ -37,9 +37,7 @@ This project then exists to provide to your Gmail filters:
 4. Ability to review your changes before applying them;
 5. Automatic update of the settings (no manual import) in seconds.
 
-## Usage
-
-[![asciicast](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx.svg)](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx)
+## Install
 
 Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly, including the `bin` subdirectory in your `$PATH`.
 
@@ -47,19 +45,35 @@ Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) corre
 go get github.com/mbrt/gmailctl/cmd/gmailctl
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
-gmailctl edit
-# edit the config file and confirm the changes
 ```
 
-See [Configuration](#configuration) for the configuration file format. The
-utility will guide you through setting up the Gmail APIs and update your
+The init will guide you through setting up the Gmail APIs and update your
 settings without leaving your command line.
 
-**NOTE:** It's recommended to backup your current configuration before to apply
+## Usage
+
+[![asciicast](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx.svg)](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx)
+
+The easiest way to use gmailctl is to run `gmailctl edit`. This will open the local `.gmailctl/config.jsonnet` file in your editor. After you exit the editor the configuration is applied to Gmail.  See [Configuration](#configuration) for the configuration file format.
+
+**NOTE:** It's recommended to backup your current configuration before you apply
 the generated one for the first time. Your current filters will be wiped and
 replaced with the ones specified in the config file. The diff you'll get during
 the first run will probably be pretty big, but from that point on, all changes
 should generate a small and simple to review diff.
+
+Other available commands:
+
+```
+  apply       Apply a configuration file to Gmail settings
+  debug       Shows an annotated version of the configuration
+  diff        Shows a diff between the local configuaration and Gmail settings
+  edit        Edit the configuration and apply it to Gmail
+  export      Export filters into the Gmail XML format
+  help        Help about any command
+  init        Initialize the Gmail configuration
+```
+
 
 ## Configuration
 
