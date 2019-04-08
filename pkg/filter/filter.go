@@ -98,7 +98,7 @@ func (c Criteria) ToGmailSearch() string {
 		res = append(res, fmt.Sprintf("to:%s", c.To))
 	}
 	if c.Subject != "" {
-		res = append(res, fmt.Sprintf("subject:%s", c.To))
+		res = append(res, fmt.Sprintf("subject:%s", c.Subject))
 	}
 	if c.Query != "" {
 		res = append(res, c.Query)
