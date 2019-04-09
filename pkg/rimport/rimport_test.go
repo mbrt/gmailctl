@@ -46,7 +46,7 @@ func TestImport(t *testing.T) {
 
 	if *update {
 		// Update the golden files
-		err = ioutil.WriteFile("testdata/config.yaml", []byte(b), 0644)
+		err = ioutil.WriteFile("testdata/config.yaml", b, 0644)
 		assert.Nil(t, err)
 	} else {
 		// Test them

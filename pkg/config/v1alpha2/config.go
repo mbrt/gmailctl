@@ -13,10 +13,10 @@ const Version = "v1alpha2"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
-	Version string        `yaml:"version"`
-	Author  Author        `yaml:"author,omitempty"`
-	Filters []NamedFilter `yaml:"filters,omitempty"`
-	Rules   []Rule        `yaml:"rules"`
+	Version string        `yaml:"version" json:"version"`
+	Author  Author        `yaml:"author,omitempty" json:"author,omitempty"`
+	Filters []NamedFilter `yaml:"filters,omitempty" json:"filters,omitempty"`
+	Rules   []Rule        `yaml:"rules" json:"rules"`
 }
 
 // NamedFilter represents a filter with a name.
@@ -24,8 +24,8 @@ type Config struct {
 // A named filter can be referenced by other named filters and by filters
 // inside rules.
 type NamedFilter struct {
-	Name  string     `yaml:"name"`
-	Query FilterNode `yaml:"query"`
+	Name  string     `yaml:"name" json:"name"`
+	Query FilterNode `yaml:"query" json:"query"`
 }
 
 // FilterNode represents a piece of a Gmail filter.
@@ -35,25 +35,25 @@ type NamedFilter struct {
 // operator can be specified. If you need to combine multiple queries
 // together, combine the nodes with 'And', 'Or' and 'Not'.
 type FilterNode struct {
-	RefName string `yaml:"name,omitempty"`
+	RefName string `yaml:"name,omitempty" json:"name,omitempty"`
 
-	And []FilterNode `yaml:"and,omitempty"`
-	Or  []FilterNode `yaml:"or,omitempty"`
-	Not *FilterNode  `yaml:"not,omitempty"`
+	And []FilterNode `yaml:"and,omitempty" json:"and,omitempty"`
+	Or  []FilterNode `yaml:"or,omitempty" json:"or,omitempty"`
+	Not *FilterNode  `yaml:"not,omitempty" json:"not,omitempty"`
 
-	From    string `yaml:"from,omitempty"`
-	To      string `yaml:"to,omitempty"`
-	Cc      string `yaml:"cc,omitempty"`
-	Subject string `yaml:"subject,omitempty"`
-	List    string `yaml:"list,omitempty"`
-	Has     string `yaml:"has,omitempty"`
-	Query   string `yaml:"query,omitempty"`
+	From    string `yaml:"from,omitempty" json:"from,omitempty"`
+	To      string `yaml:"to,omitempty" json:"to,omitempty"`
+	Cc      string `yaml:"cc,omitempty" json:"cc,omitempty"`
+	Subject string `yaml:"subject,omitempty" json:"subject,omitempty"`
+	List    string `yaml:"list,omitempty" json:"list,omitempty"`
+	Has     string `yaml:"has,omitempty" json:"has,omitempty"`
+	Query   string `yaml:"query,omitempty" json:"query,omitempty"`
 
 	// IsRaw specifies that no escaping should be done to the given
 	// parameters.
 	//
 	// Only allowed in combination with 'From', 'To' or 'Subject'.
-	IsRaw bool `yaml:"isRaw,omitempty"`
+	IsRaw bool `yaml:"isRaw,omitempty" json:"isRaw,omitempty"`
 }
 
 // NonEmptyFields returns the names of the fields with a value.
@@ -131,8 +131,8 @@ func (f FilterNode) Empty() bool {
 // For every email, if the filter applies correctly, then the specified actions
 // will be applied to it.
 type Rule struct {
-	Filter  FilterNode `yaml:"filter"`
-	Actions Actions    `yaml:"actions"`
+	Filter  FilterNode `yaml:"filter" json:"filter"`
+	Actions Actions    `yaml:"actions" json:"actions"`
 }
 
 // Author represents the owner of the gmail account.
@@ -140,18 +140,18 @@ type Author v1.Author
 
 // Actions contains the actions to be applied to a set of emails.
 type Actions struct {
-	Archive  bool `yaml:"archive,omitempty"`
-	Delete   bool `yaml:"delete,omitempty"`
-	MarkRead bool `yaml:"markRead,omitempty"`
-	Star     bool `yaml:"star,omitempty"`
+	Archive  bool `yaml:"archive,omitempty" json:"archive,omitempty"`
+	Delete   bool `yaml:"delete,omitempty" json:"delete,omitempty"`
+	MarkRead bool `yaml:"markRead,omitempty" json:"markRead,omitempty"`
+	Star     bool `yaml:"star,omitempty" json:"star,omitempty"`
 
 	// MarkSpam can be used to disallow mails to be marked as spam.
 	// This however is not allowed to be set to true by Gmail.
-	MarkSpam      *bool `yaml:"markSpam,omitempty"`
-	MarkImportant *bool `yaml:"markImportant,omitempty"`
+	MarkSpam      *bool `yaml:"markSpam,omitempty" json:"markSpam,omitempty"`
+	MarkImportant *bool `yaml:"markImportant,omitempty" json:"markImportant,omitempty"`
 
-	Category gmail.Category `yaml:"category,omitempty"`
-	Labels   []string       `yaml:"labels,omitempty"`
+	Category gmail.Category `yaml:"category,omitempty" json:"category,omitempty"`
+	Labels   []string       `yaml:"labels,omitempty" json:"labels,omitempty"`
 }
 
 // Empty returns true if no actions are specified.

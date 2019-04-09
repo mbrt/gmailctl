@@ -20,8 +20,8 @@ type Consts map[string]ConstValue
 
 // Author represents the owner of the gmail account.
 type Author struct {
-	Name  string `yaml:"name"`
-	Email string `yaml:"email"`
+	Name  string `yaml:"name" json:"name"`
+	Email string `yaml:"email" json:"email"`
 }
 
 // ConstValue is a container for an array of string values.
