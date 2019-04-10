@@ -111,7 +111,7 @@ local me = {
   version: 'v1alpha2',
   // Optional author information (used in exports).
   author: {
-    name: 'Pippo Pluto,
+    name: 'Pippo Pluto',
     email: 'pippo@gmail.com'
   },
   rules: [
