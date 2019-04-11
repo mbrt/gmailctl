@@ -521,6 +521,19 @@ local me = 'pippo@gmail.com';
 }
 ```
 
+### Multiple Gmail accounts
+
+If you need to manage two or more accounts, it's useful to setup bash aliases
+this way:
+
+```bash
+alias gmailctlu1='gmailctl --config=$HOME/.gmailctlu1'
+alias gmailctlu2='gmailctl --config=$HOME/.gmailctlu2'
+```
+
+You will then be able to configure both accounts separately by using one or
+the other alias.
+
 ## Comparison with existing projects
 
 [gmail-britta](https://github.com/antifuchs/gmail-britta) has similar
