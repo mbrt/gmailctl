@@ -14,13 +14,26 @@ import (
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
+var (
+	importOutput string
+)
+
 // importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:   "import",
-	Short: "Import filters from Gmail to a local file",
-	Long:  `WARNING: Experimental config generation from remote filters.`,
+	Short: "Import filters from Gmail to a local config file",
+	Long: `The import command downloads the filters from Gmail and generates a
+compatible configuration file.
+
+The resulting config won't be pretty to look at, but it should be a
+good starting point if your filters have been managed by other means
+and you want to move to gmailctl.
+
+WARNING: This functionality is experimental. After importing, verify
+that no diff is detected with the remote filters by using the 'diff'
+command.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := doImport(); err != nil {
+		if err := doImport(importOutput); err != nil {
 			fatal(err)
 		}
 	},
@@ -28,9 +41,33 @@ var importCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(importCmd)
+
+	// Flags and configuration settings
+	importCmd.PersistentFlags().StringVarP(&importOutput, "output", "o", "", "output file (defaut to stdout)")
 }
 
-func doImport() error {
+func doImport(outputPath string) (err error) {
+	var out io.Writer
+	if outputPath == "" {
+		out = os.Stdout
+	} else {
+		f, e := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+		if e != nil {
+			return errors.Wrap(err, "cannot open output")
+		}
+		defer func() {
+			e = f.Close()
+			// do not hide more important error
+			if err == nil {
+				err = e
+			}
+		}()
+		out = f
+	}
+	return importWithOut(out)
+}
+
+func importWithOut(out io.Writer) error {
 	gmailapi, err := openAPI()
 	if err != nil {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
@@ -46,7 +83,7 @@ func doImport() error {
 		return err
 	}
 
-	err = marshalJsonnet(cfg, os.Stdout)
+	err = marshalJsonnet(cfg, out)
 	if err != nil {
 		return errors.Wrap(err, "error converting to Jsonnet")
 	}
