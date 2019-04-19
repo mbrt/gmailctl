@@ -9,12 +9,12 @@ rules:
     delete: true
 - filter:
     subject: '{"[ExpatRepublicAmsterdam] 9 EURO YOGA" "(Amsterdam Football and Basketball)"}'
-    isRaw: true
+    isEscaped: true
   actions:
     delete: true
 - filter:
     to: '{myselfyeah0@gmail.com myselfyeah@gmail.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     archive: true
     markRead: true
@@ -23,7 +23,7 @@ rules:
     - NotInteresting
 - filter:
     from: '{*@onstageweb.com noreply@vivigratis.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     delete: true
 - filter:
@@ -33,7 +33,7 @@ rules:
     category: personal
 - filter:
     from: '{info@reservation.foo.co.uk *@bar.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     labels:
     - BG
@@ -44,7 +44,7 @@ rules:
     - Rust
 - filter:
     from: '{zlskdj@gmail.com fsjei8.5@gmail.com jflgija@gmail.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     category: personal
     labels:
@@ -68,20 +68,20 @@ rules:
     - Rust
 - filter:
     from: '{*@univr.it flalsg.googlegroups.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     labels:
     - Uni
 - filter:
     from: '{*@fsfl.com Folijfl@fslh.com iglfj@moving.com}'
-    isRaw: true
+    isEscaped: true
   actions:
     category: personal
     labels:
     - Relocation
 - filter:
     from: '{Loo.afl@cartus.com bar.lkji@gmx.de}'
-    isRaw: true
+    isEscaped: true
   actions:
     category: personal
     labels:
@@ -102,7 +102,7 @@ rules:
     - Bright
 - filter:
     from: '{*@foo.it m.yeah@pec.it}'
-    isRaw: true
+    isEscaped: true
   actions:
     labels:
     - FOO

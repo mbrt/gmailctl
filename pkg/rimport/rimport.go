@@ -51,22 +51,22 @@ func fromCriteria(c filter.Criteria) (config.FilterNode, error) {
 	// exporting again we would double escape those strings.
 	if c.From != "" {
 		n := config.FilterNode{
-			From:  c.From,
-			IsRaw: needsEscape(c.From),
+			From:      c.From,
+			IsEscaped: needsEscape(c.From),
 		}
 		nodes = append(nodes, n)
 	}
 	if c.To != "" {
 		n := config.FilterNode{
-			To:    c.To,
-			IsRaw: needsEscape(c.To),
+			To:        c.To,
+			IsEscaped: needsEscape(c.To),
 		}
 		nodes = append(nodes, n)
 	}
 	if c.Subject != "" {
 		n := config.FilterNode{
-			Subject: c.Subject,
-			IsRaw:   needsEscape(c.Subject),
+			Subject:   c.Subject,
+			IsEscaped: needsEscape(c.Subject),
 		}
 		nodes = append(nodes, n)
 	}

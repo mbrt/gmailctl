@@ -49,11 +49,11 @@ type FilterNode struct {
 	Has     string `yaml:"has,omitempty" json:"has,omitempty"`
 	Query   string `yaml:"query,omitempty" json:"query,omitempty"`
 
-	// IsRaw specifies that no escaping should be done to the given
-	// parameters.
+	// IsEscaped specifies that the given parameters don't need any
+	// further escaping.
 	//
 	// Only allowed in combination with 'From', 'To' or 'Subject'.
-	IsRaw bool `yaml:"isRaw,omitempty" json:"isRaw,omitempty"`
+	IsEscaped bool `yaml:"isEscaped,omitempty" json:"isEscaped,omitempty"`
 }
 
 // NonEmptyFields returns the names of the fields with a value.
@@ -82,7 +82,7 @@ func (f FilterNode) NonEmptyFields() []string {
 				continue
 			}
 		case reflect.Bool:
-			// Ignore the 'Raw' marker
+			// Ignore the 'IsEscaped' marker
 			continue
 		}
 

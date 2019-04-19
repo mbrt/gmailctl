@@ -80,7 +80,7 @@ func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error)
 			Function: fn,
 			Grouping: OperationNone,
 			Args:     []string{arg},
-			IsRaw:    f.IsRaw,
+			IsRaw:    f.IsEscaped,
 		}, nil
 	}
 
@@ -96,7 +96,7 @@ func checkSyntax(f cfg.FilterNode) error {
 		return errors.Errorf("multiple fields specified in the same filter node: %s",
 			strings.Join(fs, ","))
 	}
-	if !f.IsRaw {
+	if !f.IsEscaped {
 		return nil
 	}
 
