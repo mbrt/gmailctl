@@ -69,6 +69,10 @@ func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelM
 		return res, err
 	}
 	err := di.importRemoveLabels(&res, action.RemoveLabelIds)
+
+	if res.Empty() {
+		return res, errors.New("empty or unsupported action")
+	}
 	return res, err
 }
 
