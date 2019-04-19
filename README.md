@@ -482,6 +482,34 @@ rules:
     archive: true
 ```
 
+### To me
+
+Gmail gives you the possibility to write literally `to:me` in a filter, to match
+incoming emails where you are the recipient. This is going to mostly work as
+intended, except that it will also match emails directed to `me@example.com`.
+The risk you are getting an email where you are not one of the recipients, but a
+`me@example.com` is, is pretty low, but if you are paranoid you might consider
+using your full email instead. The config is also easier to read in my opinion.
+You can also save some typing by introducing a local variable like this:
+
+```jsonnet
+// Local variable, referenced in all your config.
+local me = 'myemail@gmail.com';
+
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      // Save typing here.
+      filter: { to: me },
+      actions: {
+        markImportant: true,
+      },
+    },
+  ],
+}
+```
+
 ### Directly to me
 
 If you need to match emails that are to you directly, (i.e. you are not in CC,
