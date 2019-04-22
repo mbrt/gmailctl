@@ -80,6 +80,7 @@ func (de defaultExporter) exportAction(action filter.Actions, lmap LabelMap) (*g
 	return &gmailv1.FilterAction{
 		AddLabelIds:    lops.addLabels,
 		RemoveLabelIds: lops.removeLabels,
+		Forward:        action.Forward,
 	}, nil
 }
 

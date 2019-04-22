@@ -140,6 +140,8 @@ type Actions struct {
 
 	Category gmail.Category `yaml:"category,omitempty"`
 	Labels   []string       `yaml:"labels,omitempty"`
+
+	Forward string `yaml:"forward,omitempty"`
 }
 
 // Empty returns true if no actions are specified.

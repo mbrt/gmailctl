@@ -68,8 +68,11 @@ func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelM
 	if err := di.importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
-	err := di.importRemoveLabels(&res, action.RemoveLabelIds)
-	return res, err
+	if err := di.importRemoveLabels(&res, action.RemoveLabelIds); err != nil {
+		return res, err
+	}
+	res.Forward = action.Forward
+	return res, nil
 }
 
 func (di defaultImporter) importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) error {

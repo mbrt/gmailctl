@@ -52,6 +52,7 @@ func (f Filter) String() string {
 	w.WriteBool("star", f.Action.Star)
 	w.WriteParam("categorize as", string(f.Action.Category))
 	w.WriteParam("apply label", f.Action.AddLabel)
+	w.WriteParam("forward to", f.Action.Forward)
 
 	return w.String()
 }
@@ -60,6 +61,7 @@ func (f Filter) String() string {
 type Actions struct {
 	AddLabel         string
 	Category         gmail.Category
+	Forward          string
 	Archive          bool
 	Delete           bool
 	MarkImportant    bool

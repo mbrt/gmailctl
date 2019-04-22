@@ -264,6 +264,7 @@ func generateActions(actions parser.Actions) ([]Actions, error) {
 			Category:         actions.Category,
 			MarkNotSpam:      fromOptionalBool(actions.MarkSpam, false),
 			Star:             actions.Star,
+			Forward:          actions.Forward,
 		},
 	}
 

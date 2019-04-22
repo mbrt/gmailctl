@@ -365,6 +365,10 @@ are the same as the ones in the Gmail interface:
   that these labels have to be already present in your settings (they won't be
   created automatically), and you can specify multiple labels (normally Gmail
   allows to specify only one label per filter).
+* `forward: 'forward@to.com'`: forward the message to another email address.
+  The forwarding address must be already in your settings
+  (Forwarding and POP/IMAP > Add a forwarding address). Gmail allows no more
+  than 20 filters with a forward.
 
 Example:
 
