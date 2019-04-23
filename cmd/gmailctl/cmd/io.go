@@ -12,7 +12,7 @@ func askYN(prompt string) bool {
 	for {
 		fmt.Printf("%s [y/N]: ", prompt)
 		if choice, err := r.ReadString('\n'); err == nil {
-			switch strings.ToLower(strings.TrimSuffix(choice, "\n")) {
+			switch strings.ToLower(strings.TrimRight(choice, "\r\n")) {
 			case "y", "yes":
 				return true
 			case "n", "no", "": // empty string defaults to 'no'
