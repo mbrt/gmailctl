@@ -46,7 +46,7 @@ configuration file, shows you the diff with your current Gmail
 configuration, and applies minimal changes to it in order to
 make it match your desired state.
 
-The edior to be used can be overridded with the $EDITOR
+The editor to be used can be overridden with the $EDITOR
 environment variable.
 
 By default edit uses the configuration file inside the config
