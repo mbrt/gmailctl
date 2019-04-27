@@ -15,38 +15,45 @@ import (
 )
 
 var (
-	importOutput string
+	downloadOutput string
 )
 
-// importCmd represents the import command
-var importCmd = &cobra.Command{
-	Use:   "import",
-	Short: "Import filters from Gmail to a local config file",
-	Long: `The import command downloads the filters from Gmail and generates a
-compatible configuration file.
+const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
+//
+// WARNING: This functionality is experimental. Before making any
+// changes, check that no diff is detected with the remote filters by
+// using the 'diff' command.
+`
 
-The resulting config won't be pretty to look at, but it should be a
-good starting point if your filters have been managed by other means
-and you want to move to gmailctl.
+// downloadCmd represents the import command
+var downloadCmd = &cobra.Command{
+	Use:   "download",
+	Short: "Download filters from Gmail to a local config file",
+	Long: `The download command gets the currently configured filters from Gmail
+and generates a compatible configuration file.
 
-WARNING: This functionality is experimental. After importing, verify
+The resulting config won't be pretty, but it should be a good starting
+point if your filters have been managed by other means and you want to
+move to gmailctl.
+
+WARNING: This functionality is experimental. After downloading, verify
 that no diff is detected with the remote filters by using the 'diff'
 command.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := doImport(importOutput); err != nil {
+		if err := download(downloadOutput); err != nil {
 			fatal(err)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(importCmd)
+	rootCmd.AddCommand(downloadCmd)
 
 	// Flags and configuration settings
-	importCmd.PersistentFlags().StringVarP(&importOutput, "output", "o", "", "output file (defaut to stdout)")
+	downloadCmd.PersistentFlags().StringVarP(&downloadOutput, "output", "o", "", "output file (default to stdout)")
 }
 
-func doImport(outputPath string) (err error) {
+func download(outputPath string) (err error) {
 	var out io.Writer
 	if outputPath == "" {
 		out = os.Stdout
@@ -64,10 +71,10 @@ func doImport(outputPath string) (err error) {
 		}()
 		out = f
 	}
-	return importWithOut(out)
+	return downloadWithOut(out)
 }
 
-func importWithOut(out io.Writer) error {
+func downloadWithOut(out io.Writer) error {
 	gmailapi, err := openAPI()
 	if err != nil {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
@@ -102,6 +109,11 @@ func marshalJsonnet(v interface{}, w io.Writer) error {
 	writer := bufio.NewWriter(w)
 	keyRe := regexp.MustCompile(`^ *"([a-zA-Z01]+)":`)
 	var line []byte
+
+	_, err = writer.WriteString(downloadHeader)
+	if err != nil {
+		return err
+	}
 
 	line, _, err = reader.ReadLine()
 	for err == nil {
