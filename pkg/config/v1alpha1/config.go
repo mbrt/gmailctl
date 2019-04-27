@@ -4,7 +4,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
-// Version is the latest supported version.
+// Version is the config format version supported by this package.
 const Version = "v1alpha1"
 
 // Config contains the yaml configuration of the Gmail filters.

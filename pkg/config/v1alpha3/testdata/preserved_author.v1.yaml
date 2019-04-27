@@ -1,0 +1,4 @@
+version: v1alpha1
+author:
+  name: foo
+  email: bar

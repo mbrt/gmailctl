@@ -11,20 +11,21 @@ import (
 
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 // LatestVersion points to the latest version of the config format.
-const LatestVersion = cfgv2.Version
+const LatestVersion = cfgv3.Version
 
 // ReadFile takes a path and returns the parsed config file.
 //
 // If the config file needs to have access to additional libraries,
 // their location can be specified with cfgDirs.
-func ReadFile(path, libPath string) (cfgv2.Config, error) {
+func ReadFile(path, libPath string) (cfgv3.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return cfgv2.Config{}, NotFoundError(err)
+		return cfgv3.Config{}, NotFoundError(err)
 	}
 	if filepath.Ext(path) == ".jsonnet" {
 		// We pass the libPath to jsonnet, because that is the hint
@@ -38,34 +39,64 @@ func ReadFile(path, libPath string) (cfgv2.Config, error) {
 	return readYaml(b)
 }
 
-func readJsonnet(path string, buf []byte) (cfgv2.Config, error) {
-	var res cfgv2.Config
+func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
+	var res cfgv3.Config
 	vm := jsonnet.MakeVM()
 	jstr, err := vm.EvaluateSnippet(path, string(buf))
 	if err != nil {
 		return res, errors.Wrap(err, "invalid jsonnet")
 	}
-	err = json.Unmarshal([]byte(jstr), &res)
-	if err != nil {
-		return res, err
-	}
-	if res.Version != cfgv2.Version {
-		return res, errors.Errorf("unsupported version '%s'", res.Version)
-	}
-	return res, nil
-}
-
-func readYaml(buf []byte) (cfgv2.Config, error) {
-	var res cfgv2.Config
-	version, err := readVersion(buf)
+	version, err := readJSONVersion(jstr)
 	if err != nil {
 		return res, errors.Wrap(err, "error parsing the config version")
 	}
 
 	switch version {
+	case cfgv3.Version:
+		err = json.Unmarshal([]byte(jstr), &res)
+		return res, err
+
 	case cfgv2.Version:
+		var v2 cfgv2.Config
+		err = json.Unmarshal([]byte(jstr), &v2)
+		if err != nil {
+			return res, errors.Wrap(err, "error parsing v1alpha2 config")
+		}
+		return importFromV2(v2)
+
+	case cfgv1.Version:
+		var v1 cfgv1.Config
+		err = json.Unmarshal([]byte(jstr), &v1)
+		if err != nil {
+			return res, errors.Wrap(err, "error parsing v1alpha1 config")
+		}
+		return importFromV1(v1)
+
+	default:
+		return res, errors.Errorf("unknown config version: %s", version)
+	}
+}
+
+func readYaml(buf []byte) (cfgv3.Config, error) {
+	// TODO: Get rid of support for YAML config v3
+	var res cfgv3.Config
+	version, err := readYamlVersion(buf)
+	if err != nil {
+		return res, errors.Wrap(err, "error parsing the config version")
+	}
+
+	switch version {
+	case cfgv3.Version:
 		err = yaml.UnmarshalStrict(buf, &res)
 		return res, err
+
+	case cfgv2.Version:
+		var v2 cfgv2.Config
+		err = yaml.UnmarshalStrict(buf, &v2)
+		if err != nil {
+			return res, errors.Wrap(err, "error parsing v1alpha2 config")
+		}
+		return importFromV2(v2)
 
 	case cfgv1.Version:
 		var v1 cfgv1.Config
@@ -73,19 +104,40 @@ func readYaml(buf []byte) (cfgv2.Config, error) {
 		if err != nil {
 			return res, errors.Wrap(err, "error parsing v1alpha1 config")
 		}
-		return cfgv2.Import(v1)
+		return importFromV1(v1)
 
 	default:
 		return res, errors.Errorf("unknown config version: %s", version)
 	}
 }
 
-func readVersion(buf []byte) (string, error) {
+func importFromV1(v1 cfgv1.Config) (cfgv3.Config, error) {
+	v2, err := cfgv2.Import(v1)
+	if err != nil {
+		return cfgv3.Config{}, err
+	}
+	return importFromV2(v2)
+}
+
+func importFromV2(v2 cfgv2.Config) (cfgv3.Config, error) {
+	return cfgv3.Import(v2)
+}
+
+func readYamlVersion(buf []byte) (string, error) {
 	// Try to unmarshal only the version
 	v := struct {
 		Version string `yaml:"version"`
 	}{}
 	err := yaml.Unmarshal(buf, &v)
+	return v.Version, err
+}
+
+func readJSONVersion(js string) (string, error) {
+	// Try to unmarshal only the version
+	v := struct {
+		Version string `json:"version"`
+	}{}
+	err := json.Unmarshal([]byte(js), &v)
 	return v.Version, err
 }
 

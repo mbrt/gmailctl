@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	config "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	config "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 

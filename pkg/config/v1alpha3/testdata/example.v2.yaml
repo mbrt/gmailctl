@@ -1,0 +1,47 @@
+version: v1alpha2
+author:
+  name: Pippo Pluto
+  email: pippo@gmail.com
+
+rules:
+  - filter:
+      from: myalarm@myalarm.com
+    actions:
+      markImportant: true
+      labels:
+        - alarm
+
+  - filter:
+      or:
+        - subject: foo bar baz
+        - subject: I want to spam you
+    actions:
+      delete: true
+
+  - filter:
+      from: spammer@spam.com
+    actions:
+      delete: true
+
+  - filter:
+      or:
+        - has: buy this
+        - has: buy that
+    actions:
+      delete: true
+
+  - filter:
+      and:
+        - from: interesting@maillist.com
+        - not:
+            or:
+              - to: pippo@gmail.com
+              - to: pippo@hotmail.com
+    actions:
+      archive: true
+
+  - filter:
+      from: interesting@maillist.com
+    actions:
+      labels:
+        - mail-list

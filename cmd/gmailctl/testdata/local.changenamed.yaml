@@ -1,4 +1,4 @@
-version: v1alpha2
+version: v1alpha3
 filters:
   - name: me
     query:

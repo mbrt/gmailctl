@@ -32,7 +32,7 @@ local filters = {
 
 // The config
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {

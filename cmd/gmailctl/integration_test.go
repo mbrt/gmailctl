@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config"
-	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/parser"
 	"github.com/mbrt/gmailctl/pkg/rimport"
@@ -30,7 +30,7 @@ func read(t *testing.T, path string) []byte {
 	return b
 }
 
-func readConfig(t *testing.T, path string) cfgv1.Config {
+func readConfig(t *testing.T, path string) cfgv3.Config {
 	t.Helper()
 	res, err := cfg.ReadFile(path, "")
 	if err != nil {

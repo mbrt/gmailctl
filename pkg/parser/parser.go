@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 // Rule is an intermediate representation of a Gmail filter.
@@ -155,6 +155,7 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 	return FunctionNone, ""
 }
 
+// lint:ignore SA1019 this is going to disappear soon.
 func parseNamedFilters(filters []cfg.NamedFilter) (namedCriteriaMap, error) {
 	m := namedCriteriaMap{}
 
