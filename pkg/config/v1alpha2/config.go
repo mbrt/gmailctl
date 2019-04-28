@@ -1,6 +1,7 @@
 package v1alpha2
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 
@@ -48,6 +49,14 @@ type FilterNode struct {
 	List    string `yaml:"list,omitempty"`
 	Has     string `yaml:"has,omitempty"`
 	Query   string `yaml:"query,omitempty"`
+}
+
+func (f FilterNode) String() string {
+	j, err := json.MarshalIndent(f, "", "  ")
+	if err != nil {
+		return "<INVALID JSON>"
+	}
+	return string(j)
 }
 
 // NonEmptyFields returns the names of the fields with a value.
@@ -121,6 +130,14 @@ func (f FilterNode) Empty() bool {
 type Rule struct {
 	Filter  FilterNode `yaml:"filter"`
 	Actions Actions    `yaml:"actions"`
+}
+
+func (r Rule) String() string {
+	j, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		return "<INVALID JSON>"
+	}
+	return string(j)
 }
 
 // Author represents the owner of the gmail account.

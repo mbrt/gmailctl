@@ -22,14 +22,9 @@ type Actions cfg.Actions
 // Note that the number of rules and their contents might be different than the
 // original, because symplifications will be performed on the data.
 func Parse(config cfg.Config) ([]Rule, error) {
-	cmap, err := parseNamedFilters(config.Filters)
-	if err != nil {
-		return nil, err
-	}
-
 	res := []Rule{}
 	for i, rule := range config.Rules {
-		crit, err := parseCriteria(rule.Filter, cmap)
+		crit, err := parseCriteria(rule.Filter)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error parsing criteria for rule #%d", i)
 		}
@@ -48,23 +43,17 @@ func Parse(config cfg.Config) ([]Rule, error) {
 	return res, nil
 }
 
-// namedCriteriaMap maps a named filter to its parsed representation.
-type namedCriteriaMap map[string]CriteriaAST
-
-func parseCriteria(f cfg.FilterNode, nmap namedCriteriaMap) (CriteriaAST, error) {
+func parseCriteria(f cfg.FilterNode) (CriteriaAST, error) {
 	if err := checkSyntax(f); err != nil {
 		return nil, err
 	}
 
 	// Since the node is valid, only one function will be present.
 	// This means that we can stop checking after the first valid field.
-	if f.RefName != "" {
-		return parseRefName(f.RefName, nmap)
-	}
 	if op, children := parseOperation(f); op != OperationNone {
 		var astchildren []CriteriaAST
 		for _, c := range children {
-			astc, err := parseCriteria(c, nmap)
+			astc, err := parseCriteria(c)
 			if err != nil {
 				return nil, err
 			}
@@ -110,13 +99,6 @@ func checkSyntax(f cfg.FilterNode) error {
 	return errors.Errorf("'isRaw' can be used only with fields %s", strings.Join(allowed, ", "))
 }
 
-func parseRefName(name string, nmap namedCriteriaMap) (CriteriaAST, error) {
-	if crit, ok := nmap[name]; ok {
-		return crit, nil
-	}
-	return nil, errors.Errorf("filter name '%s' not found", name)
-}
-
 func parseOperation(f cfg.FilterNode) (OperationType, []cfg.FilterNode) {
 	if len(f.And) > 0 {
 		return OperationAnd, f.And
@@ -153,19 +135,4 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 		return FunctionQuery, f.Query
 	}
 	return FunctionNone, ""
-}
-
-// lint:ignore SA1019 this is going to disappear soon.
-func parseNamedFilters(filters []cfg.NamedFilter) (namedCriteriaMap, error) {
-	m := namedCriteriaMap{}
-
-	for _, f := range filters {
-		c, err := parseCriteria(f.Query, m)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error parsing filter '%s'", f.Name)
-		}
-		m[f.Name] = c
-	}
-
-	return m, nil
 }

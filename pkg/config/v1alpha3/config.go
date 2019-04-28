@@ -12,21 +12,9 @@ const Version = "v1alpha3"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
-	Version string        `yaml:"version" json:"version"`
-	Author  Author        `yaml:"author,omitempty" json:"author,omitempty"`
-	Filters []NamedFilter `yaml:"filters,omitempty" json:"filters,omitempty"`
-	Rules   []Rule        `yaml:"rules" json:"rules"`
-}
-
-// NamedFilter represents a filter with a name.
-//
-// A named filter can be referenced by other named filters and by filters
-// inside rules.
-//
-// Deprecated: Soon to be removed when YAML support goes away.
-type NamedFilter struct {
-	Name  string     `yaml:"name"`
-	Query FilterNode `yaml:"query"`
+	Version string `yaml:"version" json:"version"`
+	Author  Author `yaml:"author,omitempty" json:"author,omitempty"`
+	Rules   []Rule `yaml:"rules" json:"rules"`
 }
 
 // FilterNode represents a piece of a Gmail filter.

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
@@ -53,12 +54,12 @@ func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
 
 	switch version {
 	case cfgv3.Version:
-		err = json.Unmarshal([]byte(jstr), &res)
+		err = jsonUnmarshalStrict([]byte(jstr), &res)
 		return res, err
 
 	case cfgv2.Version:
 		var v2 cfgv2.Config
-		err = json.Unmarshal([]byte(jstr), &v2)
+		err = jsonUnmarshalStrict([]byte(jstr), &v2)
 		if err != nil {
 			return res, errors.Wrap(err, "error parsing v1alpha2 config")
 		}
@@ -66,7 +67,7 @@ func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
 
 	case cfgv1.Version:
 		var v1 cfgv1.Config
-		err = json.Unmarshal([]byte(jstr), &v1)
+		err = jsonUnmarshalStrict([]byte(jstr), &v1)
 		if err != nil {
 			return res, errors.Wrap(err, "error parsing v1alpha1 config")
 		}
@@ -139,6 +140,12 @@ func readJSONVersion(js string) (string, error) {
 	}{}
 	err := json.Unmarshal([]byte(js), &v)
 	return v.Version, err
+}
+
+func jsonUnmarshalStrict(b []byte, v interface{}) error {
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.DisallowUnknownFields()
+	return dec.Decode(v)
 }
 
 // IsNotFound returns true if an error is related to a file not found
