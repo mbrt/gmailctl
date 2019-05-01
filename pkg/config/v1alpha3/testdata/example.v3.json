@@ -1,0 +1,66 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "someone",
+    "email": "someone@gmail.com"
+  },
+  "rules": [
+    {
+      "filter": {
+        "and": [
+          {
+            "or": [
+              { "list": "list1" },
+              { "list": "list2" },
+              { "list": "list3" }
+            ]
+          },
+          {
+            "not": {
+              "or": [
+                { "to": "pippo@gmail.com" },
+                { "to": "pippo@hotmail.com" }
+              ]
+            }
+          }
+        ]
+      },
+      "actions": {
+        "archive": true,
+        "labels": ["maillist", "onemorelabel"]
+      }
+    },
+    {
+      "filter": {
+        "and": [
+          { "to": "myalias@gmail.com" },
+          {
+            "or": [
+              { "list": "list1" },
+              { "list": "list2" },
+              { "list": "list3" }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "markImportant": true
+      }
+    },
+    {
+      "filter": {
+        "or": [
+          { "from": "spammer1" },
+          { "from": "spammer2" },
+          { "subject": "spam mail" },
+          { "to": "pippo+spammy@gmail.com" },
+          { "has": "buy this thing" },
+          { "has": "very important!!!" }
+        ]
+      },
+      "actions": {
+        "delete": true
+      }
+    }
+  ]
+}
