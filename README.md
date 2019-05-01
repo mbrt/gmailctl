@@ -54,7 +54,11 @@ settings without leaving your command line.
 
 [![asciicast](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx.svg)](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx)
 
-The easiest way to use gmailctl is to run `gmailctl edit`. This will open the local `.gmailctl/config.jsonnet` file in your editor. After you exit the editor the configuration is applied to Gmail.  See [Configuration](#configuration) for the configuration file format.
+The easiest way to use gmailctl is to run `gmailctl edit`. This will open the
+local `.gmailctl/config.jsonnet` file in your editor. After you exit the editor
+the configuration is applied to Gmail. See [Configuration](#configuration) for
+the configuration file format. This is the preferred way if you want to start
+your filters from scratch.
 
 **NOTE:** It's recommended to backup your current configuration before you apply
 the generated one for the first time. Your current filters will be wiped and
@@ -62,37 +66,52 @@ replaced with the ones specified in the config file. The diff you'll get during
 the first run will probably be pretty big, but from that point on, all changes
 should generate a small and simple to review diff.
 
-Other available commands:
+Another possibility is to use the `download** command, that looks up at your
+currently configured filters in Gmail and tries to create a configuration file
+matching that configuration.
+
+**NOTE:** This functionality is experimental. It's recommended to download the
+filters and check that they correspond to the remote ones, before making any
+changes, to avoid surprises. Also note that the configuration file will be quite
+ugly, as expressions won't be reconstructed properly, but it should serve as a
+starting point if you are migrating from other systems.
+
+Example of usage:
+
+```bash
+# download the filters to the default configuration file
+gmailctl download > ~/.gmailctl/config.jsonnet
+# check that the diff is empty and no errors are present
+gmailctl diff
+# happy editing!
+gmailctl edit
+```
+
+All the available commands (you can also check with `gmailctl help`):
 
 ```
   apply       Apply a configuration file to Gmail settings
   debug       Shows an annotated version of the configuration
   diff        Shows a diff between the local configuaration and Gmail settings
+  download    Download filters from Gmail to a local config file
   edit        Edit the configuration and apply it to Gmail
   export      Export filters into the Gmail XML format
   help        Help about any command
   init        Initialize the Gmail configuration
 ```
 
-
 ## Configuration
 
 **NOTE:** The configuration format is still in alpha and might change in the
-future. If you are looking for the deprecated version `v1alpha1`, please refer
-to [docs/v1alpha1.md](docs/v1alpha1.md).
+future. If you are looking for the deprecated versions `v1alpha1`, or
+`v1alpha2`, please refer to [docs/v1alpha1.md](docs/v1alpha1.md) and
+[docs/v1alpha2.md](docs/v1alpha2.md).
 
-For the configuration file, both YAML and Jsonnet are supported. The YAML format
-is kept for retro-compatibility, it can be more readable but also much less
-flexible. The Jsonnet version is very powerful and also comes with a utility
-library that helps you write some more complex filters.
-
-For the documentation on the YAML version, please refer to
-[docs/v1alpha2-yaml.md](docs/v1alpha2-yaml.md).
-
-Jsonnet is a very powerful configuration language, derived from JSON, adding
-functionality such as comments, variables, references, arithmetic and logic
-operations, functions, conditionals, importing other files, parametrizations and
-so on. For more details on the language, please refer to [the official
+The configuration file is written in Jsonnet, that is a very powerful
+configuration language, derived from JSON. It adds functionality such as
+comments, variables, references, arithmetic and logic operations, functions,
+conditionals, importing other files, parametrizations and so on. For more
+details on the language, please refer to [the official
 tutorial](https://jsonnet.org/learning/tutorial.html).
 
 Simple example:
@@ -108,7 +127,7 @@ local me = {
 
 // The exported configuration starts here
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   // Optional author information (used in exports).
   author: {
     name: 'Pippo Pluto',
@@ -169,7 +188,7 @@ Example:
 
 ```jsonnet
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: { subject: 'important mail' },
@@ -203,7 +222,7 @@ Example:
 
 ```jsonnet
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {
@@ -248,7 +267,7 @@ local toMe = {
 local notToMe = { not: toMe };
 
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {
@@ -281,7 +300,7 @@ The example is effectively equivalent to this one:
 
 ```jsonnet
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {
@@ -316,33 +335,6 @@ The example is effectively equivalent to this one:
 }
 ```
 
-Or in YAML:
-
-```yaml
-version: v1alpha2
-rules:
-  - filter:
-      and:
-        - from: foobar
-        # Was "name: notToMe"
-        - not:
-            # Inside "notToMe" there was "name: me", so its definition
-            # got replaced here
-            or:
-              - to: myself@gmail.com
-              - to: myself@yahoo.com
-    actions:
-      delete: true
-  - filter:
-      # Was "name: toMe"
-      or:
-        - to: myself@gmail.com
-        - to: myself@yahoo.com
-    actions:
-      labels:
-        - directed
-```
-
 ### Actions
 
 Every rule is a composition of a filter and a set of actions. Those actions will
@@ -370,7 +362,7 @@ Example:
 
 ```jsonnet
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: { from: 'love@gmail.com' },
@@ -420,7 +412,7 @@ local favourite = {
 };
 
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
            // ... Other filters applied in any order
          ]
@@ -446,42 +438,6 @@ local favourite = {
 }
 ```
 
-This is equivalent to this YAML configuration:
-
-```yaml
-version: v1alpha2
-rules:
-- filter:
-    to: myself@gmail.com
-  actions:
-    markImportant: true
-
-- filter:
-    and:
-    - not:
-        to: myself@gmail.com
-    - or:
-      - from: foo@bar.com
-      - from: baz@bar.com
-      - list: wow@list.com
-  actions:
-    labels:
-    - interesting
-  
-- filter:
-    and:
-    - not:
-        to: myself@gmail.com
-    - not:
-        or:
-        - from: foo@bar.com
-        - from: baz@bar.com
-        - list: wow@list.com
-    - to: myself+spam@gmail.com
-  actions:
-    archive: true
-```
-
 ### To me
 
 Gmail gives you the possibility to write literally `to:me` in a filter, to match
@@ -497,7 +453,7 @@ You can also save some typing by introducing a local variable like this:
 local me = 'myemail@gmail.com';
 
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       // Save typing here.
@@ -539,7 +495,7 @@ for example in this way:
 local lib = import 'gmailctl.libsonnet';
 local me = 'pippo@gmail.com';
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: lib.directlyTo(me),
@@ -612,7 +568,7 @@ local spam = {
   ],
 };
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: spam,
@@ -665,7 +621,7 @@ local spam = {
   ],
 };
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {

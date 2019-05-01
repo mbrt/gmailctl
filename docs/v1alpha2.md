@@ -1,4 +1,4 @@
-# YAML config v1alpha2
+# Config v1alpha2
 
 **Note:** This document refer to a deprecated (but still supported) version of
 the configuration file. New versions of `gmailctl` will still be able to read
@@ -6,7 +6,54 @@ and apply this version of the configuration file, but the support might
 disappear in the future. Please refer to the main README for details on the
 newer format.
 
+For the configuration file, both YAML and Jsonnet are supported. The YAML format
+is kept for retro-compatibility, it can be more readable but also much less
+flexible. The Jsonnet version is very powerful and also comes with a utility
+library that helps you write some more complex filters.
+
+Jsonnet is a very powerful configuration language, derived from JSON, adding
+functionality such as comments, variables, references, arithmetic and logic
+operations, functions, conditionals, importing other files, parametrizations and
+so on. For more details on the language, please refer to [the official
+tutorial](https://jsonnet.org/learning/tutorial.html).
+
 Simple example:
+
+```jsonnet
+// Local variables help reuse config fragments
+local me = {
+  or: [
+    { to: 'pippo@gmail.com' },
+    { to: 'pippo@hotmail.com' },
+  ],
+};
+
+// The exported configuration starts here
+{
+  version: 'v1alpha2',
+  // Optional author information (used in exports).
+  author: {
+    name: 'Pippo Pluto',
+    email: 'pippo@gmail.com'
+  },
+  rules: [
+    {
+      filter: {
+        and: [
+          { list: 'geeks@newsletter.com' },
+          { not: me },  // Reference to the local variable 'me'
+        ],
+      },
+      actions: {
+        archive: true,
+        labels: ['news'],
+      },
+    },
+  ],
+}
+```
+
+Or in YAML:
 
 ```yaml
 version: v1alpha2
@@ -28,7 +75,8 @@ rules:
         - news
 ```
 
-The YAML configuration file contains two important sections:
+The configuration file contains mandatory version information, optional author
+metadata and two important sections:
 
 * `filters` that contains named filters that can be called up by subsequent
   filters or rules.
@@ -62,6 +110,30 @@ id="a1">[1](#f1)</sup>, or want to compose your query manually:
 
 Example:
 
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: { subject: 'important mail' },
+      actions: {
+        markImportant: true,
+      },
+    },
+    {
+      filter: {
+        query: 'dinner AROUND 5 friday has:spreadsheet',
+      },
+      actions: {
+        delete: true,
+      },
+    },
+  ],
+}
+```
+
+Or in YAML:
+
 ```yaml
 version: v1alpha2
 rules:
@@ -86,6 +158,32 @@ operators do what you expect:
 * `not`: is true if the sub-expression is false.
 
 Example:
+
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        or: [
+          { from: 'foo' },
+          {
+            and: [
+              { list: 'bar' },
+              { not: { to: 'baz' } },
+            ],
+          },
+        ],
+      },
+      actions: {
+        markImportant: true,
+      },
+    },
+  ],
+}
+```
+
+Or in YAML:
 
 ```yaml
 version: v1alpha2
@@ -176,6 +274,46 @@ rules:
 Note that filters can reference only filters previously defined, to avoid cyclic
 dependencies.
 
+Note also that this feature is not needed in Jsonnet configurations, because
+Jsonnet natively supports variables and functions, and so makes this
+functionality superfluous. In Jsonnet you would write something like:
+
+```jsonnet
+local toMe = {
+  or: [
+    { to: 'myself@gmail.com' },
+    { to: 'myself@yahoo.com' },
+  ],
+};
+local notToMe = { not: toMe };
+
+// The final configuration
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: {
+        and: [
+          { from: 'foobar' },
+          notToMe,
+        ],
+      },
+      actions: {
+        delete: true,
+      },
+    },
+    {
+      filter: toMe,
+      actions: {
+        labels: ['directed'],
+      },
+    },
+  ],
+}
+```
+
+Note the use of local variables and their references in the config.
+
 ## Actions
 
 Every rule is a composition of a filter and a set of actions. Those actions will
@@ -200,6 +338,24 @@ are the same as the ones in the Gmail interface:
   allows to specify only one label per filter).
 
 Example:
+
+```jsonnet
+{
+  version: 'v1alpha2',
+  rules: [
+    {
+      filter: { from: 'love@gmail.com' },
+      actions: {
+        markImportant: true,
+        category: 'personal',
+        labels: ['family', 'P1'],
+      },
+    },
+  ],
+}
+```
+
+Or in YAML:
 
 ```yaml
 version: v1alpha2
