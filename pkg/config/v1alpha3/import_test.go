@@ -1,13 +1,13 @@
 package v1alpha3
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"testing"
 
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 

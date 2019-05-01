@@ -59,8 +59,17 @@ func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
 
 func (i *importer) importRule(r v2.Rule) Rule {
 	return Rule{
-		Filter:  i.importFilter(r.Filter),
-		Actions: r.Actions,
+		Filter: i.importFilter(r.Filter),
+		Actions: Actions{
+			Archive:       r.Actions.Archive,
+			Delete:        r.Actions.Delete,
+			MarkRead:      r.Actions.MarkRead,
+			Star:          r.Actions.Star,
+			MarkSpam:      r.Actions.MarkSpam,
+			MarkImportant: r.Actions.MarkImportant,
+			Category:      r.Actions.Category,
+			Labels:        r.Actions.Labels,
+		},
 	}
 }
 
