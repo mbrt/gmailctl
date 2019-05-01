@@ -1,0 +1,201 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "YOUR NAME HERE (auto imported)",
+    "email": "your@email"
+  },
+  "rules": [
+    {
+      "filter": {
+        "to": "myselfyeah0@gmail.com"
+      },
+      "actions": {
+        "delete": true
+      }
+    },
+    {
+      "filter": {
+        "subject": "{\"[ExpatRepublicAmsterdam] 9 EURO YOGA\" \"(Amsterdam Football and Basketball)\"}",
+        "isEscaped": true
+      },
+      "actions": {
+        "delete": true
+      }
+    },
+    {
+      "filter": {
+        "to": "{myselfyeah0@gmail.com myselfyeah@gmail.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "markImportant": false,
+        "labels": [
+          "NotInteresting"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{*@onstageweb.com noreply@vivigratis.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "delete": true
+      }
+    },
+    {
+      "filter": {
+        "from": "foobar@gmail.com"
+      },
+      "actions": {
+        "markImportant": true,
+        "category": "personal"
+      }
+    },
+    {
+      "filter": {
+        "from": "{info@reservation.foo.co.uk *@bar.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "labels": [
+          "BG"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "list:zbaz.122677.list-id.mcsv.net"
+      },
+      "actions": {
+        "labels": [
+          "Rust"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{zlskdj@gmail.com fsjei8.5@gmail.com jflgija@gmail.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "category": "personal",
+        "labels": [
+          "Amici"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "*@dblab.it"
+      },
+      "actions": {
+        "labels": [
+          "DBLab"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "and": [
+          {
+            "from": "express@airbnb.com"
+          },
+          {
+            "query": "RE:"
+          }
+        ]
+      },
+      "actions": {
+        "markImportant": true,
+        "category": "personal"
+      }
+    },
+    {
+      "filter": {
+        "from": "internals@rust-lang.org"
+      },
+      "actions": {
+        "labels": [
+          "Rust"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{*@univr.it flalsg.googlegroups.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "labels": [
+          "Uni"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{*@fsfl.com Folijfl@fslh.com iglfj@moving.com}",
+        "isEscaped": true
+      },
+      "actions": {
+        "category": "personal",
+        "labels": [
+          "Relocation"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{Loo.afl@cartus.com bar.lkji@gmx.de}",
+        "isEscaped": true
+      },
+      "actions": {
+        "category": "personal",
+        "labels": [
+          "Relocation"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "to": "myself.yeah+ah@gmail.com"
+      },
+      "actions": {
+        "category": "promotions"
+      }
+    },
+    {
+      "filter": {
+        "to": "asdflkj@studenti.uni.it"
+      },
+      "actions": {
+        "labels": [
+          "Uni"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "*@brightfoobar.com"
+      },
+      "actions": {
+        "labels": [
+          "Bright"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "{*@foo.it m.yeah@pec.it}",
+        "isEscaped": true
+      },
+      "actions": {
+        "labels": [
+          "FOO"
+        ]
+      }
+    }
+  ]
+}

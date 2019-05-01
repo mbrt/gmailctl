@@ -1,4 +1,7 @@
-version: v2beta1
+version: v1alpha2
+author:
+  name: someone
+  email: someone@gmail.com
 filters:
   - name: me
     query:
@@ -34,6 +37,7 @@ rules:
     actions:
       labels:
         - maillist
+        - onemorelabel
       archive: true
 
   - filter:

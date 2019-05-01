@@ -16,7 +16,7 @@ local spam = {
 // The actual configuration
 {
   // Mandatory header
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   author: {
     name: 'Pippo Pluto',
     email: me,

@@ -94,7 +94,7 @@ func generateNode(node *parser.Node) (Criteria, error) {
 }
 
 func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
-	needEscape := leaf.Function != parser.FunctionQuery
+	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
 	query := joinStrings(needEscape, leaf.Args...)
 	if len(leaf.Args) > 1 {
 		var err error
@@ -156,7 +156,7 @@ func generateNodeAsString(node *parser.Node) (string, error) {
 }
 
 func generateLeafAsString(leaf *parser.Leaf) (string, error) {
-	needEscape := leaf.Function != parser.FunctionQuery
+	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
 	query := joinStrings(needEscape, leaf.Args...)
 	if len(leaf.Args) > 1 {
 		var err error

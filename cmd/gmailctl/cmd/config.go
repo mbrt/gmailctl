@@ -7,13 +7,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/mbrt/gmailctl/pkg/config"
-	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
 type parseResult struct {
-	config  cfgv2.Config
+	config  cfgv3.Config
 	rules   []parser.Rule
 	filters filter.Filters
 }

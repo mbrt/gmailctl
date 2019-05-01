@@ -15,7 +15,7 @@ local toMe = { to: me };
 // The actual configuration
 {
   // Mandatory header
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   author: {
     name: 'YOUR NAME HERE',
     email: me,

@@ -1,22 +1,17 @@
 package parser
 
 import (
-	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	cfg "github.com/mbrt/gmailctl/pkg/config"
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
-func readConfig(t *testing.T, path string) cfg.Config {
-	b, err := ioutil.ReadFile(path)
+func readConfig(t *testing.T, path string) cfgv1.Config {
+	res, err := cfg.ReadFile(path, path)
 	if err != nil {
-		t.Fatal(err)
-	}
-	var res cfg.Config
-	if err := yaml.UnmarshalStrict(b, &res); err != nil {
 		t.Fatal(err)
 	}
 	return res
@@ -27,7 +22,7 @@ func boolptr(a bool) *bool {
 }
 
 func TestParse(t *testing.T) {
-	conf := readConfig(t, "testdata/example.yaml")
+	conf := readConfig(t, "testdata/example.jsonnet")
 	expected := []Rule{
 		{
 			Criteria: and(
