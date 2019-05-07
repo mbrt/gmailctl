@@ -27,7 +27,13 @@ To do so, head to https://console.developers.google.com
    2a. Select the Gmail API
    2b. Select 'Other UI'
    2c. Access 'User data'.
-3. Download the credentials file into '%s'
+3. Go to 'OAuth constent screen' and update 'Scopes for Google API', by
+   adding:
+     * https://www.googleapis.com/auth/gmail.metadata
+     * https://www.googleapis.com/auth/gmail.settings.basic
+4. IMPORTANT: you don't need to submit your changes for verification, as
+   you're not creating a public App
+5. Download the credentials file into '%s'
    and execute the 'init' command again.
 
 Documentation about Gmail API authorization can be found
