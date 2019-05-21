@@ -66,12 +66,15 @@ replaced with the ones specified in the config file. The diff you'll get during
 the first run will probably be pretty big, but from that point on, all changes
 should generate a small and simple to review diff.
 
-Another possibility is to use the `download** command, that looks up at your
-currently configured filters in Gmail and tries to create a configuration file
-matching that configuration.
+### Migrate from another solution
+
+If you want to preserve your current filters and migrate to a more sane
+configuration gradually, you can try to use the `download` command. This will
+look up at your currently configured filters in Gmail and try to create a
+configuration file matching the current state.
 
 **NOTE:** This functionality is experimental. It's recommended to download the
-filters and check that they correspond to the remote ones, before making any
+filters and check that they correspond to the remote ones before making any
 changes, to avoid surprises. Also note that the configuration file will be quite
 ugly, as expressions won't be reconstructed properly, but it should serve as a
 starting point if you are migrating from other systems.
@@ -86,6 +89,8 @@ gmailctl diff
 # happy editing!
 gmailctl edit
 ```
+
+### Other commands
 
 All the available commands (you can also check with `gmailctl help`):
 
