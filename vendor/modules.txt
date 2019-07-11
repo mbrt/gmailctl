@@ -1,0 +1,61 @@
+# cloud.google.com/go v0.26.0
+cloud.google.com/go/compute/metadata
+# github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
+github.com/cnf/structhash
+# github.com/cpmech/gosl v0.0.0-20190102001352-442e9fffea0a
+github.com/cpmech/gosl/chk
+github.com/cpmech/gosl/io
+github.com/cpmech/gosl/utl
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
+# github.com/golang/protobuf v1.1.0
+github.com/golang/protobuf/proto
+# github.com/google/go-jsonnet v0.12.1
+github.com/google/go-jsonnet
+github.com/google/go-jsonnet/ast
+github.com/google/go-jsonnet/parser
+# github.com/hashicorp/errwrap v0.0.0-20180715044906-d6c0cd880357
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v0.0.0-20180717150148-3d5d8f294aa0
+github.com/hashicorp/go-multierror
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/mitchellh/go-homedir v0.0.0-20180801233206-58046073cbff
+github.com/mitchellh/go-homedir
+# github.com/pkg/errors v0.8.0
+github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/spf13/cobra v0.0.3
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.2
+github.com/spf13/pflag
+# github.com/stretchr/testify v1.2.2
+github.com/stretchr/testify/assert
+# golang.org/x/net v0.0.0-20180811021610-c39426892332
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+# golang.org/x/oauth2 v0.0.0-20180724155351-3d292e4d0cdc
+golang.org/x/oauth2
+golang.org/x/oauth2/google
+golang.org/x/oauth2/internal
+golang.org/x/oauth2/jws
+golang.org/x/oauth2/jwt
+# google.golang.org/api v0.0.0-20180811000443-0aa0a1f2c0c4
+google.golang.org/api/gmail/v1
+google.golang.org/api/gensupport
+google.golang.org/api/googleapi
+google.golang.org/api/googleapi/internal/uritemplates
+# google.golang.org/appengine v1.1.0
+google.golang.org/appengine
+google.golang.org/appengine/urlfetch
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/app_identity
+google.golang.org/appengine/internal/modules
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
+# gopkg.in/yaml.v2 v2.2.1
+gopkg.in/yaml.v2
