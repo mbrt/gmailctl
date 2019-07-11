@@ -575,6 +575,38 @@ func builtinMd5(i *interpreter, trace TraceElement, x value) (value, error) {
 	return makeValueString(hex.EncodeToString(hash[:])), nil
 }
 
+func builtinEncodeUTF8(i *interpreter, trace TraceElement, x value) (value, error) {
+	str, err := i.getString(x, trace)
+	if err != nil {
+		return nil, err
+	}
+	s := str.getString()
+	elems := make([]*cachedThunk, 0, len(s)) // it will be longer if characters fall outside of ASCII
+	for _, c := range []byte(s) {
+		elems = append(elems, readyThunk(makeValueNumber(float64(c))))
+	}
+	return makeValueArray(elems), nil
+}
+
+func builtinDecodeUTF8(i *interpreter, trace TraceElement, x value) (value, error) {
+	arr, err := i.getArray(x, trace)
+	if err != nil {
+		return nil, err
+	}
+	bs := make([]byte, len(arr.elements)) // it will be longer if characters fall outside of ASCII
+	for pos := range arr.elements {
+		v, err := i.evaluateInt(arr.elements[pos], trace)
+		if err != nil {
+			return nil, err
+		}
+		if v < 0 || v > 255 {
+			return nil, i.Error(fmt.Sprintf("Bytes must be integers in range [0, 255], got %d", v), trace)
+		}
+		bs[pos] = byte(v)
+	}
+	return makeValueString(string(bs)), nil
+}
+
 // Maximum allowed unicode codepoint
 // https://en.wikipedia.org/wiki/Unicode#Architecture_and_terminology
 const codepointMax = 0x10FFFF
@@ -718,6 +750,43 @@ func builtinPow(i *interpreter, trace TraceElement, basev value, expv value) (va
 	return makeDoubleCheck(i, trace, math.Pow(base.value, exp.value))
 }
 
+func builtinSplitLimit(i *interpreter, trace TraceElement, strv, cv, maxSplitsV value) (value, error) {
+	str, err := i.getString(strv, trace)
+	if err != nil {
+		return nil, err
+	}
+	c, err := i.getString(cv, trace)
+	if err != nil {
+		return nil, err
+	}
+	maxSplits, err := i.getInt(maxSplitsV, trace)
+	if err != nil {
+		return nil, err
+	}
+	if maxSplits < -1 {
+		return nil, i.Error(fmt.Sprintf("std.splitLimit third parameter should be -1 or non-negative, got %v", maxSplits), trace)
+	}
+	sStr := str.getString()
+	sC := c.getString()
+	if len(sC) != 1 {
+		return nil, i.Error(fmt.Sprintf("std.splitLimit second parameter should have length 1, got %v", len(sC)), trace)
+	}
+
+	// the convention is slightly different from strings.splitN in Go (the meaning of non-negative values is shifted by one)
+	var strs []string
+	if maxSplits == -1 {
+		strs = strings.SplitN(sStr, sC, -1)
+	} else {
+		strs = strings.SplitN(sStr, sC, maxSplits+1)
+	}
+	res := make([]*cachedThunk, len(strs))
+	for i := range strs {
+		res[i] = readyThunk(makeValueString(strs[i]))
+	}
+
+	return makeValueArray(res), nil
+}
+
 func builtinStrReplace(i *interpreter, trace TraceElement, strv, fromv, tov value) (value, error) {
 	str, err := i.getString(strv, trace)
 	if err != nil {
@@ -741,6 +810,9 @@ func builtinStrReplace(i *interpreter, trace TraceElement, strv, fromv, tov valu
 }
 
 func builtinUglyObjectFlatMerge(i *interpreter, trace TraceElement, x value) (value, error) {
+	// TODO(sbarzowski) consider keeping comprehensions in AST
+	// It will probably be way less hacky, with better error messages and better performance
+
 	objarr, err := i.getArray(x, trace)
 	if err != nil {
 		return nil, err
@@ -749,6 +821,7 @@ func builtinUglyObjectFlatMerge(i *interpreter, trace TraceElement, x value) (va
 		return &valueSimpleObject{}, nil
 	}
 	newFields := make(simpleObjectFieldMap)
+	var anyObj *valueSimpleObject
 	for _, elem := range objarr.elements {
 		obj, err := i.evaluateObject(elem, trace)
 		if err != nil {
@@ -756,10 +829,22 @@ func builtinUglyObjectFlatMerge(i *interpreter, trace TraceElement, x value) (va
 		}
 		// starts getting ugly - we mess with object internals
 		simpleObj := obj.(*valueSimpleObject)
+		// there is only one field, really
 		for fieldName, fieldVal := range simpleObj.fields {
 			if _, alreadyExists := newFields[fieldName]; alreadyExists {
 				return nil, i.Error(duplicateFieldNameErrMsg(fieldName), trace)
 			}
+
+			// Here is the tricky part. Each field in a comprehension has different
+			// upValues, because for example in {[v]: v for v in ["x", "y", "z"] },
+			// the v is different for each field.
+			// Yet, even though upValues are field-specific, they are shadowed by object locals,
+			// so we need to make holes to let them pass through
+			upValues := simpleObj.upValues
+			for _, l := range simpleObj.locals {
+				delete(upValues, l.name)
+			}
+
 			newFields[fieldName] = simpleObjectField{
 				hide: fieldVal.hide,
 				field: &bindingsUnboundField{
@@ -768,11 +853,24 @@ func builtinUglyObjectFlatMerge(i *interpreter, trace TraceElement, x value) (va
 				},
 			}
 		}
+		anyObj = simpleObj
 	}
+
+	var locals []objectLocal
+	var localUpValues bindingFrame
+	if len(objarr.elements) > 0 {
+		// another ugliness - we just take the locals of our last object,
+		// we assume that the locals are the same for each of merged objects
+		locals = anyObj.locals
+		// note that there are already holes for object locals
+		localUpValues = anyObj.upValues
+	}
+
 	return makeValueSimpleObject(
-		nil, // no binding frame
+		localUpValues,
 		newFields,
 		[]unboundField{}, // No asserts allowed
+		locals,
 	), nil
 }
 
@@ -1014,8 +1112,11 @@ var funcBuiltins = buildBuiltinMap([]builtin{
 	&binaryBuiltin{name: "pow", function: builtinPow, parameters: ast.Identifiers{"base", "exp"}},
 	&binaryBuiltin{name: "modulo", function: builtinModulo, parameters: ast.Identifiers{"x", "y"}},
 	&unaryBuiltin{name: "md5", function: builtinMd5, parameters: ast.Identifiers{"x"}},
+	&ternaryBuiltin{name: "splitLimit", function: builtinSplitLimit, parameters: ast.Identifiers{"str", "c", "maxsplits"}},
 	&ternaryBuiltin{name: "strReplace", function: builtinStrReplace, parameters: ast.Identifiers{"str", "from", "to"}},
 	&unaryBuiltin{name: "parseJson", function: builtinParseJSON, parameters: ast.Identifiers{"str"}},
+	&unaryBuiltin{name: "encodeUTF8", function: builtinEncodeUTF8, parameters: ast.Identifiers{"str"}},
+	&unaryBuiltin{name: "decodeUTF8", function: builtinDecodeUTF8, parameters: ast.Identifiers{"arr"}},
 	&unaryBuiltin{name: "native", function: builtinNative, parameters: ast.Identifiers{"x"}},
 
 	// internal

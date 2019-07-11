@@ -18,10 +18,7 @@ install:
 
 script:
   - go test -mod vendor ./...
-  - >
-    ./bin/golangci-lint run --skip-dirs=pkg/graph
-    --enable=golint --enable=gosec --enable=unconvert
-    --enable=misspell
+  - ./bin/golangci-lint run
   - hack/check-codegen.sh
 
 notifications:

@@ -203,6 +203,14 @@ func (s *callStack) getCurrentEnv(ast ast.Node) environment {
 	)
 }
 
+func (s *callStack) getTopEnv() environment {
+	top := s.stack[len(s.stack)-1]
+	if !top.isCall {
+		panic("getTopEnv is allowed only for artifical nodes which are called in new environment")
+	}
+	return top.env
+}
+
 // Build a binding frame containing specified variables.
 func (s *callStack) capture(freeVars ast.Identifiers) bindingFrame {
 	env := make(bindingFrame)
@@ -283,7 +291,7 @@ func (i *interpreter) evaluate(a ast.Node, tc tailCallStatus) (value, error) {
 	case *ast.Binary:
 		if node.Op == ast.BopAnd {
 			// Special case for shortcut semantics.
-			xv, err := i.evaluate(node.Left, tc)
+			xv, err := i.evaluate(node.Left, nonTailCall)
 			if err != nil {
 				return nil, err
 			}
@@ -301,7 +309,7 @@ func (i *interpreter) evaluate(a ast.Node, tc tailCallStatus) (value, error) {
 			return i.getBoolean(yv, trace)
 		} else if node.Op == ast.BopOr {
 			// Special case for shortcut semantics.
-			xv, err := i.evaluate(node.Left, tc)
+			xv, err := i.evaluate(node.Left, nonTailCall)
 			if err != nil {
 				return nil, err
 			}
@@ -319,7 +327,7 @@ func (i *interpreter) evaluate(a ast.Node, tc tailCallStatus) (value, error) {
 			return i.getBoolean(yv, trace)
 
 		} else {
-			left, err := i.evaluate(node.Left, tc)
+			left, err := i.evaluate(node.Left, nonTailCall)
 			if err != nil {
 				return nil, err
 			}
@@ -392,8 +400,12 @@ func (i *interpreter) evaluate(a ast.Node, tc tailCallStatus) (value, error) {
 		for _, assert := range node.Asserts {
 			asserts = append(asserts, &codeUnboundField{assert})
 		}
+		var locals []objectLocal
+		for _, local := range node.Locals {
+			locals = append(locals, objectLocal{name: local.Variable, node: local.Body})
+		}
 		upValues := i.stack.capture(node.FreeVariables())
-		return makeValueSimpleObject(upValues, fields, asserts), nil
+		return makeValueSimpleObject(upValues, fields, asserts, locals), nil
 
 	case *ast.Error:
 		msgVal, err := i.evaluate(node.Expr, nonTailCall)
@@ -561,7 +573,7 @@ func (i *interpreter) evaluate(a ast.Node, tc tailCallStatus) (value, error) {
 		return i.evaluateTailCall(node.function, arguments, tc, trace)
 
 	default:
-		return nil, i.Error(fmt.Sprintf("Executing this AST type not implemented: %v", reflect.TypeOf(a)), trace)
+		panic(fmt.Sprintf("Executing this AST type not implemented: %v", reflect.TypeOf(a)))
 	}
 }
 
@@ -1128,7 +1140,7 @@ func buildObject(hide ast.ObjectFieldHide, fields map[string]value) valueObject 
 	for name, v := range fields {
 		fieldMap[name] = simpleObjectField{hide, &readyValue{v}}
 	}
-	return makeValueSimpleObject(bindingFrame{}, fieldMap, nil)
+	return makeValueSimpleObject(bindingFrame{}, fieldMap, nil, nil)
 }
 
 func buildInterpreter(ext vmExtMap, nativeFuncs map[string]*NativeFunction, maxStack int, importer Importer) (*interpreter, error) {

@@ -549,6 +549,7 @@ type DesugaredObject struct {
 	NodeBase
 	Asserts Nodes
 	Fields  DesugaredObjectFields
+	Locals  LocalBinds
 }
 
 // ---------------------------------------------------------------------------

@@ -16,21 +16,27 @@ feedback.
 
 This code is known to work on Go 1.8 and above. We recommend always using the newest stable release of Go.
 
-## Build instructions
+## Install instructions
+
+```
+go get github.com/google/go-jsonnet/cmd/jsonnet
+```
+
+## Build instructions (go 1.11+)
 
 ```bash
-export GOPATH=$HOME/go-workspace
-mkdir -pv $GOPATH
-go get github.com/fatih/color
-go get github.com/google/go-jsonnet
+git clone github.com/google/go-jsonnet
+cd go-jsonnet
+go build ./cmd/jsonnet
+```
+
+## Build instructions (go 1.8 - 1.10)
+
+```bash
+go get -u github.com/google/go-jsonnet
 cd $GOPATH/src/github.com/google/go-jsonnet
-cd jsonnet
-go build
-./jsonnet /dev/stdin <<< '{x: 1, y: self.x} + {x: 10}'
-{
-   "x": 10,
-   "y": 10
-}
+go get -u .
+go build ./cmd/jsonnet
 ```
 
 ## Running tests
@@ -52,10 +58,17 @@ export PATH=$PATH:$GOPATH/bin  # If you haven't already
 go generate
 ```
 
-## Generated Stdlib
+## Updating and modifying the standard library
 
-To regenerate the standard library, do:
+Standard library source code is kept in `cpp-jsonnet` submodule,
+because it is shared with [Jsonnet C++
+implementation](https://github.com/google/jsonnet).
+
+For perfomance reasons we perform preprocessing on the standard library,
+so for the changes to be visible, regeneration is necessary:
 
 ```bash
-./reset_stdast_go.sh && go run cmd/dumpstdlibast.go
+./reset_stdast_go.sh && go run cmd/dumpstdlibast/dumpstdlibast.go
 ```
+
+The above command recreates `ast/stdast.go` which puts the desugared standard library into the right data structures, which lets us avoid the parsing overhead during execution.

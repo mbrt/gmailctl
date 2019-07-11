@@ -3,27 +3,24 @@ module github.com/mbrt/gmailctl
 go 1.12
 
 require (
-	cloud.google.com/go v0.26.0 // indirect
+	cloud.google.com/go v0.41.0 // indirect
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
-	github.com/cpmech/gosl v0.0.0-20190102001352-442e9fffea0a
-	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
-	github.com/golang/protobuf v1.1.0 // indirect
-	github.com/google/go-jsonnet v0.12.1
-	github.com/hashicorp/errwrap v0.0.0-20180715044906-d6c0cd880357 // indirect
-	github.com/hashicorp/go-multierror v0.0.0-20180717150148-3d5d8f294aa0
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/mitchellh/go-homedir v0.0.0-20180801233206-58046073cbff
-	github.com/pkg/errors v0.8.0
+	github.com/cpmech/gosl v1.1.0
+	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/google/go-jsonnet v0.13.0
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/pkg/errors v0.8.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/sergi/go-diff v1.0.0 // indirect
-	github.com/spf13/cobra v0.0.3
-	github.com/spf13/pflag v1.0.2 // indirect
-	github.com/stretchr/testify v1.2.2
-	golang.org/x/net v0.0.0-20180811021610-c39426892332 // indirect
-	golang.org/x/oauth2 v0.0.0-20180724155351-3d292e4d0cdc
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
-	google.golang.org/api v0.0.0-20180811000443-0aa0a1f2c0c4
-	google.golang.org/appengine v1.1.0 // indirect
-	gopkg.in/yaml.v2 v2.2.1
+	github.com/spf13/cobra v0.0.5
+	github.com/stretchr/testify v1.3.0
+	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/sys v0.0.0-20190710143415-6ec70d6a5542 // indirect
+	google.golang.org/api v0.7.0
+	google.golang.org/genproto v0.0.0-20190708153700-3bdd9d9f5532 // indirect
+	google.golang.org/grpc v1.22.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )

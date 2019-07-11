@@ -456,6 +456,12 @@ func (obj *valueObjectBase) getAssertionsCheckResult() error {
 	return obj.assertionError
 }
 
+type objectLocal struct {
+	name ast.Identifier
+	// Locals may depend on self and super so they are unbound fields and not simply thunks
+	node ast.Node
+}
+
 // valueSimpleObject represents a flat object (no inheritance).
 // Note that it can be used as part of extended objects
 // in inheritance using operator +.
@@ -469,6 +475,7 @@ type valueSimpleObject struct {
 	upValues bindingFrame
 	fields   simpleObjectFieldMap
 	asserts  []unboundField
+	locals   []objectLocal
 }
 
 func checkAssertionsHelper(i *interpreter, trace TraceElement, obj valueObject, curr valueObject, superDepth int) error {
@@ -486,7 +493,8 @@ func checkAssertionsHelper(i *interpreter, trace TraceElement, obj valueObject, 
 	case *valueSimpleObject:
 		for _, assert := range curr.asserts {
 			sb := selfBinding{self: obj, superDepth: superDepth}
-			_, err := assert.evaluate(i, trace, sb, curr.upValues, "")
+			fieldUpValues := prepareFieldUpvalues(sb, curr.upValues, curr.locals)
+			_, err := assert.evaluate(i, trace, sb, fieldUpValues, "")
 			if err != nil {
 				return err
 			}
@@ -516,11 +524,12 @@ func (*valueSimpleObject) inheritanceSize() int {
 	return 1
 }
 
-func makeValueSimpleObject(b bindingFrame, fields simpleObjectFieldMap, asserts []unboundField) *valueSimpleObject {
+func makeValueSimpleObject(b bindingFrame, fields simpleObjectFieldMap, asserts []unboundField, locals []objectLocal) *valueSimpleObject {
 	return &valueSimpleObject{
 		upValues: b,
 		fields:   fields,
 		asserts:  asserts,
+		locals:   locals,
 	}
 }
 
@@ -579,28 +588,49 @@ func makeValueExtendedObject(left, right valueObject) *valueExtendedObject {
 // findField returns a field in object curr, with superDepth at least minSuperDepth
 // It also returns an associated bindingFrame and actual superDepth that the field
 // was found at.
-func findField(curr value, minSuperDepth int, f string) (bool, simpleObjectField, bindingFrame, int) {
+func findField(curr value, minSuperDepth int, f string) (bool, simpleObjectField, bindingFrame, []objectLocal, int) {
 	switch curr := curr.(type) {
 	case *valueExtendedObject:
 		if curr.right.inheritanceSize() > minSuperDepth {
-			found, field, frame, counter := findField(curr.right, minSuperDepth, f)
+			found, field, frame, locals, counter := findField(curr.right, minSuperDepth, f)
 			if found {
-				return true, field, frame, counter
+				return true, field, frame, locals, counter
 			}
 		}
-		found, field, frame, counter := findField(curr.left, minSuperDepth-curr.right.inheritanceSize(), f)
-		return found, field, frame, counter + curr.right.inheritanceSize()
+		found, field, frame, locals, counter := findField(curr.left, minSuperDepth-curr.right.inheritanceSize(), f)
+		return found, field, frame, locals, counter + curr.right.inheritanceSize()
 
 	case *valueSimpleObject:
 		if minSuperDepth <= 0 {
 			if field, ok := curr.fields[f]; ok {
-				return true, field, curr.upValues, 0
+				return true, field, curr.upValues, curr.locals, 0
 			}
 		}
-		return false, simpleObjectField{}, nil, 0
+		return false, simpleObjectField{}, nil, nil, 0
 	default:
 		panic(fmt.Sprintf("Unknown object type %#v", curr))
 	}
+}
+
+func prepareFieldUpvalues(sb selfBinding, upValues bindingFrame, locals []objectLocal) bindingFrame {
+	newUpValues := make(bindingFrame)
+	for k, v := range upValues {
+		newUpValues[k] = v
+	}
+	localThunks := make([]*cachedThunk, 0, len(locals))
+	for _, l := range locals {
+		th := &cachedThunk{
+			// We will fill upValues later
+			env:  &environment{upValues: nil, selfBinding: sb},
+			body: l.node,
+		}
+		newUpValues[l.name] = th
+		localThunks = append(localThunks, th)
+	}
+	for _, th := range localThunks {
+		th.env.upValues = newUpValues
+	}
+	return newUpValues
 }
 
 func objectIndex(i *interpreter, trace TraceElement, sb selfBinding, fieldName string) (value, error) {
@@ -612,17 +642,19 @@ func objectIndex(i *interpreter, trace TraceElement, sb selfBinding, fieldName s
 		return nil, i.Error("Attempt to use super when there is no super class.", trace)
 	}
 
-	found, field, upValues, foundAt := findField(sb.self, sb.superDepth, fieldName)
+	found, field, upValues, locals, foundAt := findField(sb.self, sb.superDepth, fieldName)
 	if !found {
 		return nil, i.Error(fmt.Sprintf("Field does not exist: %s", fieldName), trace)
 	}
 
 	fieldSelfBinding := selfBinding{self: sb.self, superDepth: foundAt}
-	return field.field.evaluate(i, trace, fieldSelfBinding, upValues, fieldName)
+	fieldUpValues := prepareFieldUpvalues(fieldSelfBinding, upValues, locals)
+
+	return field.field.evaluate(i, trace, fieldSelfBinding, fieldUpValues, fieldName)
 }
 
 func objectHasField(sb selfBinding, fieldName string, h Hidden) bool {
-	found, field, _, _ := findField(sb.self, sb.superDepth, fieldName)
+	found, field, _, _, _ := findField(sb.self, sb.superDepth, fieldName)
 	if !found || (h == withoutHidden && field.hide == ast.ObjectFieldHidden) {
 		return false
 	}
