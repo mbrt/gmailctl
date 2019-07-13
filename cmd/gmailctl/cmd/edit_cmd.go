@@ -188,9 +188,6 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 		return err
 	}
 
-	// This forces labels to be re-fetched, in case something has changed
-	// between edit retries.
-	_, _ = gmailapi.LabelMap()
 	upstream, err := upstreamFilters(gmailapi)
 	if err != nil {
 		return err

@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
@@ -19,9 +18,7 @@ const (
 
 // GmailAPI is a wrapper around the Gmail APIs.
 type GmailAPI struct {
-	service  *gmailv1.Service
-	labelmap *exportapi.LabelMap // don't use without locking
-	mutex    *sync.Mutex
+	service *gmailv1.Service
 }
 
 // ListFilters returns the list of Gmail filters in the settings.
@@ -73,81 +70,55 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 
 // ListLabels lists the user labels.
 func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
-	idNameMap, err := g.refreshLabelMap()
-	if err != nil {
-		return nil, err
-	}
-
-	i := 0
-	res := make([]filter.Label, len(idNameMap))
-	for id, name := range idNameMap {
-		res[i] = filter.Label{ID: id, Name: name}
-		i++
-	}
-
-	return res, nil
-}
-
-// LabelMap returns a map of label ids and names.
-//
-// Deprecated: build the LabelMap directly with the list of labels.
-func (g *GmailAPI) LabelMap() (exportapi.LabelMap, error) {
-	_, err := g.refreshLabelMap()
-	if err != nil {
-		return exportapi.LabelMap{}, err
-	}
-	return *g.labelmap, nil
-}
-
-func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
-	if err := g.initLabelMap(); err != nil {
-		return exportapi.LabelMap{}, errors.Wrap(err, "cannot get list of labels")
-	}
-	g.mutex.Lock()
-	res := *g.labelmap
-	g.mutex.Unlock()
-
-	return res, nil
-}
-
-func (g *GmailAPI) initLabelMap() error {
-	g.mutex.Lock()
-	needInit := (g.labelmap == nil)
-	g.mutex.Unlock()
-
-	if !needInit {
-		return nil
-	}
-
-	_, err := g.refreshLabelMap()
-	return err
-}
-
-func (g *GmailAPI) refreshLabelMap() (map[string]string, error) {
-	idNameMap, err := g.fetchLabelsIDNameMap()
-	if err != nil {
-		return nil, err
-	}
-	newLabelMap := exportapi.NewLabelMap(idNameMap)
-
-	g.mutex.Lock()
-	g.labelmap = &newLabelMap
-	g.mutex.Unlock()
-
-	return idNameMap, nil
-}
-
-func (g *GmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
 	apires, err := g.service.Users.Labels.List(gmailUser).Do()
 	if err != nil {
 		return nil, err
 	}
-	idNameMap := map[string]string{}
+
+	var res []filter.Label
+
 	for _, label := range apires.Labels {
 		// We are only interested in user labels.
-		if label.Type != labelTypeSystem {
-			idNameMap[label.Id] = label.Name
+		if label.Type == labelTypeSystem {
+			continue
 		}
+
+		var color *filter.Color
+		if label.Color != nil {
+			color = &filter.Color{
+				Background: label.Color.BackgroundColor,
+				Text:       label.Color.TextColor,
+			}
+		}
+
+		res = append(res, filter.Label{
+			ID:          label.Id,
+			Name:        label.Name,
+			Color:       color,
+			NumMessages: int(label.MessagesTotal),
+		})
+	}
+
+	return res, nil
+}
+
+func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
+	idNameMap, err := g.fetchLabelsIDNameMap()
+	if err != nil {
+		return exportapi.LabelMap{}, err
+	}
+	return exportapi.NewLabelMap(idNameMap), nil
+}
+
+func (g *GmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
+	labels, err := g.ListLabels()
+	if err != nil {
+		return nil, err
+	}
+
+	idNameMap := map[string]string{}
+	for _, label := range labels {
+		idNameMap[label.ID] = label.Name
 	}
 	return idNameMap, nil
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"sync"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -47,11 +46,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 		return nil, errors.Wrap(err, "error creating gmail client")
 	}
 
-	// Lazy load the LabelMap
-	return &GmailAPI{
-		service: srv,
-		mutex:   &sync.Mutex{},
-	}, nil
+	return &GmailAPI{srv}, nil
 }
 
 // AuthURL returns the URL the user has to visit to authorize the

@@ -111,7 +111,7 @@ func (c Criteria) ToGmailSearch() string {
 type Label struct {
 	ID          string
 	Name        string
-	Color       Color
+	Color       *Color
 	NumMessages int
 }
 
