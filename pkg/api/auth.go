@@ -48,7 +48,10 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 	}
 
 	// Lazy load the LabelMap
-	return &GmailAPI{srv, nil, &sync.Mutex{}}, nil
+	return &GmailAPI{
+		service: srv,
+		mutex:   &sync.Mutex{},
+	}, nil
 }
 
 // AuthURL returns the URL the user has to visit to authorize the

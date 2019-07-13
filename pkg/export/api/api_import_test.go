@@ -102,7 +102,7 @@ func TestImportLabels(t *testing.T) {
 			},
 		},
 	}
-	lmap := NewDefaultLabelMap(map[string]string{
+	lmap := NewLabelMap(map[string]string{
 		"label1": "MyLabel",
 		"label2": "NewLabel",
 	})

@@ -10,8 +10,8 @@ import (
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
-func emptyLabelMap() DefaultLabelMap {
-	return NewDefaultLabelMap(map[string]string{})
+func emptyLabelMap() LabelMap {
+	return NewLabelMap(map[string]string{})
 }
 
 func TestExportActions(t *testing.T) {
@@ -126,7 +126,7 @@ func TestExportLabels(t *testing.T) {
 			},
 		},
 	}
-	lmap := NewDefaultLabelMap(map[string]string{
+	lmap := NewLabelMap(map[string]string{
 		"label1": "MyLabel",
 		"label2": "NewLabel",
 	})

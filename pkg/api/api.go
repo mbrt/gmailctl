@@ -20,10 +20,11 @@ const (
 // GmailAPI is a wrapper around the Gmail APIs.
 type GmailAPI struct {
 	service  *gmailv1.Service
-	labelmap exportapi.LabelMap // don't use without locking
+	labelmap *exportapi.LabelMap // don't use without locking
 	mutex    *sync.Mutex
 }
 
+// ListFilters returns the list of Gmail filters in the settings.
 func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 	lmap, err := g.getLabelMap()
 	if err != nil {
@@ -37,6 +38,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 	return exportapi.DefaulImporter().Import(apires.Filter, lmap)
 }
 
+// DeleteFilters deletes all the given filter IDs.
 func (g *GmailAPI) DeleteFilters(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do()
@@ -47,6 +49,7 @@ func (g *GmailAPI) DeleteFilters(ids []string) error {
 	return nil
 }
 
+// AddFilters creates the given filters.
 func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	lmap, err := g.getLabelMap()
 	if err != nil {
@@ -68,6 +71,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	return nil
 }
 
+// ListLabels lists the user labels.
 func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 	idNameMap, err := g.refreshLabelMap()
 	if err != nil {
@@ -84,20 +88,23 @@ func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 	return res, nil
 }
 
+// LabelMap returns a map of label ids and names.
+//
+// Deprecated: build the LabelMap directly with the list of labels.
 func (g *GmailAPI) LabelMap() (exportapi.LabelMap, error) {
 	_, err := g.refreshLabelMap()
 	if err != nil {
-		return nil, err
+		return exportapi.LabelMap{}, err
 	}
-	return g.labelmap, nil
+	return *g.labelmap, nil
 }
 
 func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	if err := g.initLabelMap(); err != nil {
-		return nil, errors.Wrap(err, "cannot get list of labels")
+		return exportapi.LabelMap{}, errors.Wrap(err, "cannot get list of labels")
 	}
 	g.mutex.Lock()
-	res := g.labelmap
+	res := *g.labelmap
 	g.mutex.Unlock()
 
 	return res, nil
@@ -121,10 +128,10 @@ func (g *GmailAPI) refreshLabelMap() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	newLabelMap := exportapi.NewDefaultLabelMap(idNameMap)
+	newLabelMap := exportapi.NewLabelMap(idNameMap)
 
 	g.mutex.Lock()
-	g.labelmap = newLabelMap
+	g.labelmap = &newLabelMap
 	g.mutex.Unlock()
 
 	return idNameMap, nil
