@@ -17,7 +17,7 @@ func openAPI() (api.GmailAPI, error) {
 	return openToken(auth)
 }
 
-func openCredentials() (api.Authenticator, error) {
+func openCredentials() (*api.Authenticator, error) {
 	cred, err := os.Open(credentialsPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot open credentials")
@@ -25,7 +25,7 @@ func openCredentials() (api.Authenticator, error) {
 	return api.NewAuthenticator(cred)
 }
 
-func openToken(auth api.Authenticator) (api.GmailAPI, error) {
+func openToken(auth *api.Authenticator) (api.GmailAPI, error) {
 	token, err := os.Open(tokenPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "missing or invalid cached token")

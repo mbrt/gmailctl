@@ -19,36 +19,24 @@ import (
 //
 // Credentials can be obtained by creating a new OAuth client ID at the Google API console
 // https://console.developers.google.com/apis/credentials.
-func NewAuthenticator(credentials io.Reader) (Authenticator, error) {
+func NewAuthenticator(credentials io.Reader) (*Authenticator, error) {
 	cfg, err := clientFromCredentials(credentials)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating config from credentials")
 	}
-	return authenticator{cfg}, nil
+	return &Authenticator{cfg}, nil
 }
 
 // Authenticator encapsulates authentication operations for Gmail APIs.
-type Authenticator interface {
-	// API creates a GmailAPI instance from a token JSON file contents.
-	//
-	// If no token is available, AuthURL and CacheToken can be used to
-	// obtain one.
-	API(ctx context.Context, token io.Reader) (GmailAPI, error)
-
-	// AuthURL returns the URL the user has to visit to authorize the
-	// application and obtain an auth code.
-	AuthURL() string
-	// CacheToken creates and caches a token JSON file from an auth code.
-	//
-	// The token can be subsequently used to authorize a GmailAPI instance.
-	CacheToken(ctx context.Context, authCode string, token io.Writer) error
-}
-
-type authenticator struct {
+type Authenticator struct {
 	cfg *oauth2.Config
 }
 
-func (a authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, error) {
+// API creates a GmailAPI instance from a token JSON file contents.
+//
+// If no token is available, AuthURL and CacheToken can be used to
+// obtain one.
+func (a Authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, error) {
 	tok, err := parseToken(token)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding token")
@@ -63,11 +51,16 @@ func (a authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, erro
 	return &gmailAPI{srv, nil, &sync.Mutex{}}, nil
 }
 
-func (a authenticator) AuthURL() string {
+// AuthURL returns the URL the user has to visit to authorize the
+// application and obtain an auth code.
+func (a Authenticator) AuthURL() string {
 	return a.cfg.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 }
 
-func (a authenticator) CacheToken(ctx context.Context, authCode string, token io.Writer) error {
+// CacheToken creates and caches a token JSON file from an auth code.
+//
+// The token can be subsequently used to authorize a GmailAPI instance.
+func (a Authenticator) CacheToken(ctx context.Context, authCode string, token io.Writer) error {
 	tok, err := a.cfg.Exchange(ctx, authCode)
 	if err != nil {
 		return errors.Wrap(err, "unable to retrieve token from web")
