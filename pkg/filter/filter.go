@@ -109,8 +109,20 @@ func (c Criteria) ToGmailSearch() string {
 
 // Label contains information about a Gmail label.
 type Label struct {
-	ID   string
-	Name string
+	ID          string
+	Name        string
+	Color       Color
+	NumMessages int
+}
+
+// Color is the color of a label.
+//
+// Only predefined sets of colors are allowed. See
+// https://developers.google.com/gmail/api/v1/reference/users/labels
+// for the list.
+type Color struct {
+	Background string
+	Text       string
 }
 
 type writer struct {

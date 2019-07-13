@@ -11,7 +11,11 @@ import (
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
-const gmailUser = "me"
+const (
+	gmailUser = "me"
+
+	labelTypeSystem = "system"
+)
 
 // GmailAPI is a wrapper around the Gmail APIs.
 type GmailAPI interface {
@@ -142,7 +146,10 @@ func (g *gmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
 	}
 	idNameMap := map[string]string{}
 	for _, label := range apires.Labels {
-		idNameMap[label.Id] = label.Name
+		// We are only interested in user labels.
+		if label.Type != labelTypeSystem {
+			idNameMap[label.Id] = label.Name
+		}
 	}
 	return idNameMap, nil
 }
