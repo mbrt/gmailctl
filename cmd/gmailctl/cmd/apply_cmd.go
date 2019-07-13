@@ -78,7 +78,7 @@ func apply(path string, interactive bool) error {
 	return updateFilters(gmailapi, diff)
 }
 
-func updateFilters(gmailapi api.GmailAPI, diff filter.FiltersDiff) error {
+func updateFilters(gmailapi *api.GmailAPI, diff filter.FiltersDiff) error {
 	if len(diff.Added) > 0 {
 		if err := gmailapi.AddFilters(diff.Added); err != nil {
 			return errors.Wrap(err, "error adding filters")

@@ -36,7 +36,7 @@ type Authenticator struct {
 //
 // If no token is available, AuthURL and CacheToken can be used to
 // obtain one.
-func (a Authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, error) {
+func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, error) {
 	tok, err := parseToken(token)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding token")
@@ -48,7 +48,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, erro
 	}
 
 	// Lazy load the LabelMap
-	return &gmailAPI{srv, nil, &sync.Mutex{}}, nil
+	return &GmailAPI{srv, nil, &sync.Mutex{}}, nil
 }
 
 // AuthURL returns the URL the user has to visit to authorize the

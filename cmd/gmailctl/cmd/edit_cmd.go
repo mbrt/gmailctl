@@ -182,7 +182,7 @@ func spawnEditor(path string) error {
 	return errors.New("no suitable editor found")
 }
 
-func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
+func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 	parseRes, err := parseConfig(path, originalPath)
 	if err != nil {
 		return err

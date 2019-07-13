@@ -7,7 +7,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
-func upstreamFilters(gmailapi api.GmailAPI) (filter.Filters, error) {
+func upstreamFilters(gmailapi *api.GmailAPI) (filter.Filters, error) {
 	f, err := gmailapi.ListFilters()
 	if err != nil {
 		if len(f) == 0 {

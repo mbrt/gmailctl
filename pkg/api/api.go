@@ -18,22 +18,13 @@ const (
 )
 
 // GmailAPI is a wrapper around the Gmail APIs.
-type GmailAPI interface {
-	ListFilters() (filter.Filters, error)
-	DeleteFilters(ids []string) error
-	AddFilters(fs filter.Filters) error
-
-	ListLabels() ([]filter.Label, error)
-	LabelMap() (exportapi.LabelMap, error)
-}
-
-type gmailAPI struct {
+type GmailAPI struct {
 	service  *gmailv1.Service
 	labelmap exportapi.LabelMap // don't use without locking
 	mutex    *sync.Mutex
 }
 
-func (g *gmailAPI) ListFilters() (filter.Filters, error) {
+func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 	lmap, err := g.getLabelMap()
 	if err != nil {
 		return nil, err
@@ -46,7 +37,7 @@ func (g *gmailAPI) ListFilters() (filter.Filters, error) {
 	return exportapi.DefaulImporter().Import(apires.Filter, lmap)
 }
 
-func (g *gmailAPI) DeleteFilters(ids []string) error {
+func (g *GmailAPI) DeleteFilters(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do()
 		if err != nil {
@@ -56,7 +47,7 @@ func (g *gmailAPI) DeleteFilters(ids []string) error {
 	return nil
 }
 
-func (g *gmailAPI) AddFilters(fs filter.Filters) error {
+func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	lmap, err := g.getLabelMap()
 	if err != nil {
 		return err
@@ -77,7 +68,7 @@ func (g *gmailAPI) AddFilters(fs filter.Filters) error {
 	return nil
 }
 
-func (g *gmailAPI) ListLabels() ([]filter.Label, error) {
+func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 	idNameMap, err := g.refreshLabelMap()
 	if err != nil {
 		return nil, err
@@ -93,7 +84,7 @@ func (g *gmailAPI) ListLabels() ([]filter.Label, error) {
 	return res, nil
 }
 
-func (g *gmailAPI) LabelMap() (exportapi.LabelMap, error) {
+func (g *GmailAPI) LabelMap() (exportapi.LabelMap, error) {
 	_, err := g.refreshLabelMap()
 	if err != nil {
 		return nil, err
@@ -101,7 +92,7 @@ func (g *gmailAPI) LabelMap() (exportapi.LabelMap, error) {
 	return g.labelmap, nil
 }
 
-func (g *gmailAPI) getLabelMap() (exportapi.LabelMap, error) {
+func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	if err := g.initLabelMap(); err != nil {
 		return nil, errors.Wrap(err, "cannot get list of labels")
 	}
@@ -112,7 +103,7 @@ func (g *gmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	return res, nil
 }
 
-func (g *gmailAPI) initLabelMap() error {
+func (g *GmailAPI) initLabelMap() error {
 	g.mutex.Lock()
 	needInit := (g.labelmap == nil)
 	g.mutex.Unlock()
@@ -125,7 +116,7 @@ func (g *gmailAPI) initLabelMap() error {
 	return err
 }
 
-func (g *gmailAPI) refreshLabelMap() (map[string]string, error) {
+func (g *GmailAPI) refreshLabelMap() (map[string]string, error) {
 	idNameMap, err := g.fetchLabelsIDNameMap()
 	if err != nil {
 		return nil, err
@@ -139,7 +130,7 @@ func (g *gmailAPI) refreshLabelMap() (map[string]string, error) {
 	return idNameMap, nil
 }
 
-func (g *gmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
+func (g *GmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
 	apires, err := g.service.Users.Labels.List(gmailUser).Do()
 	if err != nil {
 		return nil, err
