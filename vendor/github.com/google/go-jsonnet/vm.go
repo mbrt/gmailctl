@@ -96,6 +96,33 @@ const (
 	evalKindStream           = iota
 )
 
+func (vm *VM) Evaluate(node ast.Node) (output interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("(CRASH) %v\n%s", r, debug.Stack())
+		}
+	}()
+	return evaluate(node, vm.ext, vm.tla, vm.nativeFuncs, vm.MaxStack, vm.importer, vm.StringOutput)
+}
+
+func (vm *VM) EvaluateStream(node ast.Node) (output interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("(CRASH) %v\n%s", r, debug.Stack())
+		}
+	}()
+	return evaluateStream(node, vm.ext, vm.tla, vm.nativeFuncs, vm.MaxStack, vm.importer)
+}
+
+func (vm *VM) EvaluateMulti(node ast.Node) (output interface{}, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("(CRASH) %v\n%s", r, debug.Stack())
+		}
+	}()
+	return evaluateMulti(node, vm.ext, vm.tla, vm.nativeFuncs, vm.MaxStack, vm.importer, vm.StringOutput)
+}
+
 func (vm *VM) evaluateSnippet(filename string, snippet string, kind evalKind) (output interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -164,12 +191,16 @@ func (vm *VM) EvaluateSnippetMulti(filename string, snippet string) (files map[s
 	return
 }
 
-func snippetToAST(filename string, snippet string) (ast.Node, error) {
+func snippetToRawAST(filename string, snippet string) (ast.Node, error) {
 	tokens, err := parser.Lex(filename, snippet)
 	if err != nil {
 		return nil, err
 	}
-	node, err := parser.Parse(tokens)
+	return parser.Parse(tokens)
+}
+
+func snippetToAST(filename string, snippet string) (ast.Node, error) {
+	node, err := snippetToRawAST(filename, snippet)
 	if err != nil {
 		return nil, err
 	}
@@ -191,5 +222,5 @@ func SnippetToAST(filename string, snippet string) (ast.Node, error) {
 
 // Version returns the Jsonnet version number.
 func Version() string {
-	return "v0.12.0"
+	return "v0.13.0"
 }

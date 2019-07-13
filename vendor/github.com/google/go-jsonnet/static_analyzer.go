@@ -36,6 +36,18 @@ func visitNext(a ast.Node, inObject bool, vars ast.IdentifierSet, state *analysi
 	state.freeVars.AddIdentifiers(a.FreeVariables())
 }
 
+func enterLocal(binds ast.LocalBinds, vars ast.IdentifierSet, inObject bool, s *analysisState) ast.IdentifierSet {
+	newVars := vars.Clone()
+	for _, bind := range binds {
+		newVars.Add(bind.Variable)
+	}
+	// Binds in local can be mutually or even self recursive
+	for _, bind := range binds {
+		visitNext(bind.Body, inObject, newVars, s)
+	}
+	return newVars
+}
+
 func analyzeVisit(a ast.Node, inObject bool, vars ast.IdentifierSet) error {
 	s := &analysisState{freeVars: ast.NewIdentifierSet()}
 
@@ -99,14 +111,7 @@ func analyzeVisit(a ast.Node, inObject bool, vars ast.IdentifierSet) error {
 		visitNext(a.Target, inObject, vars, s)
 		visitNext(a.Index, inObject, vars, s)
 	case *ast.Local:
-		newVars := vars.Clone()
-		for _, bind := range a.Binds {
-			newVars.Add(bind.Variable)
-		}
-		// Binds in local can be mutually or even self recursive
-		for _, bind := range a.Binds {
-			visitNext(bind.Body, inObject, newVars, s)
-		}
+		newVars := enterLocal(a.Binds, vars, inObject, s)
 		visitNext(a.Body, inObject, newVars, s)
 
 		// Any usage of newly created variables inside are considered free
@@ -123,14 +128,24 @@ func analyzeVisit(a ast.Node, inObject bool, vars ast.IdentifierSet) error {
 	case *ast.LiteralString:
 		//nothing to do here
 	case *ast.DesugaredObject:
+		newVars := enterLocal(a.Locals, vars, true, s)
 		for _, field := range a.Fields {
-			// Field names are calculated *outside* of the object
-			visitNext(field.Name, inObject, vars, s)
-			visitNext(field.Body, true, vars, s)
+			visitNext(field.Body, true, newVars, s)
 		}
 		for _, assert := range a.Asserts {
-			visitNext(assert, true, vars, s)
+			visitNext(assert, true, newVars, s)
 		}
+
+		// Object local vars are not free outside of object
+		for _, bind := range a.Locals {
+			s.freeVars.Remove(bind.Variable)
+		}
+
+		// Field names are calculated *outside* of the object
+		for _, field := range a.Fields {
+			visitNext(field.Name, inObject, vars, s)
+		}
+
 	case *ast.Self:
 		if !inObject {
 			return parser.MakeStaticError("Can't use self outside of an object.", *a.Loc())

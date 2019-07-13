@@ -30,7 +30,7 @@ const anonymous = "anonymous"
 // and exporting
 
 // directChildren are children of AST node that are executed in the same context
-// and environment as their parent
+// and environment as their parent. It supports ASTs before and after desugaring.
 //
 // They must satisfy the following rules:
 // * (no-delayed-evaluation) They are evaluated when their parent is evaluated or never.
@@ -46,11 +46,17 @@ func directChildren(node ast.Node) []ast.Node {
 	case *ast.Array:
 		return nil
 	case *ast.Assert:
-		return []ast.Node{node.Cond, node.Message, node.Rest}
+		if node.Message != nil {
+			return []ast.Node{node.Cond, node.Message, node.Rest}
+		}
+		return []ast.Node{node.Cond, node.Rest}
 	case *ast.Binary:
 		return []ast.Node{node.Left, node.Right}
 	case *ast.Conditional:
-		return []ast.Node{node.Cond, node.BranchTrue, node.BranchFalse}
+		if node.BranchFalse != nil {
+			return []ast.Node{node.Cond, node.BranchTrue, node.BranchFalse}
+		}
+		return []ast.Node{node.Cond, node.BranchTrue}
 	case *ast.Dollar:
 		return nil
 	case *ast.Error:
@@ -62,9 +68,22 @@ func directChildren(node ast.Node) []ast.Node {
 	case *ast.ImportStr:
 		return nil
 	case *ast.Index:
+		if node.Id != nil {
+			return nil // non-desugared dot reference
+		}
 		return []ast.Node{node.Target, node.Index}
 	case *ast.Slice:
-		return []ast.Node{node.Target, node.BeginIndex, node.EndIndex, node.Step}
+		var params []ast.Node
+		if node.Target != nil {
+			params = append(params, node.Target)
+		}
+		if node.BeginIndex != nil {
+			params = append(params, node.BeginIndex)
+		}
+		if node.EndIndex != nil {
+			params = append(params, node.EndIndex)
+		}
+		return params
 	case *ast.Local:
 		return nil
 	case *ast.LiteralBoolean:
@@ -77,6 +96,8 @@ func directChildren(node ast.Node) []ast.Node {
 		return nil
 	case *ast.Object:
 		return objectFieldsDirectChildren(node.Fields)
+	case *ast.DesugaredObject:
+		return desugaredObjectFieldsDirectChildren(node.Fields)
 	case *ast.ArrayComp:
 		result := []ast.Node{}
 		spec := &node.Spec
@@ -104,6 +125,9 @@ func directChildren(node ast.Node) []ast.Node {
 	case *ast.Self:
 		return nil
 	case *ast.SuperIndex:
+		if node.Id != nil {
+			return nil
+		}
 		return []ast.Node{node.Index}
 	case *ast.InSuper:
 		return []ast.Node{node.Index}
@@ -116,7 +140,10 @@ func directChildren(node ast.Node) []ast.Node {
 }
 
 // thunkChildren are children of AST node that are executed in a new context
-// and capture environment from parent (thunked)
+// and capture environment from parent (thunked).
+//
+// It supports ASTs before and after desugaring.
+//
 // TODO(sbarzowski) Make sure it works well with boundary cases like tailstrict arguments,
 //					make it more precise.
 // Rules:
@@ -168,6 +195,8 @@ func thunkChildren(node ast.Node) []ast.Node {
 		return nil
 	case *ast.LiteralString:
 		return nil
+	case *ast.DesugaredObject:
+		return nil
 	case *ast.Object:
 		return nil
 	case *ast.ArrayComp:
@@ -217,8 +246,27 @@ func inObjectFieldsChildren(fields ast.ObjectFields) ast.Nodes {
 	return result
 }
 
-// children that are neither direct nor thunked, e.g. object field body
-// They are evaluated in a different environment from their parent.
+func desugaredObjectFieldsDirectChildren(fields ast.DesugaredObjectFields) ast.Nodes {
+	result := ast.Nodes{}
+	for _, field := range fields {
+		result = append(result, field.Name)
+	}
+	return result
+}
+
+func inDesugaredObjectFieldsChildren(fields ast.DesugaredObjectFields) ast.Nodes {
+	result := ast.Nodes{}
+	for _, field := range fields {
+		result = append(result, field.Body)
+	}
+	return result
+}
+
+// specialChildren returns children are neither direct nor thunked,
+// e.g. object field body.
+// These nodes are evaluated in a different environment from their parent.
+//
+// It supports ASTs before and after desugaring.
 func specialChildren(node ast.Node) []ast.Node {
 	switch node := node.(type) {
 	case *ast.Apply:
@@ -263,6 +311,8 @@ func specialChildren(node ast.Node) []ast.Node {
 		return nil
 	case *ast.LiteralString:
 		return nil
+	case *ast.DesugaredObject:
+		return inDesugaredObjectFieldsChildren(node.Fields)
 	case *ast.Object:
 		return inObjectFieldsChildren(node.Fields)
 	case *ast.ArrayComp:
@@ -285,7 +335,7 @@ func specialChildren(node ast.Node) []ast.Node {
 	panic(fmt.Sprintf("specialChildren: Unknown node %#v", node))
 }
 
-// Children returns all children of a node.
+// Children returns all children of a node. It supports ASTs before and after desugaring.
 func Children(node ast.Node) []ast.Node {
 	var result []ast.Node
 	result = append(result, directChildren(node)...)
