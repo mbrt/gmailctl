@@ -79,12 +79,12 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/transform
 # google.golang.org/api v0.7.0
 google.golang.org/api/gmail/v1
+google.golang.org/api/option
 google.golang.org/api/gensupport
 google.golang.org/api/googleapi
-google.golang.org/api/option
 google.golang.org/api/transport/http
-google.golang.org/api/googleapi/internal/uritemplates
 google.golang.org/api/internal
+google.golang.org/api/googleapi/internal/uritemplates
 google.golang.org/api/googleapi/transport
 google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.6.1

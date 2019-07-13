@@ -9,6 +9,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 
 	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
@@ -53,8 +54,7 @@ func (a authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, erro
 		return nil, errors.Wrap(err, "error decoding token")
 	}
 
-	client := a.cfg.Client(ctx, tok)
-	srv, err := gmailv1.New(client)
+	srv, err := gmailv1.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating gmail client")
 	}
