@@ -8,6 +8,7 @@ import (
 
 	exportapi "github.com/mbrt/gmailctl/pkg/export/api"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/label"
 )
 
 const (
@@ -69,33 +70,33 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 }
 
 // ListLabels lists the user labels.
-func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
+func (g *GmailAPI) ListLabels() ([]label.Label, error) {
 	apires, err := g.service.Users.Labels.List(gmailUser).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	var res []filter.Label
+	var res []label.Label
 
-	for _, label := range apires.Labels {
+	for _, lb := range apires.Labels {
 		// We are only interested in user labels.
-		if label.Type == labelTypeSystem {
+		if lb.Type == labelTypeSystem {
 			continue
 		}
 
-		var color *filter.LabelColor
-		if label.Color != nil {
-			color = &filter.LabelColor{
-				Background: label.Color.BackgroundColor,
-				Text:       label.Color.TextColor,
+		var color *label.Color
+		if lb.Color != nil {
+			color = &label.Color{
+				Background: lb.Color.BackgroundColor,
+				Text:       lb.Color.TextColor,
 			}
 		}
 
-		res = append(res, filter.Label{
-			ID:          label.Id,
-			Name:        label.Name,
+		res = append(res, label.Label{
+			ID:          lb.Id,
+			Name:        lb.Name,
 			Color:       color,
-			NumMessages: int(label.MessagesTotal),
+			NumMessages: int(lb.MessagesTotal),
 		})
 	}
 
@@ -115,7 +116,7 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 }
 
 // AddLabels creates the given labels.
-func (g *GmailAPI) AddLabels(lbs []filter.Label) error {
+func (g *GmailAPI) AddLabels(lbs []label.Label) error {
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
 		if err != nil {
@@ -128,7 +129,7 @@ func (g *GmailAPI) AddLabels(lbs []filter.Label) error {
 // UpdateLabels modifies the given labels.
 //
 // The label ID is required for the edit to be successful.
-func (g *GmailAPI) UpdateLabels(lbs []filter.Label) error {
+func (g *GmailAPI) UpdateLabels(lbs []label.Label) error {
 	for _, lb := range lbs {
 		if lb.ID == "" {
 			return errors.Errorf("error, label '%s' has empty ID", lb.Name)
@@ -149,7 +150,7 @@ func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	return exportapi.NewLabelMap(labels), nil
 }
 
-func labelToGmailAPI(lb filter.Label) *gmailv1.Label {
+func labelToGmailAPI(lb label.Label) *gmailv1.Label {
 	var color *gmailv1.LabelColor
 	if lb.Color != nil {
 		color = &gmailv1.LabelColor{

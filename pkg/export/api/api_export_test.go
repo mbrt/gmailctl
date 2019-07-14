@@ -8,6 +8,7 @@ import (
 
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/gmail"
+	"github.com/mbrt/gmailctl/pkg/label"
 )
 
 func emptyLabelMap() LabelMap {
@@ -126,7 +127,7 @@ func TestExportLabels(t *testing.T) {
 			},
 		},
 	}
-	lmap := NewLabelMap([]filter.Label{
+	lmap := NewLabelMap([]label.Label{
 		{ID: "label1", Name: "MyLabel"},
 		{ID: "label2", Name: "NewLabel"},
 	})

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/mbrt/gmailctl/pkg/filter"
+import "github.com/mbrt/gmailctl/pkg/label"
 
 const (
 	labelIDInbox     = "INBOX"
@@ -24,7 +24,7 @@ type LabelMap struct {
 }
 
 // NewLabelMap creates a new LabelMap given a list of labels.
-func NewLabelMap(labels []filter.Label) LabelMap {
+func NewLabelMap(labels []label.Label) LabelMap {
 	nameIDMap := map[string]string{}
 	idNameMap := map[string]string{}
 
