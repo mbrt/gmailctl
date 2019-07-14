@@ -114,10 +114,51 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 
 }
 
+// AddLabels creates the given labels.
+func (g *GmailAPI) AddLabels(lbs []filter.Label) error {
+	for _, lb := range lbs {
+		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
+		if err != nil {
+			return errors.Wrapf(err, "error creating label '%s'", lb.Name)
+		}
+	}
+	return nil
+}
+
+// UpdateLabels modifies the given labels.
+//
+// The label ID is required for the edit to be successful.
+func (g *GmailAPI) UpdateLabels(lbs []filter.Label) error {
+	for _, lb := range lbs {
+		if lb.ID == "" {
+			return errors.Errorf("error, label '%s' has empty ID", lb.Name)
+		}
+		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do()
+		if err != nil {
+			return errors.Wrapf(err, "error patching label '%s'", lb.Name)
+		}
+	}
+	return nil
+}
+
 func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	labels, err := g.ListLabels()
 	if err != nil {
 		return exportapi.LabelMap{}, err
 	}
 	return exportapi.NewLabelMap(labels), nil
+}
+
+func labelToGmailAPI(lb filter.Label) *gmailv1.Label {
+	var color *gmailv1.LabelColor
+	if lb.Color != nil {
+		color = &gmailv1.LabelColor{
+			BackgroundColor: lb.Color.Background,
+			TextColor:       lb.Color.Text,
+		}
+	}
+	return &gmailv1.Label{
+		Name:  lb.Name,
+		Color: color,
+	}
 }
