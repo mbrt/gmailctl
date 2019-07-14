@@ -11,7 +11,7 @@ import (
 )
 
 func emptyLabelMap() LabelMap {
-	return NewLabelMap(map[string]string{})
+	return NewLabelMap(nil)
 }
 
 func TestExportActions(t *testing.T) {
@@ -126,9 +126,9 @@ func TestExportLabels(t *testing.T) {
 			},
 		},
 	}
-	lmap := NewLabelMap(map[string]string{
-		"label1": "MyLabel",
-		"label2": "NewLabel",
+	lmap := NewLabelMap([]filter.Label{
+		{ID: "label1", Name: "MyLabel"},
+		{ID: "label2", Name: "NewLabel"},
 	})
 
 	exported, err := DefaulExporter().Export(filters, lmap)

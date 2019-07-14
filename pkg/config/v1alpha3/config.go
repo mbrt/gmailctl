@@ -13,9 +13,10 @@ const Version = "v1alpha3"
 
 // Config contains the yaml configuration of the Gmail filters.
 type Config struct {
-	Version string `json:"version"`
-	Author  Author `json:"author,omitempty"`
-	Rules   []Rule `json:"rules"`
+	Version string  `json:"version"`
+	Author  Author  `json:"author,omitempty"`
+	Labels  []Label `json:"labels,omitempty"`
+	Rules   []Rule  `json:"rules"`
 }
 
 // FilterNode represents a piece of a Gmail filter.
@@ -151,6 +152,21 @@ type Actions struct {
 // Empty returns true if no actions are specified.
 func (a Actions) Empty() bool {
 	return reflect.DeepEqual(a, Actions{})
+}
+
+// Label represents a Gmail label.
+type Label struct {
+	Name  string      `json:"name"`
+	Color *LabelColor `json:"color,omitempty"`
+}
+
+// LabelColor is the color of a label.
+//
+// See https://developers.google.com/gmail/api/v1/reference/users/labels
+// for the list of possible colors.
+type LabelColor struct {
+	Background string `json:"background"`
+	Text       string `json:"text"`
 }
 
 func jsonTagName(t reflect.StructTag) string {

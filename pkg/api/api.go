@@ -83,9 +83,9 @@ func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 			continue
 		}
 
-		var color *filter.Color
+		var color *filter.LabelColor
 		if label.Color != nil {
-			color = &filter.Color{
+			color = &filter.LabelColor{
 				Background: label.Color.BackgroundColor,
 				Text:       label.Color.TextColor,
 			}
@@ -103,22 +103,9 @@ func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 }
 
 func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
-	idNameMap, err := g.fetchLabelsIDNameMap()
+	labels, err := g.ListLabels()
 	if err != nil {
 		return exportapi.LabelMap{}, err
 	}
-	return exportapi.NewLabelMap(idNameMap), nil
-}
-
-func (g *GmailAPI) fetchLabelsIDNameMap() (map[string]string, error) {
-	labels, err := g.ListLabels()
-	if err != nil {
-		return nil, err
-	}
-
-	idNameMap := map[string]string{}
-	for _, label := range labels {
-		idNameMap[label.ID] = label.Name
-	}
-	return idNameMap, nil
+	return exportapi.NewLabelMap(labels), nil
 }

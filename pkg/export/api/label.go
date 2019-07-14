@@ -1,5 +1,7 @@
 package api
 
+import "github.com/mbrt/gmailctl/pkg/filter"
+
 const (
 	labelIDInbox     = "INBOX"
 	labelIDTrash     = "TRASH"
@@ -21,12 +23,16 @@ type LabelMap struct {
 	idtn map[string]string
 }
 
-// NewLabelMap creates a new LabelMap, given mapping between IDs to label names.
-func NewLabelMap(idNameMap map[string]string) LabelMap {
+// NewLabelMap creates a new LabelMap given a list of labels.
+func NewLabelMap(labels []filter.Label) LabelMap {
 	nameIDMap := map[string]string{}
-	for id, name := range idNameMap {
-		nameIDMap[name] = id
+	idNameMap := map[string]string{}
+
+	for _, l := range labels {
+		nameIDMap[l.Name] = l.ID
+		idNameMap[l.ID] = l.Name
 	}
+
 	return LabelMap{
 		ntid: nameIDMap,
 		idtn: idNameMap,
