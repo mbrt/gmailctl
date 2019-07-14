@@ -10,23 +10,11 @@ import (
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
-// Exporter exports Gmail filters into Gmail API objects
-type Exporter interface {
-	// Export exports Gmail filters into Gmail API objects
-	Export(filters filter.Filters, lmap LabelMap) ([]*gmailv1.Filter, error)
-}
-
-// DefaulExporter returns a default implementation of a Gmail API filter exporter.
-func DefaulExporter() Exporter {
-	return defaultExporter{}
-}
-
-type defaultExporter struct{}
-
-func (de defaultExporter) Export(filters filter.Filters, lmap LabelMap) ([]*gmailv1.Filter, error) {
+// Export exports Gmail filters into Gmail API objects
+func Export(filters filter.Filters, lmap LabelMap) ([]*gmailv1.Filter, error) {
 	res := make([]*gmailv1.Filter, len(filters))
 	for i, filter := range filters {
-		ef, err := de.export(filter, lmap)
+		ef, err := export(filter, lmap)
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("error exporting filter #%d", i))
 		}
@@ -35,7 +23,7 @@ func (de defaultExporter) Export(filters filter.Filters, lmap LabelMap) ([]*gmai
 	return res, nil
 }
 
-func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.Filter, error) {
+func export(filter filter.Filter, lmap LabelMap) (*gmailv1.Filter, error) {
 	if filter.Action.Empty() {
 		return nil, errors.New("no action specified")
 	}
@@ -43,11 +31,11 @@ func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.
 		return nil, errors.New("no criteria specified")
 	}
 
-	action, err := de.exportAction(filter.Action, lmap)
+	action, err := exportAction(filter.Action, lmap)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in export action")
 	}
-	criteria, err := de.exportCriteria(filter.Criteria)
+	criteria, err := exportCriteria(filter.Criteria)
 	if err != nil {
 		return nil, errors.Wrap(err, "error in export criteria")
 	}
@@ -58,12 +46,12 @@ func (de defaultExporter) export(filter filter.Filter, lmap LabelMap) (*gmailv1.
 	}, nil
 }
 
-func (de defaultExporter) exportAction(action filter.Actions, lmap LabelMap) (*gmailv1.FilterAction, error) {
+func exportAction(action filter.Actions, lmap LabelMap) (*gmailv1.FilterAction, error) {
 	lops := labelOps{}
-	de.exportFlags(action, &lops)
+	exportFlags(action, &lops)
 
 	if action.Category != "" {
-		cat, err := de.exportCategory(action.Category)
+		cat, err := exportCategory(action.Category)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +71,7 @@ func (de defaultExporter) exportAction(action filter.Actions, lmap LabelMap) (*g
 	}, nil
 }
 
-func (de defaultExporter) exportFlags(action filter.Actions, lops *labelOps) {
+func exportFlags(action filter.Actions, lops *labelOps) {
 	if action.Archive {
 		lops.RemoveLabel(labelIDInbox)
 	}
@@ -107,7 +95,7 @@ func (de defaultExporter) exportFlags(action filter.Actions, lops *labelOps) {
 	}
 }
 
-func (de defaultExporter) exportCategory(category gmail.Category) (string, error) {
+func exportCategory(category gmail.Category) (string, error) {
 	switch category {
 	case gmail.CategoryPersonal:
 		return labelIDCategoryPersonal, nil
@@ -123,7 +111,7 @@ func (de defaultExporter) exportCategory(category gmail.Category) (string, error
 	return "", errors.Errorf("unknown category '%s'", category)
 }
 
-func (de defaultExporter) exportCriteria(criteria filter.Criteria) (*gmailv1.FilterCriteria, error) {
+func exportCriteria(criteria filter.Criteria) (*gmailv1.FilterCriteria, error) {
 	return &gmailv1.FilterCriteria{
 		From:    criteria.From,
 		To:      criteria.To,

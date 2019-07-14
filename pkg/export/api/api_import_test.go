@@ -31,7 +31,7 @@ func TestImportActions(t *testing.T) {
 			},
 		},
 	}
-	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
+	imported, err := Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
 			Action: filter.Actions{
@@ -68,7 +68,7 @@ func TestImportCriteria(t *testing.T) {
 			},
 		},
 	}
-	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
+	imported, err := Import(filters, emptyLabelMap())
 	expected := filter.Filters{
 		{
 			Action: filter.Actions{
@@ -107,7 +107,7 @@ func TestImportLabels(t *testing.T) {
 		{ID: "label2", Name: "NewLabel"},
 	})
 
-	imported, err := DefaulImporter().Import(filters, lmap)
+	imported, err := Import(filters, lmap)
 	expected := filter.Filters{
 		{
 			Action: filter.Actions{
@@ -138,7 +138,7 @@ func TestImportLabels(t *testing.T) {
 			},
 		},
 	}
-	_, err = DefaulImporter().Import(filters, lmap)
+	_, err = Import(filters, lmap)
 	assert.NotNil(t, err)
 }
 
@@ -160,7 +160,7 @@ func TestImportBad(t *testing.T) {
 			},
 		},
 	}
-	imported, err := DefaulImporter().Import(filters, emptyLabelMap())
+	imported, err := Import(filters, emptyLabelMap())
 	assert.NotNil(t, err)
 	assert.Len(t, imported, 1)
 
@@ -180,7 +180,7 @@ func TestImportBad(t *testing.T) {
 			},
 		},
 	}
-	imported, err = DefaulImporter().Import(filters, emptyLabelMap())
+	imported, err = Import(filters, emptyLabelMap())
 	assert.NotNil(t, err)
 	assert.Len(t, imported, 1)
 }

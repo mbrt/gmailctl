@@ -31,7 +31,7 @@ func TestExportActions(t *testing.T) {
 			},
 		},
 	}
-	exported, err := DefaulExporter().Export(filters, emptyLabelMap())
+	exported, err := Export(filters, emptyLabelMap())
 	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
@@ -71,7 +71,7 @@ func TestExportCriteria(t *testing.T) {
 			},
 		},
 	}
-	exported, err := DefaulExporter().Export(filters, emptyLabelMap())
+	exported, err := Export(filters, emptyLabelMap())
 	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
@@ -98,7 +98,7 @@ func TestExportNoActions(t *testing.T) {
 			},
 		},
 	}
-	_, err := DefaulExporter().Export(filters, emptyLabelMap())
+	_, err := Export(filters, emptyLabelMap())
 	assert.NotNil(t, err)
 }
 
@@ -110,7 +110,7 @@ func TestExportNoCriteria(t *testing.T) {
 			},
 		},
 	}
-	_, err := DefaulExporter().Export(filters, emptyLabelMap())
+	_, err := Export(filters, emptyLabelMap())
 	assert.NotNil(t, err)
 }
 
@@ -131,7 +131,7 @@ func TestExportLabels(t *testing.T) {
 		{ID: "label2", Name: "NewLabel"},
 	})
 
-	exported, err := DefaulExporter().Export(filters, lmap)
+	exported, err := Export(filters, lmap)
 	expected := []*gmailv1.Filter{
 		{
 			Action: &gmailv1.FilterAction{
@@ -160,6 +160,6 @@ func TestExportLabels(t *testing.T) {
 			},
 		},
 	}
-	_, err = DefaulExporter().Export(filters, emptyLabelMap())
+	_, err = Export(filters, emptyLabelMap())
 	assert.NotNil(t, err)
 }

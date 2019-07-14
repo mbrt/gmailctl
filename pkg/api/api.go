@@ -32,7 +32,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 	if err != nil {
 		return nil, err
 	}
-	return exportapi.DefaulImporter().Import(apires.Filter, lmap)
+	return exportapi.Import(apires.Filter, lmap)
 }
 
 // DeleteFilters deletes all the given filter IDs.
@@ -53,7 +53,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 		return err
 	}
 
-	gfilters, err := exportapi.DefaulExporter().Export(fs, lmap)
+	gfilters, err := exportapi.Export(fs, lmap)
 	if err != nil {
 		return err
 	}
@@ -100,6 +100,18 @@ func (g *GmailAPI) ListLabels() ([]filter.Label, error) {
 	}
 
 	return res, nil
+}
+
+// DeleteLabels deletes all the given label IDs.
+func (g *GmailAPI) DeleteLabels(ids []string) error {
+	for _, id := range ids {
+		err := g.service.Users.Labels.Delete(gmailUser, id).Do()
+		if err != nil {
+			return errors.Wrapf(err, "error deleting label '%s'", id)
+		}
+	}
+	return nil
+
 }
 
 func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
