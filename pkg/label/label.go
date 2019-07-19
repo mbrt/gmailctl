@@ -1,11 +1,46 @@
 package label
 
+import (
+	"fmt"
+	"strings"
+)
+
+// Labels is a list of labels.
+type Labels []Label
+
+func (ls Labels) String() string {
+	var ss []string
+	for _, l := range ls {
+		ss = append(ss, l.String())
+	}
+	return strings.Join(ss, "\n")
+}
+
 // Label contains information about a Gmail label.
 type Label struct {
 	ID          string
 	Name        string
 	Color       *Color
 	NumMessages int
+}
+
+func (l Label) String() string {
+	var ss []string
+
+	if l.ID != "" {
+		ss = append(ss, fmt.Sprintf("%s [%s]", l.Name, l.ID))
+	} else {
+		ss = append(ss, l.Name)
+	}
+	if l.Color != nil {
+		ss = append(ss, fmt.Sprintf("color: %s, %s",
+			l.Color.Background, l.Color.Text))
+	}
+	if l.NumMessages > 0 {
+		ss = append(ss, fmt.Sprintf("num messages: %d", l.NumMessages))
+	}
+
+	return strings.Join(ss, "; ")
 }
 
 // Color is the color of a label.
@@ -15,4 +50,25 @@ type Label struct {
 type Color struct {
 	Background string
 	Text       string
+}
+
+// Equivalent returns true if two labels can be considered equal, despite a
+// different ID or number of messages.
+func Equivalent(l1, l2 Label) bool {
+	// Ignore ID
+	if l1.Name != l2.Name {
+		return false
+	}
+
+	l1HasColor := l1.Color != nil
+	l2HasColor := l2.Color != nil
+	if l1HasColor != l2HasColor {
+		return false
+	}
+	if !l1HasColor {
+		// Both are not colored
+		return true
+	}
+	// Need to check if the color is the same
+	return *l1.Color == *l2.Color
 }
