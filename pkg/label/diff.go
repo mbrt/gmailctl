@@ -83,18 +83,16 @@ func (d LabelsDiff) String() string {
 	}
 
 	for _, ml := range d.Modified {
-		old = append(old, cleanup(ml.Old).String())
-		new = append(new, ml.New.String())
+		old = append(old, cleanup(ml.Old).String()+"\n")
+		new = append(new, ml.New.String()+"\n")
 	}
 
 	for _, l := range d.Removed {
-		old = append(old, cleanup(l).String())
-		new = append(new, "")
+		old = append(old, cleanup(l).String()+"\n")
 	}
 
 	for _, l := range d.Added {
-		old = append(old, "")
-		new = append(new, l.String())
+		new = append(new, l.String()+"\n")
 	}
 
 	s, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
