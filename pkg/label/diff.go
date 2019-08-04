@@ -5,7 +5,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/pmezard/go-difflib/difflib"
+
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // Diff computes the diff between two lists of labels.
@@ -118,6 +121,19 @@ func (d LabelsDiff) String() string {
 type ModifiedLabel struct {
 	Old Label
 	New Label
+}
+
+// Validate makes sure that a diff is valid and safe to apply.
+func Validate(d LabelsDiff, filters filter.Filters) error {
+	for _, l := range d.Removed {
+		if l.NumMessages > 0 {
+			return errors.Errorf("cannot remove label '%s', because it contains messages", l.Name)
+		}
+		if filters.HasLabel(l.Name) {
+			return errors.Errorf("cannot remove label '%s', used in filter", l.Name)
+		}
+	}
+	return nil
 }
 
 type byName Labels
