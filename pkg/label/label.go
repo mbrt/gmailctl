@@ -3,6 +3,8 @@ package label
 import (
 	"fmt"
 	"strings"
+
+	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 // Labels is a list of labels.
@@ -71,4 +73,25 @@ func Equivalent(l1, l2 Label) bool {
 	}
 	// Need to check if the color is the same
 	return *l1.Color == *l2.Color
+}
+
+// FromConfig creates labels from the config format.
+func FromConfig(ls []cfgv3.Label) Labels {
+	var res Labels
+
+	for _, l := range ls {
+		var color *Color
+		if l.Color != nil {
+			color = &Color{
+				Background: l.Color.Background,
+				Text:       l.Color.Text,
+			}
+		}
+		res = append(res, Label{
+			Name:  l.Name,
+			Color: color,
+		})
+	}
+
+	return res
 }

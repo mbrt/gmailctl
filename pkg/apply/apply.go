@@ -1,9 +1,12 @@
 package apply
 
 import (
+	"github.com/pkg/errors"
+
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/label"
+	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
 // GmailConfig represents a Gmail configuration.
@@ -21,8 +24,36 @@ type ConfigDiff struct {
 
 // Diff computes the diff between local and upstream configuration.
 func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
-	// TODO
-	return ConfigDiff{}, nil
+	rules, err := parser.Parse(cfg)
+	if err != nil {
+		return ConfigDiff{}, errors.Wrap(err, "cannot parse config file")
+	}
+	filters, err := filter.FromRules(rules)
+	if err != nil {
+		return ConfigDiff{}, errors.Wrap(err, "error exporting to filters")
+	}
+	fdiff, err := filter.Diff(upstream.Filters, filters)
+	if err != nil {
+		return ConfigDiff{}, errors.Wrap(err, "cannot compute filters diff")
+	}
+
+	ldiff := label.LabelsDiff{}
+	if len(cfg.Labels) > 0 {
+		// Labels management opted-in
+		labels := label.FromConfig(cfg.Labels)
+		ldiff, err = label.Diff(upstream.Labels, labels)
+		if err != nil {
+			return ConfigDiff{}, errors.Wrap(err, "cannot compute labels diff")
+		}
+		if err = label.Validate(ldiff, filters); err != nil {
+			return ConfigDiff{}, errors.Wrap(err, "invalid labels diff")
+		}
+	}
+
+	return ConfigDiff{
+		Filters: fdiff,
+		Labels:  ldiff,
+	}, nil
 }
 
 // Apply applies the changes identified by the diff to the remote configuration.
