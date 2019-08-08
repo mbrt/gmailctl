@@ -1,0 +1,16 @@
+Filters:
+--- Current
++++ TO BE APPLIED
+@@ -1,11 +1,6 @@
+ * Criteria:
+-    to: myalias@gmail.com
++    from: foobaz@mail.com
+     query: list:{list1 list2 list3}
+   Actions:
+     mark as important
+ 
+-* Criteria:
+-    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
+-  Actions:
+-    apply label: onemorelabel
+-

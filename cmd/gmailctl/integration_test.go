@@ -1,15 +1,13 @@
 package main
 
 import (
-	"flag"
-	"io/ioutil"
-	"math/rand"
 	"path/filepath"
 	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mbrt/gmailctl/pkg/apply"
 	cfg "github.com/mbrt/gmailctl/pkg/config"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -17,22 +15,11 @@ import (
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
-// update is useful to regenerate the diff files, whenever necessary.
-// Make sure the new version makes sense!!
-var update = flag.Bool("update", false, "update .diff files")
-
-func read(t *testing.T, path string) []byte {
-	t.Helper()
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return b
-}
+const testdataDir = "../../testdata"
 
 func readConfig(t *testing.T, path string) cfgv3.Config {
 	t.Helper()
-	res, err := cfg.ReadFile(path, "")
+	res, err := cfg.ReadFile(path, filepath.Join(testdataDir, path))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,9 +31,9 @@ type testPaths struct {
 	diffs  []string
 }
 
-func globPaths(t *testing.T, pattern string) []string {
+func globTestdataPaths(t *testing.T, pattern string) []string {
 	t.Helper()
-	fs, err := filepath.Glob(pattern)
+	fs, err := filepath.Glob(filepath.Join(testdataDir, pattern))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,11 +43,11 @@ func globPaths(t *testing.T, pattern string) []string {
 
 func allTestPaths(t *testing.T) testPaths {
 	t.Helper()
-	local := globPaths(t, "testdata/local.*.yaml")
-	local = append(local, globPaths(t, "testdata/local.*.jsonnet")...)
+	local := globTestdataPaths(t, "local.*.yaml")
+	local = append(local, globTestdataPaths(t, "local.*.jsonnet")...)
 	tp := testPaths{
 		locals: local,
-		diffs:  globPaths(t, "testdata/local.*.diff"),
+		diffs:  globTestdataPaths(t, "local.*.diff"),
 	}
 	if len(tp.locals) != len(tp.diffs) {
 		t.Fatal("expected both yaml and diff to be present")
@@ -78,41 +65,6 @@ func cfgPathToFilters(t *testing.T, path string) (filter.Filters, error) {
 	return filter.FromRules(rules)
 }
 
-func TestIntegrationDiff(t *testing.T) {
-	remoteFilt, err := cfgPathToFilters(t, "testdata/remote.yaml")
-	assert.Nil(t, err)
-	tps := allTestPaths(t)
-
-	for i := 0; i < len(tps.locals); i++ {
-		local := tps.locals[i]
-
-		t.Run(local, func(t *testing.T) {
-			diffFile := tps.diffs[i]
-			locFilt, err := cfgPathToFilters(t, local)
-			assert.Nil(t, err)
-
-			// Remote filters can come in _any_ order
-			// We can make the test more realistic by shuffling them here
-			rand.Shuffle(len(remoteFilt), func(i, j int) {
-				remoteFilt[i], remoteFilt[j] = remoteFilt[j], remoteFilt[i]
-			})
-
-			diff, err := filter.Diff(remoteFilt, locFilt)
-			assert.Nil(t, err)
-
-			if *update {
-				// Update the golden files
-				err = ioutil.WriteFile(diffFile, []byte(diff.String()), 0644)
-				assert.Nil(t, err)
-			} else {
-				// Test them
-				expectedDiff := read(t, diffFile)
-				assert.Equal(t, string(expectedDiff), diff.String())
-			}
-		})
-	}
-}
-
 func TestIntegrationImport(t *testing.T) {
 	tps := allTestPaths(t)
 
@@ -127,13 +79,8 @@ func TestIntegrationImport(t *testing.T) {
 			config, err := rimport.Import(locFilt)
 			assert.Nil(t, err)
 			// Generate
-			rules, err := parser.Parse(config)
-			assert.Nil(t, err)
-			newFilt, err := filter.FromRules(rules)
-			assert.Nil(t, err)
-
+			diff, err := apply.Diff(config, apply.GmailConfig{Filters: locFilt})
 			// Re-generating imported filters should not cause any diff
-			diff, err := filter.Diff(newFilt, locFilt)
 			assert.Nil(t, err)
 			assert.Equal(t, "", diff.String())
 		})

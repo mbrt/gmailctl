@@ -1,6 +1,8 @@
 package apply
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
@@ -22,6 +24,21 @@ type ConfigDiff struct {
 	Labels  label.LabelsDiff
 }
 
+func (d ConfigDiff) String() string {
+	var res []string
+
+	if !d.Filters.Empty() {
+		res = append(res, "Filters:")
+		res = append(res, d.Filters.String())
+	}
+	if !d.Labels.Empty() {
+		res = append(res, "Labels:")
+		res = append(res, d.Labels.String())
+	}
+
+	return strings.Join(res, "\n")
+}
+
 // Diff computes the diff between local and upstream configuration.
 func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
 	rules, err := parser.Parse(cfg)
@@ -41,6 +58,9 @@ func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
 	if len(cfg.Labels) > 0 {
 		// Labels management opted-in
 		labels := label.FromConfig(cfg.Labels)
+		if err = labels.Validate(); err != nil {
+			return ConfigDiff{}, errors.Wrap(err, "error validating labels")
+		}
 		ldiff, err = label.Diff(upstream.Labels, labels)
 		if err != nil {
 			return ConfigDiff{}, errors.Wrap(err, "cannot compute labels diff")
