@@ -35,12 +35,19 @@ local filters = {
   version: 'v1alpha3',
   labels: [
     { name: 'maillist' },
-    { name: 'onemorelabel' },
     {
-      name: 'label3',
+      name: 'onemorelabel',
       color: {
         background: '#cca6ac',
         text: '#ffffff',
+      },
+    },
+    { name: 'newlabel' },
+    {
+      name: 'newlabel2',
+      color: {
+        background: '#ffffff',
+        text: '#000000',
       },
     },
   ],

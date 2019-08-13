@@ -52,7 +52,6 @@ func globTestdataPaths(t *testing.T, pattern string) []string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sort.Strings(fs)
 	return fs
 }
 
@@ -65,8 +64,13 @@ func allTestPaths(t *testing.T) testPaths {
 		diffs:  globTestdataPaths(t, "local.*.diff"),
 	}
 	if len(tp.locals) != len(tp.diffs) {
-		t.Fatal("expected both yaml and diff to be present")
+		t.Fatal("expected both local and diff files to be present")
 	}
+
+	// Get the files in the same order
+	sort.Strings(tp.locals)
+	sort.Strings(tp.diffs)
+
 	return tp
 }
 

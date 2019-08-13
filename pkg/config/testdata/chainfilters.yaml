@@ -1,34 +1,254 @@
-version: v1alpha2
+version: v1alpha3
+author:
+  name: ""
+  email: ""
+labels: []
 rules:
 - filter:
+    refname: ""
     and:
-    - to: pippo@gmail.com
-    - not:
+    - refname: ""
+      and: []
+      or: []
+      not: null
+      from: ""
+      to: pippo@gmail.com
+      cc: ""
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    - refname: ""
+      and: []
+      or: []
+      not:
+        refname: ""
+        and: []
+        or: []
+        not: null
+        from: ""
+        to: ""
         cc: pippo@gmail.com
+        subject: ""
+        list: ""
+        has: ""
+        query: ""
+        isescaped: false
+      from: ""
+      to: ""
+      cc: ""
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    or: []
+    not: null
+    from: ""
+    to: ""
+    cc: ""
+    subject: ""
+    list: ""
+    has: ""
+    query: ""
+    isescaped: false
   actions:
-    markImportant: true
+    archive: false
+    delete: false
+    markread: false
+    star: false
+    markspam: null
+    markimportant: true
+    category: ""
+    labels: []
+    forward: ""
 - filter:
+    refname: ""
+    and: []
+    or: []
+    not: null
+    from: ""
+    to: ""
     cc: pippo@gmail.com
+    subject: ""
+    list: ""
+    has: ""
+    query: ""
+    isescaped: false
   actions:
     archive: true
+    delete: false
+    markread: false
+    star: false
+    markspam: null
+    markimportant: null
+    category: ""
+    labels: []
+    forward: ""
 - filter:
+    refname: ""
+    and: []
+    or: []
+    not: null
+    from: ""
     to: pippo@gmail.com
+    cc: ""
+    subject: ""
+    list: ""
+    has: ""
+    query: ""
+    isescaped: false
   actions:
-    markImportant: true
+    archive: false
+    delete: false
+    markread: false
+    star: false
+    markspam: null
+    markimportant: true
+    category: ""
+    labels: []
+    forward: ""
 - filter:
+    refname: ""
     and:
-    - not:
+    - refname: ""
+      and: []
+      or: []
+      not:
+        refname: ""
+        and: []
+        or: []
+        not: null
+        from: ""
         to: pippo@gmail.com
-    - cc: pippo@gmail.com
+        cc: ""
+        subject: ""
+        list: ""
+        has: ""
+        query: ""
+        isescaped: false
+      from: ""
+      to: ""
+      cc: ""
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    - refname: ""
+      and: []
+      or: []
+      not: null
+      from: ""
+      to: ""
+      cc: pippo@gmail.com
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    or: []
+    not: null
+    from: ""
+    to: ""
+    cc: ""
+    subject: ""
+    list: ""
+    has: ""
+    query: ""
+    isescaped: false
   actions:
     archive: true
+    delete: false
+    markread: false
+    star: false
+    markspam: null
+    markimportant: null
+    category: ""
+    labels: []
+    forward: ""
 - filter:
+    refname: ""
     and:
-    - not:
+    - refname: ""
+      and: []
+      or: []
+      not:
+        refname: ""
+        and: []
+        or: []
+        not: null
+        from: ""
         to: pippo@gmail.com
-    - not:
+        cc: ""
+        subject: ""
+        list: ""
+        has: ""
+        query: ""
+        isescaped: false
+      from: ""
+      to: ""
+      cc: ""
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    - refname: ""
+      and: []
+      or: []
+      not:
+        refname: ""
+        and: []
+        or: []
+        not: null
+        from: ""
+        to: ""
         cc: pippo@gmail.com
-    - list: foobar@list.com
+        subject: ""
+        list: ""
+        has: ""
+        query: ""
+        isescaped: false
+      from: ""
+      to: ""
+      cc: ""
+      subject: ""
+      list: ""
+      has: ""
+      query: ""
+      isescaped: false
+    - refname: ""
+      and: []
+      or: []
+      not: null
+      from: ""
+      to: ""
+      cc: ""
+      subject: ""
+      list: foobar@list.com
+      has: ""
+      query: ""
+      isescaped: false
+    or: []
+    not: null
+    from: ""
+    to: ""
+    cc: ""
+    subject: ""
+    list: ""
+    has: ""
+    query: ""
+    isescaped: false
   actions:
+    archive: false
+    delete: false
+    markread: false
+    star: false
+    markspam: null
+    markimportant: null
+    category: ""
     labels:
     - mylist
+    forward: ""
