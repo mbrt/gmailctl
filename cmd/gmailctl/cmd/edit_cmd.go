@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/api"
+	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // Parameters
@@ -188,22 +188,26 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 		return err
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
-		return err
+		if err != errLabelsDisabled {
+			return err
+		}
+		// Drop the labels, to be sure we don't try to apply them later on
+		parseRes.labels = nil
 	}
 
-	diff, err := filter.Diff(upstream, parseRes.filters)
+	diff, err := papply.Diff(parseRes.config, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local filters")
+		return errors.New("cannot compare upstream with local config")
 	}
 
 	if diff.Empty() {
 		fmt.Println("No changes have been made.")
-		return errUnchanged
+		return nil
 	}
 
-	fmt.Printf("You are going to apply the following changes to your filters:\n\n%s", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
 
 	switch askOptions("Do you want to apply them?", []string{"yes", "no (continue editing)", "abort"}) {
 	case 0:
@@ -215,5 +219,5 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 	}
 
 	fmt.Println("Applying the changes...")
-	return updateFilters(gmailapi, diff)
+	return papply.Apply(diff, gmailapi)
 }

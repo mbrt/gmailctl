@@ -40,6 +40,11 @@ func (d ConfigDiff) String() string {
 	return strings.Join(res, "\n")
 }
 
+// Empty returns whether the diff contains no changes.
+func (d ConfigDiff) Empty() bool {
+	return d.Filters.Empty() && d.Labels.Empty()
+}
+
 // Diff computes the diff between local and upstream configuration.
 func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
 	rules, err := parser.Parse(cfg)

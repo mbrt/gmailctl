@@ -6,8 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/pkg/api"
-	"github.com/mbrt/gmailctl/pkg/filter"
+	papply "github.com/mbrt/gmailctl/pkg/apply"
 )
 
 var (
@@ -32,8 +31,7 @@ directory [config.(yaml|jsonnet)].`,
 		if err := apply(f, !applyYes); err != nil {
 			fatal(err)
 		}
-	},
-}
+	}}
 
 func init() {
 	rootCmd.AddCommand(applyCmd)
@@ -54,14 +52,18 @@ func apply(path string, interactive bool) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
-		return err
+		if err != errLabelsDisabled {
+			return err
+		}
+		// Drop the labels, to be sure we don't try to apply them later on
+		parseRes.labels = nil
 	}
 
-	diff, err := filter.Diff(upstream, parseRes.filters)
+	diff, err := papply.Diff(parseRes.config, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local filters")
+		return errors.New("cannot compare upstream with local config")
 	}
 
 	if diff.Empty() {
@@ -75,25 +77,7 @@ func apply(path string, interactive bool) error {
 	}
 
 	fmt.Println("Applying the changes...")
-	return updateFilters(gmailapi, diff)
-}
-
-func updateFilters(gmailapi *api.GmailAPI, diff filter.FiltersDiff) error {
-	if len(diff.Added) > 0 {
-		if err := gmailapi.AddFilters(diff.Added); err != nil {
-			return errors.Wrap(err, "error adding filters")
-		}
-	}
-	if len(diff.Removed) == 0 {
-		return nil
-	}
-
-	removedIds := make([]string, len(diff.Removed))
-	for i, f := range diff.Removed {
-		removedIds[i] = f.ID
-	}
-	err := gmailapi.DeleteFilters(removedIds)
-	return errors.Wrap(err, "error deleting filters")
+	return papply.Apply(diff, gmailapi)
 }
 
 func configurationError(err error) error {

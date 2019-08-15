@@ -9,13 +9,16 @@ import (
 	"github.com/mbrt/gmailctl/pkg/config"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/label"
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
+// TODO remove everything except the config here
 type parseResult struct {
 	config  cfgv3.Config
 	rules   []parser.Rule
 	filters filter.Filters
+	labels  label.Labels
 }
 
 func configFilenameFromDir(cfgDir string) string {
@@ -53,5 +56,6 @@ func parseConfig(path, originalPath string) (parseResult, error) {
 	if err != nil {
 		return res, errors.Wrap(err, "error exporting to filters")
 	}
+	res.labels = label.FromConfig(res.config.Labels)
 	return res, nil
 }
