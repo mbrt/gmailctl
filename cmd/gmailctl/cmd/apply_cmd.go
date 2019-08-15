@@ -63,7 +63,7 @@ func apply(path string, interactive bool) error {
 
 	diff, err := papply.Diff(parseRes.config, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local config")
+		return errors.Wrap(err, "cannot compare upstream with local config")
 	}
 
 	if diff.Empty() {

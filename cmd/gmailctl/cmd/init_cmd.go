@@ -29,6 +29,7 @@ To do so, head to https://console.developers.google.com
    2c. Access 'User data'.
 3. Go to 'OAuth constent screen' and update 'Scopes for Google API', by
    adding:
+     * https://www.googleapis.com/auth/gmail.labels
      * https://www.googleapis.com/auth/gmail.metadata
      * https://www.googleapis.com/auth/gmail.settings.basic
 4. IMPORTANT: you don't need to submit your changes for verification, as

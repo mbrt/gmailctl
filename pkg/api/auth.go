@@ -74,6 +74,7 @@ func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
 	return google.ConfigFromJSON(credBytes,
 		gmailv1.GmailSettingsBasicScope,
 		gmailv1.GmailMetadataScope,
+		gmailv1.GmailLabelsScope,
 	)
 }
 

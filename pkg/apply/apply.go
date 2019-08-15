@@ -125,7 +125,7 @@ func addLabels(lbs label.Labels, api API) error {
 		return nil
 	}
 	// If we have nested labels we should create them in the right order.
-	// As a quick hack, we could sort them by the lenght of the name,
+	// As a quick hack, we could sort them by the length of the name,
 	// because a label is strictly longer than its prefixes.
 	sort.Sort(byLen(lbs))
 	return api.AddLabels(lbs)
@@ -167,7 +167,7 @@ func removeLabels(lbs label.Labels, api API) error {
 		return nil
 	}
 	// If we have nested labels we should remove them in the right order.
-	// As a quick hack, we could sort them by the lenght of the name,
+	// As a quick hack, we could sort them by the length of the name,
 	// because a label is strictly longer than its prefixes.
 	sort.Sort(byLen(lbs))
 

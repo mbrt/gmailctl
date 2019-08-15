@@ -381,6 +381,68 @@ Example:
 }
 ```
 
+### Labels
+
+You can optionally manage your labels with gmailctl. The config contains a
+`labels` section. Adding even a single label in there will opt you in to full
+label management as well.
+
+Example:
+
+```jsonnet
+{
+  version: 'v1alpha3',
+  labels: [
+    { name: 'family' },
+  ],
+  rules: [
+    {
+      filter: { from: 'love@gmail.com' },
+      actions: {
+        labels: ['family'],
+      },
+    },
+  ],
+}
+```
+
+To make this work, your credentials need to contain permissions for labels
+management as well. If you configured gmailctl before this functionality was
+available, you probably need to update your 'Scopes for Google API' in the
+'OAuth content screen' by adding `https://www.googleapis.com/auth/gmail.labels`.
+If you don't know how to do this, just reset and re-create your credentials
+following the steps in:
+
+```
+$ gmailctl init --reset
+$ gmailctl init
+```
+
+You can also optionally manage the color of your labels. If you specify it, it
+will be enforced. If you don't, the existing color will be left intact. This is
+useful to people who set the colors with the Gmail UI. You can find the list of
+supported colors
+[here](https://developers.google.com/gmail/api/v1/reference/users/labels).
+
+Example:
+
+```jsonnet
+{
+  version: 'v1alpha3',
+  labels: [
+    {
+      name: 'family',
+      color: {
+        background: "#fad165",
+        text: "#000000",
+      },
+    },
+  ],
+  rules: [ // ...
+  ],
+}
+```
+
 ## Tips and tricks
 
 ### Chain filtering
