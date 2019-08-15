@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // update is useful to regenerate the diff files, whenever necessary.
@@ -93,4 +95,26 @@ func TestDiff(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidateNonEmpty(t *testing.T) {
+	d := LabelsDiff{
+		Removed: Labels{{Name: "foo", NumMessages: 10}},
+	}
+	err := Validate(d, nil)
+	assert.NotNil(t, err)
+}
+
+func TestValidateUsed(t *testing.T) {
+	d := LabelsDiff{
+		Removed: Labels{{Name: "foo"}},
+	}
+	fs := filter.Filters{
+		{
+			Criteria: filter.Criteria{To: "foobar"},
+			Action:   filter.Actions{AddLabel: "foo"},
+		},
+	}
+	err := Validate(d, fs)
+	assert.NotNil(t, err)
 }
