@@ -26,8 +26,6 @@ type Config struct {
 // operator can be specified. If you need to combine multiple queries
 // together, combine the nodes with 'And', 'Or' and 'Not'.
 type FilterNode struct {
-	RefName string `json:"name,omitempty"`
-
 	And []FilterNode `json:"and,omitempty"`
 	Or  []FilterNode `json:"or,omitempty"`
 	Not *FilterNode  `json:"not,omitempty"`
