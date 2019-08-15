@@ -105,23 +105,26 @@ type Color struct {
 
 // Equivalent returns true if two labels can be considered equal, despite a
 // different ID or number of messages.
-func Equivalent(l1, l2 Label) bool {
+//
+// Unspecified color is also ignored.
+func Equivalent(upstream, local Label) bool {
 	// Ignore ID
-	if l1.Name != l2.Name {
+	if upstream.Name != local.Name {
 		return false
 	}
 
-	l1HasColor := l1.Color != nil
-	l2HasColor := l2.Color != nil
-	if l1HasColor != l2HasColor {
-		return false
-	}
-	if !l1HasColor {
-		// Both are not colored
+	upsHasColor := upstream.Color != nil
+	locHasColor := local.Color != nil
+	if !locHasColor {
+		// We don't care about the color locally
 		return true
 	}
+	if !upsHasColor {
+		// Going to add the color.
+		return false
+	}
 	// Need to check if the color is the same
-	return *l1.Color == *l2.Color
+	return *upstream.Color == *local.Color
 }
 
 // FromConfig creates labels from the config format.
