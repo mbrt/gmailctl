@@ -70,13 +70,13 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 }
 
 // ListLabels lists the user labels.
-func (g *GmailAPI) ListLabels() ([]label.Label, error) {
+func (g *GmailAPI) ListLabels() (label.Labels, error) {
 	apires, err := g.service.Users.Labels.List(gmailUser).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	var res []label.Label
+	var res label.Labels
 
 	for _, lb := range apires.Labels {
 		// We are only interested in user labels.
@@ -116,7 +116,7 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 }
 
 // AddLabels creates the given labels.
-func (g *GmailAPI) AddLabels(lbs []label.Label) error {
+func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
 		if err != nil {
@@ -129,7 +129,7 @@ func (g *GmailAPI) AddLabels(lbs []label.Label) error {
 // UpdateLabels modifies the given labels.
 //
 // The label ID is required for the edit to be successful.
-func (g *GmailAPI) UpdateLabels(lbs []label.Label) error {
+func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		if lb.ID == "" {
 			return errors.Errorf("error, label '%s' has empty ID", lb.Name)
