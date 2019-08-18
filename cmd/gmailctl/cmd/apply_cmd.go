@@ -54,11 +54,7 @@ func apply(path string, interactive bool) error {
 
 	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
-		if err != errLabelsDisabled {
-			return err
-		}
-		// Drop the labels, to be sure we don't try to apply them later on
-		parseRes.labels = nil
+		return err
 	}
 
 	diff, err := papply.Diff(parseRes.config, upstream)
@@ -71,7 +67,12 @@ func apply(path string, interactive bool) error {
 		return nil
 	}
 
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
+
+	if err := diff.Validate(); err != nil {
+		return err
+	}
+
 	if interactive && !askYN("Do you want to apply them?") {
 		return nil
 	}

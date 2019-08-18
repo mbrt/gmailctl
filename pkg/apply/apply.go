@@ -18,23 +18,43 @@ type GmailConfig struct {
 	Filters filter.Filters
 }
 
+// FromConfig creates a GmailConfig from a parsed configuration file.
+func FromConfig(cfg cfgv3.Config) (GmailConfig, error) {
+	res := GmailConfig{}
+
+	rules, err := parser.Parse(cfg)
+	if err != nil {
+		return res, errors.Wrap(err, "cannot parse config file")
+	}
+	res.Filters, err = filter.FromRules(rules)
+	if err != nil {
+		return res, errors.Wrap(err, "error exporting to filters")
+	}
+	res.Labels = label.FromConfig(cfg.Labels)
+
+	return res, nil
+}
+
 // ConfigDiff contains the difference between local and upstream configuration,
 // including both labels and filters.
 type ConfigDiff struct {
-	Filters filter.FiltersDiff
-	Labels  label.LabelsDiff
+	FiltersDiff filter.FiltersDiff
+	LabelsDiff  label.LabelsDiff
+
+	Filters filter.Filters
+	Labels  label.Labels
 }
 
 func (d ConfigDiff) String() string {
 	var res []string
 
-	if !d.Filters.Empty() {
+	if !d.FiltersDiff.Empty() {
 		res = append(res, "Filters:")
-		res = append(res, d.Filters.String())
+		res = append(res, d.FiltersDiff.String())
 	}
-	if !d.Labels.Empty() {
+	if !d.LabelsDiff.Empty() {
 		res = append(res, "Labels:")
-		res = append(res, d.Labels.String())
+		res = append(res, d.LabelsDiff.String())
 	}
 
 	return strings.Join(res, "\n")
@@ -42,44 +62,50 @@ func (d ConfigDiff) String() string {
 
 // Empty returns whether the diff contains no changes.
 func (d ConfigDiff) Empty() bool {
-	return d.Filters.Empty() && d.Labels.Empty()
+	return d.FiltersDiff.Empty() && d.LabelsDiff.Empty()
+}
+
+// Validate returns whether the given diff is valid.
+func (d ConfigDiff) Validate() error {
+	if d.LabelsDiff.Empty() {
+		return nil
+	}
+	if err := d.Labels.Validate(); err != nil {
+		return errors.Wrap(err, "error validating labels")
+	}
+	if err := label.Validate(d.LabelsDiff, d.Filters); err != nil {
+		return errors.Wrap(err, "invalid labels diff")
+	}
+	return nil
 }
 
 // Diff computes the diff between local and upstream configuration.
 func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
+	res := ConfigDiff{}
+
 	rules, err := parser.Parse(cfg)
 	if err != nil {
-		return ConfigDiff{}, errors.Wrap(err, "cannot parse config file")
+		return res, errors.Wrap(err, "cannot parse config file")
 	}
-	filters, err := filter.FromRules(rules)
+	res.Filters, err = filter.FromRules(rules)
 	if err != nil {
-		return ConfigDiff{}, errors.Wrap(err, "error exporting to filters")
+		return res, errors.Wrap(err, "error exporting to filters")
 	}
-	fdiff, err := filter.Diff(upstream.Filters, filters)
+	res.FiltersDiff, err = filter.Diff(upstream.Filters, res.Filters)
 	if err != nil {
-		return ConfigDiff{}, errors.Wrap(err, "cannot compute filters diff")
+		return res, errors.Wrap(err, "cannot compute filters diff")
 	}
 
-	ldiff := label.LabelsDiff{}
 	if len(cfg.Labels) > 0 {
-		// Labels management opted-in
-		labels := label.FromConfig(cfg.Labels)
-		if err = labels.Validate(); err != nil {
-			return ConfigDiff{}, errors.Wrap(err, "error validating labels")
-		}
-		ldiff, err = label.Diff(upstream.Labels, labels)
+		// LabelsDiff management opted-in
+		res.Labels = label.FromConfig(cfg.Labels)
+		res.LabelsDiff, err = label.Diff(upstream.Labels, res.Labels)
 		if err != nil {
-			return ConfigDiff{}, errors.Wrap(err, "cannot compute labels diff")
-		}
-		if err = label.Validate(ldiff, filters); err != nil {
-			return ConfigDiff{}, errors.Wrap(err, "invalid labels diff")
+			return res, errors.Wrap(err, "cannot compute labels diff")
 		}
 	}
 
-	return ConfigDiff{
-		Filters: fdiff,
-		Labels:  ldiff,
-	}, nil
+	return res, nil
 }
 
 // API provides access to Gmail APIs.
@@ -101,19 +127,19 @@ func Apply(d ConfigDiff, api API) error {
 	// - remove filters
 	// - remove labels
 
-	if err := addLabels(d.Labels.Added, api); err != nil {
+	if err := addLabels(d.LabelsDiff.Added, api); err != nil {
 		return errors.Wrap(err, "error creating labels")
 	}
-	if err := addFilters(d.Filters.Added, api); err != nil {
+	if err := addFilters(d.FiltersDiff.Added, api); err != nil {
 		return errors.Wrap(err, "error creating filters")
 	}
-	if err := updateLabels(d.Labels.Modified, api); err != nil {
+	if err := updateLabels(d.LabelsDiff.Modified, api); err != nil {
 		return errors.Wrap(err, "error updating labels")
 	}
-	if err := removeFilters(d.Filters.Removed, api); err != nil {
+	if err := removeFilters(d.FiltersDiff.Removed, api); err != nil {
 		return errors.Wrap(err, "error deleting filters")
 	}
-	if err := removeLabels(d.Labels.Removed, api); err != nil {
+	if err := removeLabels(d.LabelsDiff.Removed, api); err != nil {
 		return errors.Wrap(err, "error removing labels")
 	}
 

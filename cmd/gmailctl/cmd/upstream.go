@@ -8,8 +8,6 @@ import (
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
-var errLabelsDisabled = errors.New("label management disabled")
-
 func upstreamConfig(gmailapi *api.GmailAPI) (papply.GmailConfig, error) {
 	f, err := gmailapi.ListFilters()
 	if err != nil {
@@ -20,10 +18,6 @@ func upstreamConfig(gmailapi *api.GmailAPI) (papply.GmailConfig, error) {
 		stderrPrintf("Warning: Error getting one or more filters from Gmail: %sThey will be ignored in the diff.\n", err)
 	}
 	l, err := gmailapi.ListLabels()
-	if err != nil {
-		stderrPrintf("Warning: Error getting labels from Gmail: %s. Labels management will be disabled\n", err)
-		err = errLabelsDisabled
-	}
 	return papply.GmailConfig{
 		Labels:  l,
 		Filters: f,
