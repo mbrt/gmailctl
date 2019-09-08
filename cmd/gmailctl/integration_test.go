@@ -53,7 +53,7 @@ func allTestPaths(t *testing.T) testPaths {
 	return tp
 }
 
-func parseConfig(t *testing.T, path string) apply.GmailConfig {
+func parseConfig(t *testing.T, path string) apply.ConfigParseRes {
 	t.Helper()
 	config := readConfig(t, path)
 	r, err := apply.FromConfig(config)
@@ -70,13 +70,15 @@ func TestIntegrationImport(t *testing.T) {
 		localPath := tps.locals[i]
 
 		t.Run(localPath, func(t *testing.T) {
-			local := parseConfig(t, localPath)
+			local := parseConfig(t, localPath).GmailConfig
 
 			// Import
 			config, err := rimport.Import(local.Filters, local.Labels)
 			assert.Nil(t, err)
 			// Generate
-			diff, err := apply.Diff(config, local)
+			pres, err := apply.FromConfig(config)
+			assert.Nil(t, err)
+			diff, err := apply.Diff(pres.GmailConfig, local)
 			// Re-generating imported filters should not cause any diff
 			assert.Nil(t, err)
 			assert.Equal(t, "", diff.String())

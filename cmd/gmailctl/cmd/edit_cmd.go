@@ -193,7 +193,7 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.config, upstream)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
 		return errors.New("cannot compare upstream with local config")
 	}

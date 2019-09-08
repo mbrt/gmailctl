@@ -56,7 +56,7 @@ func diff(path string) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.config, upstream)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
 		return errors.Wrap(err, "cannot compare upstream with local config")
 	}

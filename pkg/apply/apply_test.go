@@ -15,7 +15,6 @@ import (
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/label"
-	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
 const testdataDir = "../../testdata"
@@ -75,19 +74,14 @@ func allTestPaths(t *testing.T) testPaths {
 	return tp
 }
 
-func cfgPathToGmailConfig(t *testing.T, path string) (GmailConfig, error) {
+func parseConfig(t *testing.T, path string) ConfigParseRes {
 	t.Helper()
 	config := readConfig(t, path)
-	rules, err := parser.Parse(config)
+	r, err := FromConfig(config)
 	if err != nil {
-		return GmailConfig{}, err
+		t.Fatal(err)
 	}
-	fs, err := filter.FromRules(rules)
-	labels := label.FromConfig(config.Labels)
-	return GmailConfig{
-		Filters: fs,
-		Labels:  labels,
-	}, err
+	return r
 }
 
 func shuffleConfig(cfg GmailConfig) {
@@ -168,8 +162,7 @@ func (f *fakeAPI) DeleteLabels(ids []string) error {
 }
 
 func TestDiff(t *testing.T) {
-	upstream, err := cfgPathToGmailConfig(t, filepath.Join(testdataDir, "remote.jsonnet"))
-	assert.Nil(t, err)
+	upstream := parseConfig(t, filepath.Join(testdataDir, "remote.jsonnet")).GmailConfig
 	tps := allTestPaths(t)
 
 	for i := 0; i < len(tps.locals); i++ {
@@ -177,13 +170,13 @@ func TestDiff(t *testing.T) {
 
 		t.Run(local, func(t *testing.T) {
 			diffFile := tps.diffs[i]
-			config := readConfig(t, local)
+			config := parseConfig(t, local)
 
 			// Remote filters and labels can come in _any_ order
 			// We can make the test more realistic by shuffling them here
 			shuffleConfig(upstream)
 
-			diff, err := Diff(config, upstream)
+			diff, err := Diff(config.GmailConfig, upstream)
 			assert.Nil(t, err)
 
 			if *update {
@@ -200,15 +193,14 @@ func TestDiff(t *testing.T) {
 }
 
 func TestApply(t *testing.T) {
-	upstream, err := cfgPathToGmailConfig(t, filepath.Join(testdataDir, "remote.jsonnet"))
-	assert.Nil(t, err)
+	upstream := parseConfig(t, filepath.Join(testdataDir, "remote.jsonnet")).GmailConfig
 	tps := allTestPaths(t)
 
 	for i := 0; i < len(tps.locals); i++ {
 		local := tps.locals[i]
 
 		t.Run(local, func(t *testing.T) {
-			config := readConfig(t, local)
+			config := parseConfig(t, local)
 			api := fakeAPI{}
 
 			// Remote filters and labels can come in _any_ order
@@ -216,7 +208,7 @@ func TestApply(t *testing.T) {
 			shuffleConfig(upstream)
 			addIDs(upstream)
 
-			diff, err := Diff(config, upstream)
+			diff, err := Diff(config.GmailConfig, upstream)
 			assert.Nil(t, err)
 
 			// Apply without removing labels

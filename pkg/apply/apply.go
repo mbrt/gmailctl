@@ -18,15 +18,22 @@ type GmailConfig struct {
 	Filters filter.Filters
 }
 
-// FromConfig creates a GmailConfig from a parsed configuration file.
-func FromConfig(cfg cfgv3.Config) (GmailConfig, error) {
-	res := GmailConfig{}
+// ConfigParseRes represents the result of a config parse.
+type ConfigParseRes struct {
+	GmailConfig
+	Rules []parser.Rule
+}
 
-	rules, err := parser.Parse(cfg)
+// FromConfig creates a GmailConfig from a parsed configuration file.
+func FromConfig(cfg cfgv3.Config) (ConfigParseRes, error) {
+	res := ConfigParseRes{}
+	var err error
+
+	res.Rules, err = parser.Parse(cfg)
 	if err != nil {
 		return res, errors.Wrap(err, "cannot parse config file")
 	}
-	res.Filters, err = filter.FromRules(rules)
+	res.Filters, err = filter.FromRules(res.Rules)
 	if err != nil {
 		return res, errors.Wrap(err, "error exporting to filters")
 	}
@@ -37,12 +44,13 @@ func FromConfig(cfg cfgv3.Config) (GmailConfig, error) {
 
 // ConfigDiff contains the difference between local and upstream configuration,
 // including both labels and filters.
+//
+// For validation purposes, the local config is also kept.
 type ConfigDiff struct {
 	FiltersDiff filter.FiltersDiff
 	LabelsDiff  label.LabelsDiff
 
-	Filters filter.Filters
-	Labels  label.Labels
+	LocalConfig GmailConfig
 }
 
 func (d ConfigDiff) String() string {
@@ -70,36 +78,30 @@ func (d ConfigDiff) Validate() error {
 	if d.LabelsDiff.Empty() {
 		return nil
 	}
-	if err := d.Labels.Validate(); err != nil {
+	if err := d.LocalConfig.Labels.Validate(); err != nil {
 		return errors.Wrap(err, "error validating labels")
 	}
-	if err := label.Validate(d.LabelsDiff, d.Filters); err != nil {
+	if err := label.Validate(d.LabelsDiff, d.LocalConfig.Filters); err != nil {
 		return errors.Wrap(err, "invalid labels diff")
 	}
 	return nil
 }
 
 // Diff computes the diff between local and upstream configuration.
-func Diff(cfg cfgv3.Config, upstream GmailConfig) (ConfigDiff, error) {
-	res := ConfigDiff{}
+func Diff(local, upstream GmailConfig) (ConfigDiff, error) {
+	res := ConfigDiff{
+		LocalConfig: local,
+	}
+	var err error
 
-	rules, err := parser.Parse(cfg)
-	if err != nil {
-		return res, errors.Wrap(err, "cannot parse config file")
-	}
-	res.Filters, err = filter.FromRules(rules)
-	if err != nil {
-		return res, errors.Wrap(err, "error exporting to filters")
-	}
-	res.FiltersDiff, err = filter.Diff(upstream.Filters, res.Filters)
+	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters)
 	if err != nil {
 		return res, errors.Wrap(err, "cannot compute filters diff")
 	}
 
-	if len(cfg.Labels) > 0 {
+	if len(local.Labels) > 0 {
 		// LabelsDiff management opted-in
-		res.Labels = label.FromConfig(cfg.Labels)
-		res.LabelsDiff, err = label.Diff(upstream.Labels, res.Labels)
+		res.LabelsDiff, err = label.Diff(upstream.Labels, local.Labels)
 		if err != nil {
 			return res, errors.Wrap(err, "cannot compute labels diff")
 		}
