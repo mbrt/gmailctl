@@ -25,6 +25,13 @@ const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
 // using the 'diff' command.
 `
 
+const labelsComment = `  // Note: labels management is optional. If you prefer to use the
+  // GMail interface to add and remove labels, you can safely remove
+  // this section of the config.
+`
+
+var labelsLine = "  labels: ["
+
 // downloadCmd represents the import command
 var downloadCmd = &cobra.Command{
 	Use:   "download",
@@ -118,6 +125,12 @@ func marshalJsonnet(v interface{}, w io.Writer) error {
 	line, _, err = reader.ReadLine()
 	for err == nil {
 		line = replaceGroupsRe(keyRe, line)
+		if string(line) == labelsLine {
+			_, err = writer.WriteString(labelsComment)
+			if err != nil {
+				break
+			}
+		}
 		_, err = writer.Write(line)
 		if err != nil {
 			break

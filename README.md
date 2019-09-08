@@ -422,6 +422,18 @@ $ gmailctl init --reset
 $ gmailctl init
 ```
 
+If you want to update your existing config to include your existing labels, the
+best way to get started is to use the `download` command and copy paste the
+`labels` field into your config:
+
+```
+$ gmailctl download > /tmp/cfg.jsonnet
+$ gmailctl edit
+```
+
+After the import, verify that your current config does not contain unwanted
+changes with `gmailctl diff`.
+
 Managing the color of a label is optional. If you specify it, it will be
 enforced; if you don't, the existing color will be left intact. This is useful
 to people who want to keep setting the colors with the Gmail UI. You can find
