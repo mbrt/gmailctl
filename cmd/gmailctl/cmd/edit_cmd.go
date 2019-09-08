@@ -209,7 +209,13 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 		return err
 	}
 
-	switch askOptions("Do you want to apply them?", []string{"yes", "no (continue editing)", "abort"}) {
+	yesOption := "yes"
+	if len(diff.LabelsDiff.Removed) > 0 {
+		fmt.Print(renameLabelWarning)
+		yesOption = "yes, and I ALSO WANT TO DELETE LABELS"
+	}
+
+	switch askOptions("Do you want to apply them?", []string{yesOption, "no (continue editing)", "abort"}) {
 	case 0:
 		break
 	case 1:
@@ -219,5 +225,5 @@ func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 	}
 
 	fmt.Println("Applying the changes...")
-	return papply.Apply(diff, gmailapi)
+	return papply.Apply(diff, gmailapi, true)
 }

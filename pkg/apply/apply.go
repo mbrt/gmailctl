@@ -118,7 +118,7 @@ type API interface {
 }
 
 // Apply applies the changes identified by the diff to the remote configuration.
-func Apply(d ConfigDiff, api API) error {
+func Apply(d ConfigDiff, api API, allowRemoveLabels bool) error {
 	// In order to prevent not found errors, the sequence has to be:
 	//
 	// - add new labels
@@ -138,6 +138,10 @@ func Apply(d ConfigDiff, api API) error {
 	}
 	if err := removeFilters(d.FiltersDiff.Removed, api); err != nil {
 		return errors.Wrap(err, "error deleting filters")
+	}
+
+	if !allowRemoveLabels {
+		return nil
 	}
 	if err := removeLabels(d.LabelsDiff.Removed, api); err != nil {
 		return errors.Wrap(err, "error removing labels")

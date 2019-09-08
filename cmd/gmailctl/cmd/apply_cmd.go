@@ -10,9 +10,17 @@ import (
 )
 
 var (
-	applyFilename string
-	applyYes      bool
+	applyFilename     string
+	applyYes          bool
+	applyRemoveLabels bool
 )
+
+const renameLabelWarning = `Warning: You are going to delete labels. This operation is
+irreversible, because it also removes those labels from messages.
+
+If you are looking for renaming labels, please use the GMail UI.
+
+`
 
 // applyCmd represents the apply command
 var applyCmd = &cobra.Command{
@@ -39,6 +47,7 @@ func init() {
 	// Flags and configuration settings
 	applyCmd.PersistentFlags().StringVarP(&applyFilename, "filename", "f", "", "configuration file")
 	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
+	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
 }
 
 func apply(path string, interactive bool) error {
@@ -73,12 +82,20 @@ func apply(path string, interactive bool) error {
 		return err
 	}
 
+	if len(diff.LabelsDiff.Removed) > 0 {
+		fmt.Print(renameLabelWarning)
+		if !applyRemoveLabels {
+			return errors.New(`To protect you, deletion is disabled unless you
+explicitly provide the --remove-labels flag.`)
+		}
+	}
+
 	if interactive && !askYN("Do you want to apply them?") {
 		return nil
 	}
 
 	fmt.Println("Applying the changes...")
-	return papply.Apply(diff, gmailapi)
+	return papply.Apply(diff, gmailapi, applyRemoveLabels)
 }
 
 func configurationError(err error) error {
