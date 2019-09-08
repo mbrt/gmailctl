@@ -232,6 +232,7 @@ func TestApply(t *testing.T) {
 			// Apply with removing labels
 			if len(diff.LabelsDiff.Removed) > 0 {
 				err = Apply(diff, &api, true)
+				assert.Nil(t, err)
 				assert.Equal(t, labelIDs(diff.LabelsDiff.Removed), api.deleteLabels)
 			}
 
