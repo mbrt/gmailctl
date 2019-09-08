@@ -93,10 +93,9 @@ func (g *GmailAPI) ListLabels() (label.Labels, error) {
 		}
 
 		res = append(res, label.Label{
-			ID:          lb.Id,
-			Name:        lb.Name,
-			Color:       color,
-			NumMessages: int(lb.MessagesTotal),
+			ID:    lb.Id,
+			Name:  lb.Name,
+			Color: color,
 		})
 	}
 

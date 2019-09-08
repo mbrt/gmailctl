@@ -97,14 +97,6 @@ func TestDiff(t *testing.T) {
 	}
 }
 
-func TestValidateNonEmpty(t *testing.T) {
-	d := LabelsDiff{
-		Removed: Labels{{Name: "foo", NumMessages: 10}},
-	}
-	err := Validate(d, nil)
-	assert.NotNil(t, err)
-}
-
 func TestValidateUsed(t *testing.T) {
 	d := LabelsDiff{
 		Removed: Labels{{Name: "foo"}},

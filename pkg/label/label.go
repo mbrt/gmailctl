@@ -69,10 +69,9 @@ func checkPrefix(m stringset, n string) error {
 
 // Label contains information about a Gmail label.
 type Label struct {
-	ID          string
-	Name        string
-	Color       *Color
-	NumMessages int
+	ID    string
+	Name  string
+	Color *Color
 }
 
 func (l Label) String() string {
@@ -86,9 +85,6 @@ func (l Label) String() string {
 	if l.Color != nil {
 		ss = append(ss, fmt.Sprintf("color: %s, %s",
 			l.Color.Background, l.Color.Text))
-	}
-	if l.NumMessages > 0 {
-		ss = append(ss, fmt.Sprintf("num messages: %d", l.NumMessages))
 	}
 
 	return strings.Join(ss, "; ")
@@ -104,7 +100,7 @@ type Color struct {
 }
 
 // Equivalent returns true if two labels can be considered equal, despite a
-// different ID or number of messages.
+// different ID.
 //
 // Unspecified color is also ignored.
 func Equivalent(upstream, local Label) bool {
