@@ -10,8 +10,6 @@ import (
 	"github.com/mbrt/gmailctl/pkg/apply"
 	cfg "github.com/mbrt/gmailctl/pkg/config"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
-	"github.com/mbrt/gmailctl/pkg/filter"
-	"github.com/mbrt/gmailctl/pkg/parser"
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
@@ -55,31 +53,30 @@ func allTestPaths(t *testing.T) testPaths {
 	return tp
 }
 
-func cfgPathToFilters(t *testing.T, path string) (filter.Filters, error) {
+func parseConfig(t *testing.T, path string) apply.GmailConfig {
 	t.Helper()
 	config := readConfig(t, path)
-	rules, err := parser.Parse(config)
+	r, err := apply.FromConfig(config)
 	if err != nil {
-		return filter.Filters{}, err
+		t.Fatal(err)
 	}
-	return filter.FromRules(rules)
+	return r
 }
 
 func TestIntegrationImport(t *testing.T) {
 	tps := allTestPaths(t)
 
 	for i := 0; i < len(tps.locals); i++ {
-		local := tps.locals[i]
+		localPath := tps.locals[i]
 
-		t.Run(local, func(t *testing.T) {
-			locFilt, err := cfgPathToFilters(t, local)
-			assert.Nil(t, err)
+		t.Run(localPath, func(t *testing.T) {
+			local := parseConfig(t, localPath)
 
 			// Import
-			config, err := rimport.Import(locFilt)
+			config, err := rimport.Import(local.Filters, local.Labels)
 			assert.Nil(t, err)
 			// Generate
-			diff, err := apply.Diff(config, apply.GmailConfig{Filters: locFilt})
+			diff, err := apply.Diff(config, local)
 			// Re-generating imported filters should not cause any diff
 			assert.Nil(t, err)
 			assert.Equal(t, "", diff.String())

@@ -7,11 +7,12 @@ import (
 
 	config "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
+	"github.com/mbrt/gmailctl/pkg/label"
 )
 
 // Import converts a list of filters into config rules, best
 // effort quality.
-func Import(fs filter.Filters) (config.Config, error) {
+func Import(fs filter.Filters, ls label.Labels) (config.Config, error) {
 	var rules []config.Rule
 	for i, f := range fs {
 		r, err := fromFilter(f)
@@ -20,14 +21,35 @@ func Import(fs filter.Filters) (config.Config, error) {
 		}
 		rules = append(rules, r)
 	}
+
+	var labels []config.Label
+	for _, l := range ls {
+		labels = append(labels, fromLabel(l))
+	}
+
 	return config.Config{
 		Version: config.Version,
 		Author: config.Author{
 			Name:  "YOUR NAME HERE (auto imported)",
-			Email: "your@email",
+			Email: "your-email@gmail.com",
 		},
-		Rules: rules,
+		Labels: labels,
+		Rules:  rules,
 	}, nil
+}
+
+func fromLabel(l label.Label) config.Label {
+	var color *config.LabelColor
+	if l.Color != nil {
+		color = &config.LabelColor{
+			Background: l.Color.Background,
+			Text:       l.Color.Text,
+		}
+	}
+	return config.Label{
+		Name:  l.Name,
+		Color: color,
+	}
 }
 
 func fromFilter(f filter.Filter) (config.Rule, error) {

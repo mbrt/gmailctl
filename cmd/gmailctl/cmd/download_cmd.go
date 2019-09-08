@@ -80,12 +80,12 @@ func downloadWithOut(out io.Writer) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
 		return err
 	}
 
-	cfg, err := rimport.Import(upstream)
+	cfg, err := rimport.Import(upstream.Filters, upstream.Labels)
 	if err != nil {
 		return err
 	}

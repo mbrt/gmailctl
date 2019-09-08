@@ -84,9 +84,9 @@ func apply(path string, interactive bool) error {
 	if len(diff.LabelsDiff.Removed) > 0 {
 		fmt.Println(renameLabelWarning)
 		if !applyRemoveLabels {
-			fmt.Println("To protect you, deletion is disabled unless you\n" +
-				"explicitly provide the --remove-labels flag.\n")
-			return errors.New("no changes have been made")
+			return UserError(errors.New("no changes have been made"),
+				"To protect you, deletion is disabled unless you\n"+
+					"explicitly provide the --remove-labels flag.\n")
 		}
 	}
 
