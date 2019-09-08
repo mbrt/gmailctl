@@ -384,16 +384,20 @@ Example:
 ### Labels
 
 You can optionally manage your labels with gmailctl. The config contains a
-`labels` section. Adding even a single label in there will opt you in to full
-label management as well.
+`labels` section. Adding labels in there will opt you in to full label
+management as well. If you prefer to manage your labels through the GMail web
+interface, you can by all means still do so by simply omitting the `labels`
+section from the config.
 
 Example:
 
 ```jsonnet
 {
   version: 'v1alpha3',
+  // optional
   labels: [
     { name: 'family' },
+    { name: 'friends' },
   ],
   rules: [
     {
@@ -418,10 +422,10 @@ $ gmailctl init --reset
 $ gmailctl init
 ```
 
-You can also optionally manage the color of your labels. If you specify it, it
-will be enforced. If you don't, the existing color will be left intact. This is
-useful to people who set the colors with the Gmail UI. You can find the list of
-supported colors
+Managing the color of a label is optional. If you specify it, it will be
+enforced; if you don't, the existing color will be left intact. This is useful
+to people who want to keep setting the colors with the Gmail UI. You can find
+the list of supported colors
 [here](https://developers.google.com/gmail/api/v1/reference/users/labels).
 
 Example:
@@ -442,6 +446,14 @@ Example:
   ],
 }
 ```
+
+Note that renaming labels is not supported because there's no way to tell the
+difference between a rename and a deletion. This distinction is important
+because deleting a label and creating it with a new name would remove it from
+all the messages. This is a surprising behavior for some users, so it's
+currently gated by a confirmation prompt (for the `edit` command), or by the
+`--remove-labels` flag (for the `apply` command). If you want to rename a label,
+please do so through the GMail interface and then change your gmailctl config.
 
 ## Tips and tricks
 
