@@ -596,6 +596,75 @@ local me = 'pippo@gmail.com';
 }
 ```
 
+### Automatic labels
+
+If you opted in for labels management, you will find yourself often having to
+both add a filter and a label to your config. To alleviate this problem, you can
+use the utility function `lib.rulesLabels` provided with the gmailctl standard
+library. With that you can avoid providing the labels referenced by filters.
+They will be automatically added to the list of labels.
+
+Example:
+
+```jsonnet
+local lib = import 'gmailctl.libsonnet';
+local rules = {
+  {
+    filter: { to: 'myself@gmail.com' },
+    actions: { labels: ['directed'] },
+  },
+  {
+    filter: { from: 'foobar' },
+    actions: { labels: ['lists/foobar] },
+  },
+  {
+    filter: { list: 'baz},
+    actions: { labels: ['lists/baz', 'wow'] },
+  },
+};
+
+// the config
+{
+  version: 'v1alpha3',
+  rules: rules,
+  labels: lib.rulesLabels(rules) + [
+    'manual-label1',
+    'priority,
+    'priority/p1',
+  ],
+}
+```
+
+The resulting list of labels will be:
+
+```jsonnet
+labels: [
+  // Automatic
+  'directed',
+  'lists',  // <- because it's parent of an automatic label
+  'lists/foobar',
+  'lists/baz,
+  'wow',
+  // Manually added
+  'manual-label1',
+  'priority,
+  'priority/p1',
+]
+```
+
+Note that there's no need to specify the label `lists`, because even if it's not
+used in any filter, it's the parent of a label that is used.
+
+Things to keep in mind / gotchas:
+
+* Removing the last filter referencing a label will delete the label.
+* The only thing managed by the function is the list of labels names. You need
+  to apply some transformations yourself if you want other properties (e.g. the
+  color).
+* If you have labels that are not referenced by any filters (maybe archive
+  labels, or labels applied manually). You have to remember to specify them
+  manually in the list.
+
 ### Multiple Gmail accounts
 
 If you need to manage two or more accounts, it's useful to setup bash aliases

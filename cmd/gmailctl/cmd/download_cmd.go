@@ -23,6 +23,9 @@ const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
 // WARNING: This functionality is experimental. Before making any
 // changes, check that no diff is detected with the remote filters by
 // using the 'diff' command.
+
+// Uncomment if you want to use the standard library.
+// local lib = import 'gmailctl.libsonnet';
 `
 
 const labelsComment = `  // Note: labels management is optional. If you prefer to use the
