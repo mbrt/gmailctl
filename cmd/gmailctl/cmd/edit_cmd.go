@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/api"
+	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
 // Parameters
@@ -182,33 +182,40 @@ func spawnEditor(path string) error {
 	return errors.New("no suitable editor found")
 }
 
-func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
+func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
 	parseRes, err := parseConfig(path, originalPath)
 	if err != nil {
 		return err
 	}
 
-	// This forces labels to be re-fetched, in case something has changed
-	// between edit retries.
-	_, _ = gmailapi.LabelMap()
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
 		return err
 	}
 
-	diff, err := filter.Diff(upstream, parseRes.filters)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local filters")
+		return errors.New("cannot compare upstream with local config")
 	}
 
 	if diff.Empty() {
 		fmt.Println("No changes have been made.")
-		return errUnchanged
+		return nil
 	}
 
-	fmt.Printf("You are going to apply the following changes to your filters:\n\n%s", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
 
-	switch askOptions("Do you want to apply them?", []string{"yes", "no (continue editing)", "abort"}) {
+	if err := diff.Validate(); err != nil {
+		return err
+	}
+
+	yesOption := "yes"
+	if len(diff.LabelsDiff.Removed) > 0 {
+		fmt.Print(renameLabelWarning)
+		yesOption = "yes, and I ALSO WANT TO DELETE LABELS"
+	}
+
+	switch askOptions("Do you want to apply them?", []string{yesOption, "no (continue editing)", "abort"}) {
 	case 0:
 		break
 	case 1:
@@ -218,5 +225,5 @@ func applyEdited(path, originalPath string, gmailapi api.GmailAPI) error {
 	}
 
 	fmt.Println("Applying the changes...")
-	return updateFilters(gmailapi, diff)
+	return papply.Apply(diff, gmailapi, true)
 }

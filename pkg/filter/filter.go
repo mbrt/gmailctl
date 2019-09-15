@@ -25,6 +25,16 @@ func (fs Filters) String() string {
 	return w.String()
 }
 
+// HasLabel returns true if the given label is used by at least one filter.
+func (fs Filters) HasLabel(name string) bool {
+	for _, f := range fs {
+		if f.HasLabel(name) {
+			return true
+		}
+	}
+	return false
+}
+
 // Filter matches 1:1 a filter created on Gmail.
 type Filter struct {
 	// ID is an optional identifier associated with a filter.
@@ -54,6 +64,11 @@ func (f Filter) String() string {
 	w.WriteParam("apply label", f.Action.AddLabel)
 
 	return w.String()
+}
+
+// HasLabel returns true if the given label is used by the filter.
+func (f Filter) HasLabel(name string) bool {
+	return f.Action.AddLabel == name
 }
 
 // Actions represents an action associated with a Gmail filter.
@@ -105,12 +120,6 @@ func (c Criteria) ToGmailSearch() string {
 	}
 
 	return strings.Join(res, " ")
-}
-
-// Label contains information about a Gmail label.
-type Label struct {
-	ID   string
-	Name string
 }
 
 type writer struct {

@@ -70,5 +70,5 @@ func exportWithOut(path string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	return xml.DefaultExporter().Export(pres.config.Author, pres.filters, out)
+	return xml.DefaultExporter().Export(pres.Config.Author, pres.Res.Filters, out)
 }

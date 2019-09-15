@@ -10,28 +10,16 @@ import (
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
-// Importer imports Gmail API objects into filters
-type Importer interface {
-	// Import exports Gmail filters into Gmail API objects.
-	//
-	// If some filter is invalid, the import skips it and returns only the
-	// valid ones, but records and returns the error in the end.
-	Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error)
-}
-
-// DefaulImporter returns a default implementation of a Gmail API filter exporter.
-func DefaulImporter() Importer {
-	return defaultImporter{}
-}
-
-type defaultImporter struct{}
-
-func (di defaultImporter) Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error) {
+// Import exports Gmail filters into Gmail API objects.
+//
+// If some filter is invalid, the import skips it and returns only the
+// valid ones, but records and returns the error in the end.
+func Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error) {
 	res := filter.Filters{}
 	var reserr error
 
 	for _, gfilter := range filters {
-		impFilter, err := di.importFilter(gfilter, lmap)
+		impFilter, err := importFilter(gfilter, lmap)
 		if err != nil {
 			// We don't want to return here, but continue and skip the problematic filter
 			err = errors.Wrap(err, fmt.Sprintf("error importing filter '%s'", gfilter.Id))
@@ -44,12 +32,12 @@ func (di defaultImporter) Import(filters []*gmailv1.Filter, lmap LabelMap) (filt
 	return res, reserr
 }
 
-func (di defaultImporter) importFilter(gf *gmailv1.Filter, lmap LabelMap) (filter.Filter, error) {
-	action, err := di.importAction(gf.Action, lmap)
+func importFilter(gf *gmailv1.Filter, lmap LabelMap) (filter.Filter, error) {
+	action, err := importAction(gf.Action, lmap)
 	if err != nil {
 		return filter.Filter{}, errors.Wrap(err, "error importing action")
 	}
-	criteria, err := di.importCriteria(gf.Criteria)
+	criteria, err := importCriteria(gf.Criteria)
 	if err != nil {
 		return filter.Filter{}, errors.Wrap(err, "error importing criteria")
 	}
@@ -60,15 +48,15 @@ func (di defaultImporter) importFilter(gf *gmailv1.Filter, lmap LabelMap) (filte
 	}, nil
 }
 
-func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, error) {
+func importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, error) {
 	res := filter.Actions{}
 	if action == nil {
 		return res, errors.New("empty action")
 	}
-	if err := di.importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
+	if err := importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
-	err := di.importRemoveLabels(&res, action.RemoveLabelIds)
+	err := importRemoveLabels(&res, action.RemoveLabelIds)
 
 	if res.Empty() {
 		return res, errors.New("empty or unsupported action")
@@ -76,9 +64,9 @@ func (di defaultImporter) importAction(action *gmailv1.FilterAction, lmap LabelM
 	return res, err
 }
 
-func (di defaultImporter) importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) error {
+func importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) error {
 	for _, labelID := range addLabelIDs {
-		category := di.importCategory(labelID)
+		category := importCategory(labelID)
 		if category != "" {
 			if res.Category != "" {
 				return errors.Errorf("multiple categories: '%s', '%s'", category, res.Category)
@@ -106,7 +94,7 @@ func (di defaultImporter) importAddLabels(res *filter.Actions, addLabelIDs []str
 	return nil
 }
 
-func (di defaultImporter) importRemoveLabels(res *filter.Actions, removeLabelIDs []string) error {
+func importRemoveLabels(res *filter.Actions, removeLabelIDs []string) error {
 	for _, labelID := range removeLabelIDs {
 		switch labelID {
 		case labelIDInbox:
@@ -125,7 +113,7 @@ func (di defaultImporter) importRemoveLabels(res *filter.Actions, removeLabelIDs
 	return nil
 }
 
-func (di defaultImporter) importCategory(labelID string) gmail.Category {
+func importCategory(labelID string) gmail.Category {
 	switch labelID {
 	case labelIDCategoryPersonal:
 		return gmail.CategoryPersonal
@@ -142,7 +130,7 @@ func (di defaultImporter) importCategory(labelID string) gmail.Category {
 	}
 }
 
-func (di defaultImporter) importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
+func importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
 	if criteria == nil {
 		return filter.Criteria{}, errors.New("empty criteria")
 	}

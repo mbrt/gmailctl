@@ -1,0 +1,9 @@
+Labels:
+--- Current
++++ TO BE APPLIED
+@@ -1,2 +1,3 @@
+-onemorelabel
+-label3; color: #cca6ac, #ffffff
++onemorelabel; color: #cca6ac, #ffffff
++newlabel
++newlabel2; color: #ffffff, #000000

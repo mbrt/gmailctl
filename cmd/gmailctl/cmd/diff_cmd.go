@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/pkg/filter"
+	papply "github.com/mbrt/gmailctl/pkg/apply"
 )
 
 var (
@@ -51,14 +51,14 @@ func diff(path string) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
 		return err
 	}
 
-	diff, err := filter.Diff(upstream, parseRes.filters)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local filters")
+		return errors.Wrap(err, "cannot compare upstream with local config")
 	}
 
 	fmt.Print(diff)

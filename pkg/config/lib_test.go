@@ -1,24 +1,25 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"testing"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/stretchr/testify/assert"
+
+	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
-// update is useful to regenerate the diff files, whenever necessary.
+// update is useful to regenerate the json files, whenever necessary.
 // Make sure the new version makes sense!!
-var update = flag.Bool("update", false, "update .diff files")
+var update = flag.Bool("update", false, "update .json files")
 
 type testPaths struct {
 	jsonnets []string
-	yamls    []string
+	jsons    []string
 }
 
 func globPaths(t *testing.T, pattern string) []string {
@@ -33,12 +34,21 @@ func globPaths(t *testing.T, pattern string) []string {
 func allTestPaths(t *testing.T) testPaths {
 	tp := testPaths{
 		jsonnets: globPaths(t, "testdata/*.jsonnet"),
-		yamls:    globPaths(t, "testdata/*.yaml"),
+		jsons:    globPaths(t, "testdata/*.json"),
 	}
-	if len(tp.jsonnets) != len(tp.yamls) {
-		t.Fatal("expected both jsonnet and yaml to be present")
+	if len(tp.jsonnets) != len(tp.jsons) {
+		t.Fatal("expected both jsonnet and json to be present")
 	}
 	return tp
+}
+
+func read(t *testing.T, path string) []byte {
+	t.Helper()
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
 }
 
 func TestJsonnetLib(t *testing.T) {
@@ -47,21 +57,22 @@ func TestJsonnetLib(t *testing.T) {
 		jfile := tps.jsonnets[i]
 
 		t.Run(jfile, func(t *testing.T) {
-			jparsed, err := ReadFile(jfile, "")
+			jnparsed, err := ReadFile(jfile, "")
 			assert.Nil(t, err)
 
-			yfile := tps.yamls[i]
+			jsfile := tps.jsons[i]
 			if *update {
 				// Update the golden files
-				buf, err := yaml.Marshal(jparsed)
+				buf, err := json.MarshalIndent(jnparsed, "", "  ")
 				assert.Nil(t, err)
-				err = ioutil.WriteFile(yfile, buf, 0644)
+				err = ioutil.WriteFile(jsfile, buf, 0644)
 				assert.Nil(t, err)
 			} else {
 				// Test them
-				yparsed, err := ReadFile(yfile, "")
+				var jsparsed cfgv1.Config
+				err := json.Unmarshal(read(t, jsfile), &jsparsed)
 				assert.Nil(t, err)
-				assert.Equal(t, yparsed, jparsed)
+				assert.Equal(t, jsparsed, jnparsed)
 			}
 		})
 	}

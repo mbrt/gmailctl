@@ -6,14 +6,20 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/pkg/api"
-	"github.com/mbrt/gmailctl/pkg/filter"
+	papply "github.com/mbrt/gmailctl/pkg/apply"
 )
 
 var (
-	applyFilename string
-	applyYes      bool
+	applyFilename     string
+	applyYes          bool
+	applyRemoveLabels bool
 )
+
+const renameLabelWarning = `Warning: You are going to delete labels. This operation is
+irreversible, because it also removes those labels from messages.
+
+If you are looking for renaming labels, please use the GMail UI.
+`
 
 // applyCmd represents the apply command
 var applyCmd = &cobra.Command{
@@ -32,8 +38,7 @@ directory [config.(yaml|jsonnet)].`,
 		if err := apply(f, !applyYes); err != nil {
 			fatal(err)
 		}
-	},
-}
+	}}
 
 func init() {
 	rootCmd.AddCommand(applyCmd)
@@ -41,6 +46,7 @@ func init() {
 	// Flags and configuration settings
 	applyCmd.PersistentFlags().StringVarP(&applyFilename, "filename", "f", "", "configuration file")
 	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
+	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
 }
 
 func apply(path string, interactive bool) error {
@@ -54,14 +60,14 @@ func apply(path string, interactive bool) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
 		return err
 	}
 
-	diff, err := filter.Diff(upstream, parseRes.filters)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local filters")
+		return errors.Wrap(err, "cannot compare upstream with local config")
 	}
 
 	if diff.Empty() {
@@ -69,31 +75,27 @@ func apply(path string, interactive bool) error {
 		return nil
 	}
 
-	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s", diff)
+	fmt.Printf("You are going to apply the following changes to your settings:\n\n%s\n", diff)
+
+	if err := diff.Validate(); err != nil {
+		return err
+	}
+
+	if len(diff.LabelsDiff.Removed) > 0 {
+		fmt.Println(renameLabelWarning)
+		if !applyRemoveLabels {
+			return UserError(errors.New("no changes have been made"),
+				"To protect you, deletion is disabled unless you\n"+
+					"explicitly provide the --remove-labels flag.\n")
+		}
+	}
+
 	if interactive && !askYN("Do you want to apply them?") {
 		return nil
 	}
 
 	fmt.Println("Applying the changes...")
-	return updateFilters(gmailapi, diff)
-}
-
-func updateFilters(gmailapi api.GmailAPI, diff filter.FiltersDiff) error {
-	if len(diff.Added) > 0 {
-		if err := gmailapi.AddFilters(diff.Added); err != nil {
-			return errors.Wrap(err, "error adding filters")
-		}
-	}
-	if len(diff.Removed) == 0 {
-		return nil
-	}
-
-	removedIds := make([]string, len(diff.Removed))
-	for i, f := range diff.Removed {
-		removedIds[i] = f.ID
-	}
-	err := gmailapi.DeleteFilters(removedIds)
-	return errors.Wrap(err, "error deleting filters")
+	return papply.Apply(diff, gmailapi, applyRemoveLabels)
 }
 
 func configurationError(err error) error {

@@ -381,6 +381,92 @@ Example:
 }
 ```
 
+### Labels
+
+You can optionally manage your labels with gmailctl. The config contains a
+`labels` section. Adding labels in there will opt you in to full label
+management as well. If you prefer to manage your labels through the GMail web
+interface, you can by all means still do so by simply omitting the `labels`
+section from the config.
+
+Example:
+
+```jsonnet
+{
+  version: 'v1alpha3',
+  // optional
+  labels: [
+    { name: 'family' },
+    { name: 'friends' },
+  ],
+  rules: [
+    {
+      filter: { from: 'love@gmail.com' },
+      actions: {
+        labels: ['family'],
+      },
+    },
+  ],
+}
+```
+
+To make this work, your credentials need to contain permissions for labels
+management as well. If you configured gmailctl before this functionality was
+available, you probably need to update your 'Scopes for Google API' in the
+'OAuth content screen' by adding `https://www.googleapis.com/auth/gmail.labels`.
+If you don't know how to do this, just reset and re-create your credentials
+following the steps in:
+
+```
+$ gmailctl init --reset
+$ gmailctl init
+```
+
+If you want to update your existing config to include your existing labels, the
+best way to get started is to use the `download` command and copy paste the
+`labels` field into your config:
+
+```
+$ gmailctl download > /tmp/cfg.jsonnet
+$ gmailctl edit
+```
+
+After the import, verify that your current config does not contain unwanted
+changes with `gmailctl diff`.
+
+Managing the color of a label is optional. If you specify it, it will be
+enforced; if you don't, the existing color will be left intact. This is useful
+to people who want to keep setting the colors with the Gmail UI. You can find
+the list of supported colors
+[here](https://developers.google.com/gmail/api/v1/reference/users/labels).
+
+Example:
+
+```jsonnet
+{
+  version: 'v1alpha3',
+  labels: [
+    {
+      name: 'family',
+      color: {
+        background: "#fad165",
+        text: "#000000",
+      },
+    },
+  ],
+  rules: [ // ...
+  ],
+}
+```
+
+Note that renaming labels is not supported because there's no way to tell the
+difference between a rename and a deletion. This distinction is important
+because deleting a label and creating it with a new name would remove it from
+all the messages. This is a surprising behavior for some users, so it's
+currently gated by a confirmation prompt (for the `edit` command), or by the
+`--remove-labels` flag (for the `apply` command). If you want to rename a label,
+please do so through the GMail interface and then change your gmailctl config.
+
 ## Tips and tricks
 
 ### Chain filtering
@@ -509,6 +595,75 @@ local me = 'pippo@gmail.com';
   ],
 }
 ```
+
+### Automatic labels
+
+If you opted in for labels management, you will find yourself often having to
+both add a filter and a label to your config. To alleviate this problem, you can
+use the utility function `lib.rulesLabels` provided with the gmailctl standard
+library. With that you can avoid providing the labels referenced by filters.
+They will be automatically added to the list of labels.
+
+Example:
+
+```jsonnet
+local lib = import 'gmailctl.libsonnet';
+local rules = {
+  {
+    filter: { to: 'myself@gmail.com' },
+    actions: { labels: ['directed'] },
+  },
+  {
+    filter: { from: 'foobar' },
+    actions: { labels: ['lists/foobar] },
+  },
+  {
+    filter: { list: 'baz},
+    actions: { labels: ['lists/baz', 'wow'] },
+  },
+};
+
+// the config
+{
+  version: 'v1alpha3',
+  rules: rules,
+  labels: lib.rulesLabels(rules) + [
+    'manual-label1',
+    'priority,
+    'priority/p1',
+  ],
+}
+```
+
+The resulting list of labels will be:
+
+```jsonnet
+labels: [
+  // Automatic
+  'directed',
+  'lists',  // <- because it's parent of an automatic label
+  'lists/foobar',
+  'lists/baz,
+  'wow',
+  // Manually added
+  'manual-label1',
+  'priority,
+  'priority/p1',
+]
+```
+
+Note that there's no need to specify the label `lists`, because even if it's not
+used in any filter, it's the parent of a label that is used.
+
+Things to keep in mind / gotchas:
+
+* Removing the last filter referencing a label will delete the label.
+* The only thing managed by the function is the list of labels names. You need
+  to apply some transformations yourself if you want other properties (e.g. the
+  color).
+* If you have labels that are not referenced by any filters (maybe archive
+  labels, or labels applied manually). You have to remember to specify them
+  manually in the list.
 
 ### Multiple Gmail accounts
 

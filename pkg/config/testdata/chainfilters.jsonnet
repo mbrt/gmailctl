@@ -27,7 +27,7 @@ local ruleC = {
 };
 
 {
-  version: 'v1alpha2',
+  version: 'v1alpha3',
   rules: [
     {
       filter: lib.directlyTo(me),

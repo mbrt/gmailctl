@@ -48,16 +48,18 @@ func debug(path string) error {
 	if err != nil {
 		return err
 	}
+	configRules := parseRes.Config.Rules
+	parsedRules := parseRes.Res.Rules
 
-	if exp, got := len(parseRes.config.Rules), len(parseRes.rules); exp != got {
+	if exp, got := len(configRules), len(parsedRules); exp != got {
 		return errors.Errorf(
 			"unexpected number of generated rules: got %d, expected %d",
 			got, exp,
 		)
 	}
 
-	for i := 0; i < len(parseRes.rules); i++ {
-		parsed := parseRes.rules[i]
+	for i := 0; i < len(parsedRules); i++ {
+		parsed := parsedRules[i]
 		criteria, err := filter.GenerateCriteria(parsed.Criteria)
 		if err != nil {
 			return errors.Wrap(err, "error generating criteria")
@@ -66,7 +68,7 @@ func debug(path string) error {
 
 		fmt.Printf("# Search: %s\n", search)
 		fmt.Printf("# URL: %s\n", toGmailURL(search))
-		cfg := parseRes.config.Rules[i]
+		cfg := parsedRules[i]
 		b, err := yaml.Marshal(cfg)
 		if err != nil {
 			return errors.Wrap(err, "error marshalling rule")

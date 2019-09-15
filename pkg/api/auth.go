@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"sync"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -36,7 +35,7 @@ type Authenticator struct {
 //
 // If no token is available, AuthURL and CacheToken can be used to
 // obtain one.
-func (a Authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, error) {
+func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, error) {
 	tok, err := parseToken(token)
 	if err != nil {
 		return nil, errors.Wrap(err, "error decoding token")
@@ -47,8 +46,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (GmailAPI, erro
 		return nil, errors.Wrap(err, "error creating gmail client")
 	}
 
-	// Lazy load the LabelMap
-	return &gmailAPI{srv, nil, &sync.Mutex{}}, nil
+	return &GmailAPI{srv}, nil
 }
 
 // AuthURL returns the URL the user has to visit to authorize the
@@ -76,6 +74,7 @@ func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
 	return google.ConfigFromJSON(credBytes,
 		gmailv1.GmailSettingsBasicScope,
 		gmailv1.GmailMetadataScope,
+		gmailv1.GmailLabelsScope,
 	)
 }
 

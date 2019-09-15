@@ -38,7 +38,8 @@ func readFilters(t *testing.T, path string) filter.Filters {
 func TestImport(t *testing.T) {
 	remote := readFilters(t, "testdata/remote.json")
 
-	imp, err := Import(remote)
+	// TODO: Test labels import
+	imp, err := Import(remote, nil)
 	assert.Nil(t, err)
 	b, err := json.MarshalIndent(imp, "", "  ")
 	assert.Nil(t, err)

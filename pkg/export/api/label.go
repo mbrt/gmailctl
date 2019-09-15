@@ -1,5 +1,7 @@
 package api
 
+import "github.com/mbrt/gmailctl/pkg/label"
+
 const (
 	labelIDInbox     = "INBOX"
 	labelIDTrash     = "TRASH"
@@ -16,45 +18,41 @@ const (
 )
 
 // LabelMap maps label names and IDs together.
-type LabelMap interface {
-	// NameToID maps the name of a label to its ID.
-	NameToID(name string) (string, bool)
-	// IDToName maps the id of a string to its name.
-	IDToName(id string) (string, bool)
-}
-
-// DefaultLabelMap implements the LabelMap interface with a regular map of strings
-type DefaultLabelMap struct {
+type LabelMap struct {
 	ntid map[string]string
 	idtn map[string]string
 }
 
-// NewDefaultLabelMap creates a new DefaultLabelMap, given mapping between IDs to label names.
-func NewDefaultLabelMap(idNameMap map[string]string) DefaultLabelMap {
+// NewLabelMap creates a new LabelMap given a list of labels.
+func NewLabelMap(labels []label.Label) LabelMap {
 	nameIDMap := map[string]string{}
-	for id, name := range idNameMap {
-		nameIDMap[name] = id
+	idNameMap := map[string]string{}
+
+	for _, l := range labels {
+		nameIDMap[l.Name] = l.ID
+		idNameMap[l.ID] = l.Name
 	}
-	return DefaultLabelMap{
+
+	return LabelMap{
 		ntid: nameIDMap,
 		idtn: idNameMap,
 	}
 }
 
 // NameToID maps the name of a label to its ID.
-func (m DefaultLabelMap) NameToID(name string) (string, bool) {
+func (m LabelMap) NameToID(name string) (string, bool) {
 	id, ok := m.ntid[name]
 	return id, ok
 }
 
 // IDToName maps the id of a string to its name.
-func (m DefaultLabelMap) IDToName(id string) (string, bool) {
+func (m LabelMap) IDToName(id string) (string, bool) {
 	name, ok := m.idtn[id]
 	return name, ok
 }
 
 // AddLabel adds a label to the mapping
-func (m DefaultLabelMap) AddLabel(id, name string) {
+func (m LabelMap) AddLabel(id, name string) {
 	m.ntid[name] = id
 	m.idtn[id] = name
 }

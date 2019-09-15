@@ -23,7 +23,17 @@ const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
 // WARNING: This functionality is experimental. Before making any
 // changes, check that no diff is detected with the remote filters by
 // using the 'diff' command.
+
+// Uncomment if you want to use the standard library.
+// local lib = import 'gmailctl.libsonnet';
 `
+
+const labelsComment = `  // Note: labels management is optional. If you prefer to use the
+  // GMail interface to add and remove labels, you can safely remove
+  // this section of the config.
+`
+
+var labelsLine = "  labels: ["
 
 // downloadCmd represents the import command
 var downloadCmd = &cobra.Command{
@@ -80,12 +90,12 @@ func downloadWithOut(out io.Writer) error {
 		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
 	}
 
-	upstream, err := upstreamFilters(gmailapi)
+	upstream, err := upstreamConfig(gmailapi)
 	if err != nil {
 		return err
 	}
 
-	cfg, err := rimport.Import(upstream)
+	cfg, err := rimport.Import(upstream.Filters, upstream.Labels)
 	if err != nil {
 		return err
 	}
@@ -118,6 +128,12 @@ func marshalJsonnet(v interface{}, w io.Writer) error {
 	line, _, err = reader.ReadLine()
 	for err == nil {
 		line = replaceGroupsRe(keyRe, line)
+		if string(line) == labelsLine {
+			_, err = writer.WriteString(labelsComment)
+			if err != nil {
+				break
+			}
+		}
 		_, err = writer.Write(line)
 		if err != nil {
 			break
