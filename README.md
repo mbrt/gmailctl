@@ -665,6 +665,8 @@ Things to keep in mind / gotchas:
   labels, or labels applied manually). You have to remember to specify them
   manually in the list.
 
+Thanks to [legeana](https://github.com/legeana) for the idea!
+
 ### Multiple Gmail accounts
 
 If you need to manage two or more accounts, it's useful to setup bash aliases
