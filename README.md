@@ -42,7 +42,7 @@ This project then exists to provide to your Gmail filters:
 Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly, including the `bin` subdirectory in your `$PATH`.
 
 ```
-go get github.com/mbrt/gmailctl/cmd/gmailctl
+go get -u github.com/mbrt/gmailctl/cmd/gmailctl
 go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
 ```
