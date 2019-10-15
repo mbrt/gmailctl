@@ -134,10 +134,21 @@ func importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
 	if criteria == nil {
 		return filter.Criteria{}, errors.New("empty criteria")
 	}
+	query := criteria.Query
+
+	// We don't ever generate negated queries, so supporting them only for the import
+	// is not worth the effort. Instead update the regular query field with an
+	// equivalent expression.
+	// Note that elements in the negated query are by default in OR together, according
+	// to GMail behavior.
+	if criteria.NegatedQuery != "" {
+		query = fmt.Sprintf("%s -{%s}", query, criteria.NegatedQuery)
+	}
+
 	return filter.Criteria{
 		From:    criteria.From,
 		To:      criteria.To,
 		Subject: criteria.Subject,
-		Query:   criteria.Query,
+		Query:   query,
 	}, nil
 }
