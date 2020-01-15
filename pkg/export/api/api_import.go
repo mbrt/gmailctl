@@ -56,12 +56,15 @@ func importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, 
 	if err := importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
-	err := importRemoveLabels(&res, action.RemoveLabelIds)
+	if err := importRemoveLabels(&res, action.RemoveLabelIds); err != nil {
+		return res, err
+	}
+	res.Forward = action.Forward
 
 	if res.Empty() {
 		return res, errors.New("empty or unsupported action")
 	}
-	return res, err
+	return res, nil
 }
 
 func importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) error {

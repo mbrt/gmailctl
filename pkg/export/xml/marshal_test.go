@@ -106,6 +106,7 @@ func TestAllEntries(t *testing.T) {
 				MarkRead:      true,
 				Category:      gmail.CategoryPromotions,
 				AddLabel:      "MyLabel",
+				Forward:       "baz@zuz.it",
 			},
 			Criteria: filter.Criteria{
 				From:    "foo@baz.com",
@@ -141,6 +142,7 @@ func TestAllEntries(t *testing.T) {
     <apps:property name="shouldAlwaysMarkAsImportant" value="true"></apps:property>
     <apps:property name="shouldMarkAsRead" value="true"></apps:property>
     <apps:property name="label" value="MyLabel"></apps:property>
+    <apps:property name="forwardTo" value="baz@zuz.it"></apps:property>
     <apps:property name="smartLabelToApply" value="^smartlabel_promo"></apps:property>
   </entry>
 </feed>`

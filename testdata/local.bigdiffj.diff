@@ -1,7 +1,7 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,32 +1,55 @@
+@@ -1,32 +1,51 @@
  * Criteria:
 -    query: {"buy this thing" "very important!!!"}
 +    query: list:foobaz.mail.com -"action needed"
@@ -20,6 +20,7 @@ Filters:
 +    from: baz+zuz@mail.com
    Actions:
      mark as important
++    forward to: other@mail.com
  
  * Criteria:
 -    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
@@ -50,18 +51,13 @@ Filters:
 +    apply label: differentlabel
 +
 +* Criteria:
-+    from: notfriend@gmail.com
-+    subject: "hey there"
-+  Actions:
-+    archive
-+    star
-+
-+* Criteria:
 +    query: list:{list3 list1 list4 list6} -to:none@gmail.com
 +  Actions:
 +    apply label: thirdlabel
 +
 +* Criteria:
++    from: notfriend@gmail.com
++    subject: "hey there"
 +    query: -to:none@gmail.com
 +  Actions:
 +    archive

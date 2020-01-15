@@ -62,6 +62,7 @@ func (f Filter) String() string {
 	w.WriteBool("star", f.Action.Star)
 	w.WriteParam("categorize as", string(f.Action.Category))
 	w.WriteParam("apply label", f.Action.AddLabel)
+	w.WriteParam("forward to", f.Action.Forward)
 
 	return w.String()
 }
@@ -82,6 +83,7 @@ type Actions struct {
 	MarkRead         bool
 	MarkNotSpam      bool
 	Star             bool
+	Forward          string
 }
 
 // Empty returns true if no action is specified.

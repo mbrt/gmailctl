@@ -122,6 +122,7 @@ func fromActions(c filter.Actions) (config.Actions, error) {
 		Delete:   c.Delete,
 		MarkRead: c.MarkRead,
 		Star:     c.Star,
+		Forward:  c.Forward,
 	}
 	if c.AddLabel != "" {
 		res.Labels = []string{c.AddLabel}

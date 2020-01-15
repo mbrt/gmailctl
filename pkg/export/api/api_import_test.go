@@ -26,6 +26,7 @@ func TestImportActions(t *testing.T) {
 					labelIDUnread,
 					labelIDSpam,
 				},
+				Forward: "baz@zuz.it",
 			},
 			Criteria: &gmailv1.FilterCriteria{
 				From: "foo@bar.com",
@@ -43,6 +44,7 @@ func TestImportActions(t *testing.T) {
 				MarkNotSpam:   true,
 				MarkImportant: true,
 				Category:      gmail.CategoryUpdates,
+				Forward:       "baz@zuz.it",
 			},
 			Criteria: filter.Criteria{
 				From: "foo@bar.com",

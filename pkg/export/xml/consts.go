@@ -24,6 +24,7 @@ const (
 	PropertyMarkRead         = "shouldMarkAsRead"
 	PropertyMarkNotSpam      = "shouldNeverSpam"
 	PropertyStar             = "shouldStar"
+	PropertyForward          = "forwardTo"
 )
 
 // SmartLabel values
