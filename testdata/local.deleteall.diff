@@ -14,7 +14,7 @@ Filters:
 -    delete
 -
 -* Criteria:
--    query: {"buy this thing" "very important!!!"}
+-    to: pippo+spammy@gmail.com
 -  Actions:
 -    delete
 -
@@ -24,7 +24,7 @@ Filters:
 -    apply label: onemorelabel
 -
 -* Criteria:
--    subject: "spam mail"
+-    query: {"buy this thing" "very important!!!"}
 -  Actions:
 -    delete
 -
@@ -35,7 +35,7 @@ Filters:
 -    apply label: maillist
 -
 -* Criteria:
--    to: pippo+spammy@gmail.com
+-    subject: "spam mail"
 -  Actions:
 -    delete
 -
