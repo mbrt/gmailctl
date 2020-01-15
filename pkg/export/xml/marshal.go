@@ -143,6 +143,7 @@ func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	res = x.appendBoolProperty(res, PropertyMarkNotSpam, a.MarkNotSpam)
 	res = x.appendBoolProperty(res, PropertyStar, a.Star)
 	res = x.appendStringProperty(res, PropertyApplyLabel, a.AddLabel)
+	res = x.appendStringProperty(res, PropertyForward, a.Forward)
 
 	if a.Category != "" {
 		cat, err := categoryToSmartLabel(a.Category)

@@ -223,6 +223,7 @@ func TestActions(t *testing.T) {
 				MarkSpam:      boolptr(false),
 				MarkImportant: boolptr(true),
 				Category:      gmail.CategoryForums,
+				Forward:       "foo@bar.com",
 			},
 		},
 	}
@@ -239,6 +240,7 @@ func TestActions(t *testing.T) {
 				MarkNotSpam:   true,
 				MarkImportant: true,
 				Category:      gmail.CategoryForums,
+				Forward:       "foo@bar.com",
 			},
 		},
 	}
