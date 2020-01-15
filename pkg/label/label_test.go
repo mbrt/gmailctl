@@ -30,20 +30,6 @@ func TestInvalid(t *testing.T) {
 				{Name: "abc"},
 			},
 		},
-		{
-			"missing prefix",
-			Labels{
-				{Name: "abc/def"},
-				{Name: "ab"},
-			},
-		},
-		{
-			"missing prefix 2",
-			Labels{
-				{Name: "abc"},
-				{Name: "abc/def/ghi"},
-			},
-		},
 	}
 
 	for _, tc := range cases {
@@ -71,6 +57,20 @@ func TestValid(t *testing.T) {
 				{Name: "abc"},
 				{Name: "abc/def/ghi"},
 				{Name: "another"},
+			},
+		},
+		{
+			"missing prefix",
+			Labels{
+				{Name: "abc/def"},
+				{Name: "ab"},
+			},
+		},
+		{
+			"missing prefix 2",
+			Labels{
+				{Name: "abc"},
+				{Name: "abc/def/ghi"},
 			},
 		},
 	}

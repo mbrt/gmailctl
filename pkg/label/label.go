@@ -41,31 +41,10 @@ func (ls Labels) Validate() error {
 		lmap[n] = struct{}{}
 	}
 
-	// Check that the labels have all the parents.
-	// e.g. A/B requires A to be in the list.
-	for _, l := range ls {
-		if err := checkPrefix(lmap, l.Name); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
 type stringset map[string]struct{}
-
-func checkPrefix(m stringset, n string) error {
-	i := strings.LastIndex(n, "/")
-	if i < 0 {
-		return nil
-	}
-	prefix := n[:i]
-	if _, ok := m[prefix]; !ok {
-		return errors.Errorf("label '%s' requires label '%s' to be present",
-			n, prefix)
-	}
-	return checkPrefix(m, prefix)
-}
 
 // Label contains information about a Gmail label.
 type Label struct {
