@@ -38,6 +38,7 @@
     and: [
       { to: recipient },
       { not: { cc: recipient } },
+      { not: { bcc: recipient } },
     ],
   },
 

@@ -1,16 +1,17 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,32 +1,51 @@
+@@ -1,32 +1,52 @@
  * Criteria:
--    query: {"buy this thing" "very important!!!"}
-+    query: list:foobaz.mail.com -"action needed"
++    from: spammer1
+     subject: "spam mail"
++    query: cc:foo@baz.com bcc:bar@baz.com
    Actions:
      delete
  
  * Criteria:
-+    from: spammer1
-     subject: "spam mail"
+-    query: {"buy this thing" "very important!!!"}
++    query: list:foobaz.mail.com -"action needed"
    Actions:
      delete
  

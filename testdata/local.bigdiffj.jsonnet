@@ -24,6 +24,8 @@ local filters = {
         and: [
           {from: 'spammer1'},
           {subject: 'spam mail'},
+          {cc: 'foo@baz.com' },
+          {bcc: 'bar@baz.com' },
         ],
       },
       {from: 'spammer2'},
