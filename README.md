@@ -182,6 +182,7 @@ the following common operators:
 
 * `list`: the mail is directed to the given mail list
 * `cc`: the mail has the given address as CC destination
+* `bcc`: the mail has the given address as BCC destination
 
 One more special function is given if you need to use less common operators<sup
 id="a1">[1](#f1)</sup>, or want to compose your query manually:
@@ -573,13 +574,13 @@ local directlyTo(recipient) = {
   and: [
     { to: recipient },
     { not: { cc: recipient } },
+    { not: { bcc: recipient } },
   ],
 };
 ```
 
 So, from all emails where your mail is a recipient, we remove the ones where
-your mail is in the CC field. Note that we don't need to remove BCC emails,
-because no mail matches that filter.
+your mail is in the CC field.
 
 This trick is conveniently provided by the `gmailctl` library, so you can use it
 for example in this way:

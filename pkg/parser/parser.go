@@ -122,6 +122,9 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 	if f.Cc != "" {
 		return FunctionCc, f.Cc
 	}
+	if f.Bcc != "" {
+		return FunctionBcc, f.Bcc
+	}
 	if f.Subject != "" {
 		return FunctionSubject, f.Subject
 	}

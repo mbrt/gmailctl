@@ -33,6 +33,7 @@ type FilterNode struct {
 	From    string `json:"from,omitempty"`
 	To      string `json:"to,omitempty"`
 	Cc      string `json:"cc,omitempty"`
+	Bcc     string `json:"bcc,omitempty"`
 	Subject string `json:"subject,omitempty"`
 	List    string `json:"list,omitempty"`
 	Has     string `json:"has,omitempty"`
@@ -143,7 +144,6 @@ type Actions struct {
 	Labels   []string       `json:"labels,omitempty"`
 
 	// Forward actions
-	// TODO(#56) Unused for now.
 	Forward string `json:"forward,omitempty"`
 }
 

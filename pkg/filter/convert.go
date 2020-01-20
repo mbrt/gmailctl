@@ -120,6 +120,10 @@ func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
 		return Criteria{
 			Query: fmt.Sprintf("cc:%s", query),
 		}, nil
+	case parser.FunctionBcc:
+		return Criteria{
+			Query: fmt.Sprintf("bcc:%s", query),
+		}, nil
 	case parser.FunctionList:
 		return Criteria{
 			Query: fmt.Sprintf("list:%s", query),
