@@ -17,6 +17,7 @@ type Config struct {
 	Author  Author  `json:"author,omitempty"`
 	Labels  []Label `json:"labels,omitempty"`
 	Rules   []Rule  `json:"rules"`
+	Tests   []Test  `json:"tests,omitempty"`
 }
 
 // FilterNode represents a piece of a Gmail filter.
@@ -165,6 +166,23 @@ type Label struct {
 type LabelColor struct {
 	Background string `json:"background"`
 	Text       string `json:"text"`
+}
+
+// Test represents the intended actions applied to a set of emails.
+type Test struct {
+	Messages []Message `json:"messages"`
+	Actions  Actions   `json:"actions"`
+}
+
+// Message represents the contents and metadata of an email.
+type Message struct {
+	From    string   `json:"from,omitempty"`
+	To      []string `json:"to,omitempty"`
+	Cc      []string `json:"cc,omitempty"`
+	Bcc     []string `json:"bcc,omitempty"`
+	Lists   []string `json:"lists,omitempty"`
+	Subject string   `json:"subject,omitempty"`
+	Body    string   `json:"body,omitempty"`
 }
 
 func jsonTagName(t reflect.StructTag) string {

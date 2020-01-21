@@ -79,6 +79,8 @@ type CriteriaAST interface {
 	RootFunction() FunctionType
 	// IsLeaf returns true if the root node is a leaf.
 	IsLeaf() bool
+	// AcceptVisitor implements the visitor pattern.
+	AcceptVisitor(v Visitor)
 }
 
 // Node is an AST node with children nodes. It can only be a logical operator.
@@ -100,6 +102,11 @@ func (n *Node) RootFunction() FunctionType {
 // IsLeaf will always return false.
 func (n *Node) IsLeaf() bool {
 	return false
+}
+
+// AcceptVisitor implements the visitor pattern.
+func (n *Node) AcceptVisitor(v Visitor) {
+	v.VisitNode(n)
 }
 
 // Leaf is an AST node with no children.
@@ -127,6 +134,17 @@ func (n *Leaf) RootFunction() FunctionType {
 // IsLeaf will always return true.
 func (n *Leaf) IsLeaf() bool {
 	return true
+}
+
+// AcceptVisitor implements the visitor pattern.
+func (n *Leaf) AcceptVisitor(v Visitor) {
+	v.VisitLeaf(n)
+}
+
+// Visitor implements the visitor pattern for CriteriaAST.
+type Visitor interface {
+	VisitNode(n *Node)
+	VisitLeaf(n *Leaf)
 }
 
 // SimplifyCriteria applies multiple simplifications to a criteria.
