@@ -2,10 +2,18 @@ package cfgtest
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/parser"
+)
+
+type matchType int
+
+const (
+	matchTypeExact = iota
+	matchTypeSuffix
+	matchTypeContains
 )
 
 func Test(rules []parser.Rule, tests []cfg.Test) error {
@@ -57,8 +65,9 @@ func (n notNode) Match(msg cfg.Message) bool {
 }
 
 type funcNode struct {
-	op parser.FunctionType
-	re *regexp.Regexp
+	op        parser.FunctionType
+	expected  string
+	matchType matchType
 }
 
 func (n funcNode) Match(msg cfg.Message) bool {
@@ -82,7 +91,19 @@ func (n funcNode) Match(msg cfg.Message) bool {
 	}
 
 	for _, f := range fields {
-		if n.re.MatchString(f) {
+		isMatch := false
+
+		switch n.matchType {
+		case matchTypeExact:
+			isMatch = f == n.expected
+		case matchTypeSuffix:
+			isMatch = strings.HasSuffix(f, n.expected)
+		case matchTypeContains:
+			isMatch = strings.Contains(f, n.expected)
+		}
+
+		// If there's no match, continue searching.
+		if isMatch {
 			return true
 		}
 	}
@@ -122,5 +143,102 @@ func (r *evalBuilder) VisitNode(n *parser.Node) {
 }
 
 func (r *evalBuilder) VisitLeaf(n *parser.Leaf) {
-	// TODO
+	if n.IsRaw {
+		r.Err = fmt.Errorf("unsupported 'raw' function: %v", n)
+		return
+	}
+
+	var rules []RuleEvaluator
+
+	switch n.Function {
+	case parser.FunctionFrom, parser.FunctionCc, parser.FunctionBcc, parser.FunctionList:
+		rules = emailField(n.Function, n.Args)
+	case parser.FunctionTo:
+		rules = expandTo(n.Args)
+	case parser.FunctionSubject:
+		rules = freeTextField(n.Function, n.Args)
+	case parser.FunctionHas:
+		rules = expandHas(n.Args)
+	case parser.FunctionQuery:
+		r.Err = fmt.Errorf("unsupported unconstrained query: '%v'", n)
+		return
+	default:
+		r.Err = fmt.Errorf("unsupported function: %s", n.Function)
+		return
+	}
+
+	if len(rules) == 0 {
+		r.Err = fmt.Errorf("empty leaf: %v", n)
+		return
+	}
+	if len(rules) == 1 {
+		// No need for grouping.
+		r.Res = rules[0]
+		return
+	}
+
+	// Expand into 'and' and 'or' explicitly.
+	switch n.Grouping {
+	case parser.OperationAnd:
+		r.Res = &andNode{rules}
+	case parser.OperationOr:
+		r.Res = &orNode{rules}
+	default:
+		r.Err = fmt.Errorf("unsupported grouping %v", n.Grouping)
+	}
+}
+
+func expandTo(args []string) []RuleEvaluator {
+	// In Gmail, 'to' is a shortcut for (to || cc || bcc || list).
+	res := emailField(parser.FunctionTo, args)
+	res = append(res, emailField(parser.FunctionCc, args)...)
+	res = append(res, emailField(parser.FunctionBcc, args)...)
+	res = append(res, emailField(parser.FunctionList, args)...)
+	return res
+}
+
+func expandHas(args []string) []RuleEvaluator {
+	// the 'has' operator basically matches every field.
+	res := expandTo(args)
+	res = append(res, emailField(parser.FunctionFrom, args)...)
+	res = append(res, freeTextField(parser.FunctionSubject, args)...)
+	return res
+}
+
+func emailField(op parser.FunctionType, args []string) []RuleEvaluator {
+	var res []RuleEvaluator
+
+	for _, arg := range args {
+		// Gmail doesn't distinguish between @ and .
+		r := funcNode{
+			op:        op,
+			expected:  strings.ReplaceAll(arg, "@", "."),
+			matchType: matchTypeExact,
+		}
+		// Asking for *@gmail.com or @gmail.com is the same and means
+		// match the suffix.
+		if strings.HasPrefix(arg, "*") {
+			r.expected = arg[1:]
+			r.matchType = matchTypeSuffix
+		} else if strings.HasPrefix(arg, ".") {
+			r.matchType = matchTypeSuffix
+		}
+		res = append(res, r)
+	}
+
+	return res
+}
+
+func freeTextField(op parser.FunctionType, args []string) []RuleEvaluator {
+	var res []RuleEvaluator
+
+	for _, arg := range args {
+		res = append(res, funcNode{
+			op:        op,
+			expected:  arg,
+			matchType: matchTypeContains,
+		})
+	}
+
+	return res
 }
