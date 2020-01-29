@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
-	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
 type matchType int
@@ -15,7 +14,23 @@ const (
 	matchTypeContains
 )
 
+type matchField int
+
+const (
+	matchFieldUnknown = iota
+	matchFieldFrom
+	matchFieldTo
+	matchFieldCc
+	matchFieldBcc
+	matchFieldLists
+	matchFieldSubject
+	matchFieldBody
+)
+
+// RuleEvaluator represents a filter criteria able to evaluate if an email matches
+// its definition.
 type RuleEvaluator interface {
+	// Match returns true if the given message matches the filter criteria.
 	Match(msg cfg.Message) bool
 }
 
@@ -54,7 +69,7 @@ func (n notNode) Match(msg cfg.Message) bool {
 }
 
 type funcNode struct {
-	op        parser.FunctionType
+	field     matchField
 	expected  string
 	matchType matchType
 }
@@ -62,20 +77,20 @@ type funcNode struct {
 func (n funcNode) Match(msg cfg.Message) bool {
 	var fields []string
 
-	switch n.op {
-	case parser.FunctionFrom:
+	switch n.field {
+	case matchFieldFrom:
 		fields = []string{msg.From}
-	case parser.FunctionTo:
+	case matchFieldTo:
 		fields = msg.To
-	case parser.FunctionCc:
+	case matchFieldCc:
 		fields = msg.Cc
-	case parser.FunctionBcc:
+	case matchFieldBcc:
 		fields = msg.Bcc
-	case parser.FunctionList:
+	case matchFieldLists:
 		fields = msg.Lists
-	case parser.FunctionSubject:
+	case matchFieldSubject:
 		fields = []string{msg.Subject}
-	case parser.FunctionHas:
+	case matchFieldBody:
 		fields = []string{msg.Body}
 	}
 
@@ -101,6 +116,8 @@ func (n funcNode) Match(msg cfg.Message) bool {
 	return false
 }
 
+// normalizeField emulates Gmail normalization: @ and . are the same, and
+// the match is case insensitive.
 func normalizeField(a string) string {
 	return strings.ToLower(strings.ReplaceAll(a, "@", "."))
 }

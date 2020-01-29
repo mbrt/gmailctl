@@ -56,13 +56,13 @@ func (r *evalBuilder) VisitLeaf(n *parser.Leaf) {
 	switch n.Function {
 	case parser.FunctionFrom, parser.FunctionCc, parser.FunctionBcc, parser.FunctionList:
 		rules = expandAll(n.Args, func(a string) RuleEvaluator {
-			return emailField(n.Function, a)
+			return emailField(toMatchField(n.Function), a)
 		})
 	case parser.FunctionTo:
 		rules = expandAll(n.Args, expandTo)
 	case parser.FunctionSubject:
 		rules = expandAll(n.Args, func(a string) RuleEvaluator {
-			return freeTextField(n.Function, a)
+			return freeTextField(matchFieldSubject, a)
 		})
 	case parser.FunctionHas:
 		rules = expandAll(n.Args, expandHas)
@@ -92,10 +92,10 @@ func expandAll(args []string, f func(arg string) RuleEvaluator) []RuleEvaluator 
 func expandTo(arg string) RuleEvaluator {
 	return orNode{
 		[]RuleEvaluator{
-			emailField(parser.FunctionTo, arg),
-			emailField(parser.FunctionCc, arg),
-			emailField(parser.FunctionBcc, arg),
-			emailField(parser.FunctionList, arg),
+			emailField(matchFieldTo, arg),
+			emailField(matchFieldCc, arg),
+			emailField(matchFieldBcc, arg),
+			emailField(matchFieldLists, arg),
 		},
 	}
 }
@@ -109,17 +109,17 @@ func expandHas(arg string) RuleEvaluator {
 	return orNode{
 		[]RuleEvaluator{
 			expandTo(arg),
-			emailField(parser.FunctionFrom, arg),
-			freeTextField(parser.FunctionSubject, arg),
-			// TODO: Implement body match.
+			emailField(matchFieldFrom, arg),
+			freeTextField(matchFieldSubject, arg),
+			freeTextField(matchFieldBody, arg),
 		},
 	}
 }
 
-func emailField(op parser.FunctionType, arg string) RuleEvaluator {
+func emailField(f matchField, arg string) RuleEvaluator {
 	// Gmail doesn't distinguish between @ and .
 	r := funcNode{
-		op:        op,
+		field:     f,
 		expected:  normalizeField(arg),
 		matchType: matchTypeExact,
 	}
@@ -134,9 +134,9 @@ func emailField(op parser.FunctionType, arg string) RuleEvaluator {
 	return r
 }
 
-func freeTextField(op parser.FunctionType, arg string) RuleEvaluator {
+func freeTextField(f matchField, arg string) RuleEvaluator {
 	return funcNode{
-		op:        op,
+		field:     f,
 		expected:  normalizeField(arg),
 		matchType: matchTypeContains,
 	}
@@ -165,5 +165,24 @@ func group(op parser.OperationType, rs []RuleEvaluator) (RuleEvaluator, error) {
 		return notNode{rs[0]}, nil
 	default:
 		return nil, fmt.Errorf("unsupported operation %s", op)
+	}
+}
+
+func toMatchField(f parser.FunctionType) matchField {
+	switch f {
+	case parser.FunctionFrom:
+		return matchFieldFrom
+	case parser.FunctionTo:
+		return matchFieldTo
+	case parser.FunctionCc:
+		return matchFieldCc
+	case parser.FunctionBcc:
+		return matchFieldBcc
+	case parser.FunctionList:
+		return matchFieldLists
+	case parser.FunctionSubject:
+		return matchFieldSubject
+	default:
+		return matchFieldUnknown
 	}
 }

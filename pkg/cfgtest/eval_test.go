@@ -1,7 +1,6 @@
 package cfgtest
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,7 +25,6 @@ func TestParseEval(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewEvaluator failed: %v", err)
 	}
-	fmt.Printf("eval: %+v", eval)
 
 	tests := []struct {
 		name        string
@@ -62,14 +60,13 @@ func TestParseEval(t *testing.T) {
 			},
 			expectMatch: true,
 		},
-		// TODO: Implement body match.
-		// {
-		// 	name: "has body",
-		// 	message: cfg.Message{
-		// 		Body: "important message",
-		// 	},
-		// 	expectMatch: true,
-		// },
+		{
+			name: "has body",
+			message: cfg.Message{
+				Body: "important message",
+			},
+			expectMatch: true,
+		},
 	}
 
 	for _, tc := range tests {
