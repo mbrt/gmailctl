@@ -170,6 +170,8 @@ type LabelColor struct {
 
 // Test represents the intended actions applied to a set of emails.
 type Test struct {
+	// Name is an optional name used for error reporting.
+	Name     string    `json:"name,omitempty"`
 	Messages []Message `json:"messages"`
 	Actions  Actions   `json:"actions"`
 }
