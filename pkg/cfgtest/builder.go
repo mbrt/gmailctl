@@ -8,6 +8,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
+// NewEvaluator creates a RuleEvaluator starting from a parser criteria.
 func NewEvaluator(criteria parser.CriteriaAST) (RuleEvaluator, error) {
 	v := evalBuilder{}
 	criteria.AcceptVisitor(&v)

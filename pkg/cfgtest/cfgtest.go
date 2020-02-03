@@ -31,36 +31,6 @@ func NewFromParserRules(rs []parser.Rule) (Rules, []error) {
 	return res, errs
 }
 
-type Actions parser.Actions
-
-func (a Actions) Equal(a2 Actions) bool {
-	if a.Archive != a2.Archive {
-		return false
-	}
-	if a.Delete != a2.Delete {
-		return false
-	}
-	if a.MarkRead != a2.MarkRead {
-		return false
-	}
-	if a.Star != a2.Star {
-		return false
-	}
-	if !triboolsEqual(a.MarkSpam, a2.MarkSpam) {
-		return false
-	}
-	if !triboolsEqual(a.MarkImportant, a2.MarkImportant) {
-		return false
-	}
-	if a.Category != a2.Category {
-		return false
-	}
-	if !stringSliceEqual(a.Labels, a2.Labels) {
-		return false
-	}
-	return a.Forward == a2.Forward
-}
-
 // Rule represents a filter that can evaluate whether messages apply to it.
 type Rule struct {
 	Eval    RuleEvaluator
@@ -69,6 +39,22 @@ type Rule struct {
 
 // Rules is a set of rules.
 type Rules []Rule
+
+// ExecTests evaluates all the rules against the given tests.
+//
+// The evaluation stops at the first failing test.
+func (rs Rules) ExecTests(ts []cfg.Test) error {
+	for i, t := range ts {
+		if err := rs.ExecTest(t); err != nil {
+			name := t.Name
+			if name == "" {
+				name = fmt.Sprintf("#%d", i)
+			}
+			return fmt.Errorf("test '%s' failed: %w", name, err)
+		}
+	}
+	return nil
+}
 
 // ExecTest evaluates the rules on all the messages of the given test.
 //
@@ -106,6 +92,38 @@ func (rs Rules) MatchingActions(msg cfg.Message) (Actions, error) {
 		}
 	}
 	return res, nil
+}
+
+// Actions represents actions applied by a filter.
+type Actions parser.Actions
+
+// Equal returns true if the given actions are equivalent to this object.
+func (a Actions) Equal(a2 Actions) bool {
+	if a.Archive != a2.Archive {
+		return false
+	}
+	if a.Delete != a2.Delete {
+		return false
+	}
+	if a.MarkRead != a2.MarkRead {
+		return false
+	}
+	if a.Star != a2.Star {
+		return false
+	}
+	if !triboolsEqual(a.MarkSpam, a2.MarkSpam) {
+		return false
+	}
+	if !triboolsEqual(a.MarkImportant, a2.MarkImportant) {
+		return false
+	}
+	if a.Category != a2.Category {
+		return false
+	}
+	if !stringSliceEqual(a.Labels, a2.Labels) {
+		return false
+	}
+	return a.Forward == a2.Forward
 }
 
 func mergeActions(a1, a2 Actions) (Actions, error) {
