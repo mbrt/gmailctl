@@ -7,6 +7,7 @@ import (
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/gmail"
 	"github.com/mbrt/gmailctl/pkg/parser"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // NewFromParserRules translates parser Rules into test Rules.
@@ -65,8 +66,8 @@ func (rs Rules) ExecTest(t cfg.Test) error {
 		if err != nil {
 			return fmt.Errorf("message #%d: error evaluating matching filters: %w", i, err)
 		}
-		if expected.Equal(Actions(t.Actions)) {
-			return fmt.Errorf("message #%d: is going to get unexpected actions: %v", i, expected)
+		if !expected.Equal(Actions(t.Actions)) {
+			return fmt.Errorf("message #%d is going to get unexpected actions: %s", i, reporting.Prettify(expected, true))
 		}
 	}
 	return nil
@@ -94,7 +95,7 @@ func (rs Rules) MatchingActions(msg cfg.Message) (Actions, error) {
 	return res, nil
 }
 
-// Actions represents actions applied by a filter.
+// Actions represent the actions applied by a filter.
 type Actions parser.Actions
 
 // Equal returns true if the given actions are equivalent to this object.

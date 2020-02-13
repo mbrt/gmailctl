@@ -67,6 +67,14 @@ func TestParseEval(t *testing.T) {
 			},
 			expectMatch: true,
 		},
+		{
+			name: "list but not to me",
+			message: cfg.Message{
+				Lists: []string{"list1@gm.com"},
+				To:    []string{"notme@gmail.com"},
+			},
+			expectMatch: false,
+		},
 	}
 
 	for _, tc := range tests {

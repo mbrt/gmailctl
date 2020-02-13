@@ -20,8 +20,8 @@ var rootCmd = &cobra.Command{
 	Use:   "gmailctl",
 	Short: "Declarative configuration for Gmail",
 	Long: `Gmailctl is a command line utility that allows you to manage
-your Gmail filters in a declarative way, making it easier
-to maintain and to understand.`,
+your Gmail filters in a declarative way, making them easier
+to maintain and understand.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
