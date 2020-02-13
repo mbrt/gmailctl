@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.41.0 // indirect
 	github.com/cnf/structhash v0.0.0-20180104161610-62a607eb0224
 	github.com/cpmech/gosl v1.1.0
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-jsonnet v0.13.0
 	github.com/hashicorp/go-multierror v1.0.0
