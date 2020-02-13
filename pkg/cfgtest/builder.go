@@ -48,7 +48,7 @@ func (r *evalBuilder) VisitNode(n *parser.Node) {
 
 func (r *evalBuilder) VisitLeaf(n *parser.Leaf) {
 	if n.IsRaw {
-		r.Err = fmt.Errorf("unsupported 'raw' function: %v", n)
+		r.Err = fmt.Errorf("unsupported 'raw query': %v", n)
 		return
 	}
 

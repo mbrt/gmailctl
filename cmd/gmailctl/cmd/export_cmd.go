@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	exportFilename string
-	exportOutput   string
+	exportFilename  string
+	exportOutput    string
+	exportSkipTests bool
 )
 
 // exportCmd represents the export command
@@ -30,7 +31,7 @@ directory [config.(yaml|jsonnet)].`,
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)
 		}
-		if err := export(f, exportOutput); err != nil {
+		if err := export(f, exportOutput, !exportSkipTests); err != nil {
 			fatal(err)
 		}
 	},
@@ -42,9 +43,10 @@ func init() {
 	// Flags and configuration settings
 	exportCmd.PersistentFlags().StringVarP(&exportFilename, "filename", "f", "", "configuration file")
 	exportCmd.PersistentFlags().StringVarP(&exportOutput, "output", "o", "", "output file (defaut to stdout)")
+	exportCmd.Flags().BoolVarP(&exportSkipTests, "yolo", "", false, "skip configuration tests")
 }
 
-func export(inputPath, outputPath string) (err error) {
+func export(inputPath, outputPath string, test bool) (err error) {
 	var out io.Writer
 	if outputPath == "" {
 		out = os.Stdout
@@ -62,11 +64,11 @@ func export(inputPath, outputPath string) (err error) {
 		}()
 		out = f
 	}
-	return exportWithOut(inputPath, out)
+	return exportWithOut(inputPath, out, test)
 }
 
-func exportWithOut(path string, out io.Writer) error {
-	pres, err := parseConfig(path, "")
+func exportWithOut(path string, out io.Writer, test bool) error {
+	pres, err := parseConfig(path, "", test)
 	if err != nil {
 		return err
 	}

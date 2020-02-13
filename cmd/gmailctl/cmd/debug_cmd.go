@@ -44,7 +44,7 @@ func init() {
 }
 
 func debug(path string) error {
-	parseRes, err := parseConfig(path, "")
+	parseRes, err := parseConfig(path, "", false)
 	if err != nil {
 		return err
 	}

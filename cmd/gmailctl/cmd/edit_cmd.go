@@ -18,7 +18,8 @@ import (
 
 // Parameters
 var (
-	editFilename string
+	editFilename  string
+	editSkipTests bool
 )
 
 var (
@@ -56,7 +57,7 @@ directory [config.(yaml|jsonnet)].`,
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)
 		}
-		if err := edit(f); err != nil {
+		if err := edit(f, !editSkipTests); err != nil {
 			fatal(err)
 		}
 	},
@@ -67,9 +68,10 @@ func init() {
 
 	// Flags and configuration settings
 	editCmd.PersistentFlags().StringVarP(&editFilename, "filename", "f", "", "configuration file")
+	editCmd.Flags().BoolVarP(&editSkipTests, "yolo", "", false, "skip configuration tests")
 }
 
-func edit(path string) error {
+func edit(path string, test bool) error {
 	// First make sure that Gmail can be contacted, so that we don't
 	// waste the user's time editing a config file that cannot be
 	// applied now.
@@ -91,7 +93,7 @@ func edit(path string) error {
 			_ = os.Remove(tmpPath)
 			return err
 		}
-		if err = applyEdited(tmpPath, path, gmailapi); err != nil {
+		if err = applyEdited(tmpPath, path, test, gmailapi); err != nil {
 			if errors.Cause(err) == errUnchanged {
 				// Unchanged, but move the file anyways (it could be a refactoring)
 				return moveFile(tmpPath, path)
@@ -182,8 +184,8 @@ func spawnEditor(path string) error {
 	return errors.New("no suitable editor found")
 }
 
-func applyEdited(path, originalPath string, gmailapi *api.GmailAPI) error {
-	parseRes, err := parseConfig(path, originalPath)
+func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) error {
+	parseRes, err := parseConfig(path, originalPath, test)
 	if err != nil {
 		return err
 	}
