@@ -724,6 +724,7 @@ const (
 	F_OFD_SETLKW                         = 0x26
 	F_OK                                 = 0x0
 	F_RDLCK                              = 0x0
+	F_SEAL_FUTURE_WRITE                  = 0x10
 	F_SEAL_GROW                          = 0x4
 	F_SEAL_SEAL                          = 0x1
 	F_SEAL_SHRINK                        = 0x2
@@ -989,6 +990,7 @@ const (
 	IPV6_RECVRTHDR                       = 0x38
 	IPV6_RECVTCLASS                      = 0x42
 	IPV6_ROUTER_ALERT                    = 0x16
+	IPV6_ROUTER_ALERT_ISOLATE            = 0x1e
 	IPV6_RTHDR                           = 0x39
 	IPV6_RTHDRDSTOPTS                    = 0x37
 	IPV6_RTHDR_LOOSE                     = 0x0
@@ -1151,6 +1153,20 @@ const (
 	LOCK_NB                              = 0x4
 	LOCK_SH                              = 0x1
 	LOCK_UN                              = 0x8
+	LOOP_CLR_FD                          = 0x4c01
+	LOOP_CTL_ADD                         = 0x4c80
+	LOOP_CTL_GET_FREE                    = 0x4c82
+	LOOP_CTL_REMOVE                      = 0x4c81
+	LOOP_GET_STATUS                      = 0x4c03
+	LOOP_GET_STATUS64                    = 0x4c05
+	LOOP_SET_BLOCK_SIZE                  = 0x4c09
+	LOOP_SET_CAPACITY                    = 0x4c07
+	LOOP_SET_DIRECT_IO                   = 0x4c08
+	LOOP_SET_FD                          = 0x4c00
+	LOOP_SET_STATUS                      = 0x4c02
+	LOOP_SET_STATUS64                    = 0x4c04
+	LO_KEY_SIZE                          = 0x20
+	LO_NAME_SIZE                         = 0x40
 	MADV_DODUMP                          = 0x11
 	MADV_DOFORK                          = 0xb
 	MADV_DONTDUMP                        = 0x10
