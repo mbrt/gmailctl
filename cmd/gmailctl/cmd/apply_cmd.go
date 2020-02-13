@@ -13,6 +13,7 @@ var (
 	applyFilename     string
 	applyYes          bool
 	applyRemoveLabels bool
+	applySkipTests    bool
 )
 
 const renameLabelWarning = `Warning: You are going to delete labels. This operation is
@@ -35,7 +36,7 @@ directory [config.(yaml|jsonnet)].`,
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)
 		}
-		if err := apply(f, !applyYes); err != nil {
+		if err := apply(f, !applyYes, !applySkipTests); err != nil {
 			fatal(err)
 		}
 	}}
@@ -47,10 +48,11 @@ func init() {
 	applyCmd.PersistentFlags().StringVarP(&applyFilename, "filename", "f", "", "configuration file")
 	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
 	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
+	applyCmd.Flags().BoolVarP(&applySkipTests, "yolo", "", false, "skip configuration tests")
 }
 
-func apply(path string, interactive bool) error {
-	parseRes, err := parseConfig(path, "")
+func apply(path string, interactive, test bool) error {
+	parseRes, err := parseConfig(path, "", test)
 	if err != nil {
 		return err
 	}

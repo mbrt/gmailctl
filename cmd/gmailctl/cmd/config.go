@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	papply "github.com/mbrt/gmailctl/pkg/apply"
+	"github.com/mbrt/gmailctl/pkg/cfgtest"
 	"github.com/mbrt/gmailctl/pkg/config"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
@@ -24,7 +25,7 @@ func configFilenameFromDir(cfgDir string) string {
 	return path.Join(cfgDir, "config.jsonnet")
 }
 
-func parseConfig(path, originalPath string) (parseResult, error) {
+func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 	var res parseResult
 	var err error
 
@@ -44,5 +45,22 @@ func parseConfig(path, originalPath string) (parseResult, error) {
 	}
 
 	res.Res, err = papply.FromConfig(res.Config)
+	if err != nil {
+		return res, err
+	}
+	if test && len(res.Config.Tests) > 0 {
+		ts, errs := cfgtest.NewFromParserRules(res.Res.Rules)
+		if len(errs) > 0 {
+			stderrPrintf("WARNING: %d filters are excluded from the tests:\n", len(errs))
+			for _, err := range errs {
+				stderrPrintf("  %v\n", err)
+			}
+		}
+		err = ts.ExecTests(res.Config.Tests)
+		if err != nil {
+			return res, errors.Wrap(err, "config tests failed")
+		}
+	}
+
 	return res, err
 }
