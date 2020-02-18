@@ -3,19 +3,19 @@
 [![Build Status](https://travis-ci.org/mbrt/gmailctl.svg?branch=master)](https://travis-ci.org/mbrt/gmailctl)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
-It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be more
-simple to write and maintain than using the Gmail web interface, to categorize,
-label, archive and manage automatically your inbox.
+It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
+simpler to write and maintain than using the Gmail web interface, to categorize,
+label, archive and manage your inbox automatically.
 
 ## Motivation
 
-If you have Gmail and have (like me) to maintain a lot of filters, because you
+If you have Gmail and have to maintain (like me) a lot of filters, because you
 want to apply labels, get rid of spam or categorize your emails, then you
-probably have (like me) a very long list of messy filters. Then the day that you
+probably have (like me) a very long list of messy filters. Then the day when you
 actually want to understand why a certain message got labeled in a certain way
-comes. You scroll through that horrible mess and you wish you could
+comes. You scroll through that horrible mess, you wish you could
 find-and-replace stuff, check the change before applying it, refactor some
-filters together... in a way treat them like you do with your code!
+filters together... in a way treat them like you treat your code!
 
 Gmail allows to import and export filters in XML format. This can be used to
 maintain them in some better way... but dear Lord, no! Not by hand! That's what
@@ -39,7 +39,8 @@ This project then exists to provide to your Gmail filters:
 
 ## Install
 
-Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly, including the `bin` subdirectory in your `$PATH`.
+Make sure to setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH)
+correctly, including the `bin` subdirectory in your `$PATH`.
 
 ```
 go get -u github.com/mbrt/gmailctl/cmd/gmailctl
@@ -103,6 +104,7 @@ All the available commands (you can also check with `gmailctl help`):
   export      Export filters into the Gmail XML format
   help        Help about any command
   init        Initialize the Gmail configuration
+  test        Execute config tests
 ```
 
 ## Configuration
@@ -228,7 +230,7 @@ Example:
 
 ```jsonnet
 {
-  version: 'v1alpha3',
+ h version: 'v1alpha3',
   rules: [
     {
       filter: {
@@ -470,6 +472,102 @@ all the messages. This is a surprising behavior for some users, so it's
 currently gated by a confirmation prompt (for the `edit` command), or by the
 `--remove-labels` flag (for the `apply` command). If you want to rename a label,
 please do so through the GMail interface and then change your gmailctl config.
+
+### Tests
+
+You can optionally add unit tests to your configuraion. The tests will be
+executed before applying any changes to the upstream Gmail filters or by running
+the dedicated `test` subcommand. Tests results can be ignored by passing the
+`--yolo` command line option.
+
+Tests can be added by using the `tests` field of the main configuration object:
+
+```jsonnet
+{
+  version: 'v1alpha3',
+  rules: [ /* ... */ ],
+  tests: [
+    // you tests here.
+  ],
+}
+```
+
+A test object looks like this:
+
+```jsonnet
+{
+  // Reported when the test fails.
+  name: "the name of the test",
+  // A list of messages to test against.
+  messages: [
+    { /* message object */ },
+    // ... more messages
+  ],
+  // The actions that should be applied to the messages, according the config.
+  actions: {
+    // Same as the Actions object in the filters.
+  },
+}
+```
+
+A message object is similar to a filter, but it doesn't allow arbitrary
+expressions, uses arrays of strings for certain fields (e.g. the `to` field),
+and has some additional fields (like `body`) to represent an email as faithfully
+as possible. This is the list of fields:
+
+* `from: <string>`: the sender of the email.
+* `to: [<list>]`: a list of recipients of the email.
+* `cc: [<list>]`: a list of emails in cc.
+* `bcc: [<list>]`: a list of emails in bcc.
+* `lists: [<list>]`: a list of mailing lists.
+* `subject: <string>`: the subject of the email.
+* `body: <string>`: the body of the email.
+
+All the fields are optional. Remember that each message object represent one
+email and that the `messages` field of a test is an array of messages. A common
+mistake is to provide an array of messages thinking that they are only one.
+Example:
+
+```jsonnet
+{
+  // ...
+  tests: [
+    messages: [
+      { from: "foobar" },
+      { to: "me" },
+    ],
+    actions: {
+      // ...
+    },
+  ],
+}
+```
+
+This doesn't represent one message from "foobar" to "me", but two messages, one
+from "foobar" and the other to "me". The correct representation for that would
+be instead:
+
+```jsonnet
+{
+  // ...
+  tests: [
+    messages: [
+      {
+        from: "foobar",
+        to: "me",
+      },
+    ],
+    actions: {
+      // ...
+    },
+  ],
+}
+```
+
+**NOTE:** Not all filters are supported in tests. Arbitrary `query` expressions
+and filters with `isEscaped: true` are ignored by the tests. Warnings are
+generated when this happens. Keep in mind that in that case your tests might
+yield incorrect results.
 
 ## Tips and tricks
 
