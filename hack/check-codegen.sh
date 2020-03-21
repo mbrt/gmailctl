@@ -3,5 +3,5 @@
 set -e
 
 # check that we are not committing with things still to generate
-go generate -mod vendor ./...
+go generate ./...
 git diff --exit-code
