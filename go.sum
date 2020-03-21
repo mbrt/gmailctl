@@ -15,6 +15,8 @@ github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8Nz
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
 github.com/cpmech/gosl v1.1.0 h1:DDZqR/wvYp65P+busRIpb4DQr7KKDmYTw+f26DZL1eY=
 github.com/cpmech/gosl v1.1.0/go.mod h1:arn/jy2eYwkioG2eNbAW60SdPbJzNaHbqKmJYDnCpfs=
+github.com/cpmech/gosl v1.1.1 h1:FiKxlgyLnY6Kke3F0ojMfzpNiLC2Ag4xtAlCW5cgBdU=
+github.com/cpmech/gosl v1.1.1/go.mod h1:arn/jy2eYwkioG2eNbAW60SdPbJzNaHbqKmJYDnCpfs=
 github.com/cpuguy83/go-md2man v1.0.10/go.mod h1:SmD6nW6nTyfqj6ABTjUi3V3JVMnlJmwcJI5acqYI6dE=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
