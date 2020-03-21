@@ -2,7 +2,6 @@ run:
   deadline: "3m"
   skip-dirs:
     - pkg/graph
-  modules-download-mode: vendor
 
 linters:
   enable-all: false

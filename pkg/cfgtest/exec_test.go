@@ -1,7 +1,6 @@
 package cfgtest
 
 import (
-	"io/ioutil"
 	"path/filepath"
 	"testing"
 
@@ -11,15 +10,6 @@ import (
 	cfg "github.com/mbrt/gmailctl/pkg/config"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
-
-func read(t *testing.T, path string) []byte {
-	t.Helper()
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return b
-}
 
 func readConfig(t *testing.T, path string) cfgv3.Config {
 	t.Helper()

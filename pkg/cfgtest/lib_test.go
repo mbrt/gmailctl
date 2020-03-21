@@ -16,13 +16,6 @@ func or(children ...parser.CriteriaAST) *parser.Node {
 	}
 }
 
-func not(child parser.CriteriaAST) *parser.Node {
-	return &parser.Node{
-		Operation: parser.OperationNot,
-		Children:  []parser.CriteriaAST{child},
-	}
-}
-
 func fn(ftype parser.FunctionType, op parser.OperationType, args ...string) *parser.Leaf {
 	return &parser.Leaf{
 		Function: ftype,
