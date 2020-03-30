@@ -475,7 +475,7 @@ please do so through the GMail interface and then change your gmailctl config.
 
 ### Tests
 
-You can optionally add unit tests to your configuraion. The tests will be
+You can optionally add unit tests to your configuration. The tests will be
 executed before applying any changes to the upstream Gmail filters or by running
 the dedicated `test` subcommand. Tests results can be ignored by passing the
 `--yolo` command line option.
@@ -710,30 +710,30 @@ Example:
 
 ```jsonnet
 local lib = import 'gmailctl.libsonnet';
-local rules = {
+local rules = [
   {
     filter: { to: 'myself@gmail.com' },
     actions: { labels: ['directed'] },
   },
   {
     filter: { from: 'foobar' },
-    actions: { labels: ['lists/foobar] },
+    actions: { labels: ['lists/foobar'] },
   },
   {
     filter: { list: 'baz' },
     actions: { labels: ['lists/baz', 'wow'] },
   },
-};
+];
 
 // the config
 {
   version: 'v1alpha3',
   rules: rules,
-  labels: lib.rulesLabels(rules) + [
+  labels: lib.rulesLabels(rules) + [{ name: l } for l in [
     'manual-label1',
-    'priority,
+    'priority',
     'priority/p1',
-  ],
+  ]],
 }
 ```
 
@@ -741,16 +741,16 @@ The resulting list of labels will be:
 
 ```jsonnet
 labels: [
-  // Automatic
-  'directed',
-  'lists',  // <- because it's the parent of an automatic label
-  'lists/foobar',
-  'lists/baz,
-  'wow',
+  // Automatically added
+  { name: 'directed' },
+  { name: 'lists' },            // Implied parent label
+  { name: 'lists/baz' },
+  { name: 'lists/foobar' },
+  { name: 'wow' },
   // Manually added
-  'manual-label1',
-  'priority',
-  'priority/p1',
+  { name: 'manual-label1' },
+  { name: 'priority' },
+  { name: 'priority/p1' },
 ]
 ```
 
