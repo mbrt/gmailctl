@@ -1,6 +1,6 @@
 # gmailctl
 [![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailctl)](https://goreportcard.com/report/github.com/mbrt/gmailctl)
-[![Build Status](https://travis-ci.org/mbrt/gmailctl.svg?branch=master)](https://travis-ci.org/mbrt/gmailctl)
+![Go](https://github.com/mbrt/gmailctl/workflows/Go/badge.svg)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
 It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
