@@ -117,7 +117,7 @@ future. If you are looking for the deprecated versions `v1alpha1`, or
 The configuration file is written in Jsonnet, that is a very powerful
 configuration language, derived from JSON. It adds functionality such as
 comments, variables, references, arithmetic and logic operations, functions,
-conditionals, importing other files, parametrizations and so on. For more
+conditionals, importing other files, parameterizations and so on. For more
 details on the language, please refer to [the official
 tutorial](https://jsonnet.org/learning/tutorial.html).
 
@@ -720,7 +720,7 @@ local rules = {
     actions: { labels: ['lists/foobar] },
   },
   {
-    filter: { list: 'baz},
+    filter: { list: 'baz' },
     actions: { labels: ['lists/baz', 'wow'] },
   },
 };
@@ -743,13 +743,13 @@ The resulting list of labels will be:
 labels: [
   // Automatic
   'directed',
-  'lists',  // <- because it's parent of an automatic label
+  'lists',  // <- because it's the parent of an automatic label
   'lists/foobar',
   'lists/baz,
   'wow',
   // Manually added
   'manual-label1',
-  'priority,
+  'priority',
   'priority/p1',
 ]
 ```
