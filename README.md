@@ -91,6 +91,32 @@ gmailctl diff
 gmailctl edit
 ```
 
+Often you'll see imported filters with the `isEscaped: true` marker. This tells
+gmailctl to not escape or quote the expression, as it might contain operators
+that have to be interpreted as-is by Gmail. This happens when the `download`
+command was unable to map the filter to native gmailctl expressions. It's
+recommended to manually port the filter to regular gmailctl operators before
+doing any changes, to avoid unexpected results. Example of such conversion:
+
+```jsonnet
+{
+  from: "{foo bar baz}",
+  isEscaped: true,
+}
+```
+
+Can be translated into:
+
+```jsonnet
+{
+  or: [
+    {from: "foo"},
+    {from: "bar"},
+    {from: "baz"},
+  ],
+}
+```
+
 ### Other commands
 
 All the available commands (you can also check with `gmailctl help`):
