@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
@@ -51,7 +49,7 @@ func categoryToSmartLabel(cat gmail.Category) (string, error) {
 		smartl = SmartLabelPromo
 	default:
 		possib := gmail.PossibleCategoryValues()
-		return "", errors.Errorf("unrecognized category '%s' (possible values: %s)",
+		return "", fmt.Errorf("unrecognized category %q (possible values: %s)",
 			cat, strings.Join(possib, ", "))
 	}
 	return fmt.Sprintf("^smartlabel_%s", smartl), nil

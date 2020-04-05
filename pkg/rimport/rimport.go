@@ -1,9 +1,9 @@
 package rimport
 
 import (
+	"errors"
+	"fmt"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	config "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -17,7 +17,7 @@ func Import(fs filter.Filters, ls label.Labels) (config.Config, error) {
 	for i, f := range fs {
 		r, err := fromFilter(f)
 		if err != nil {
-			return config.Config{}, errors.Wrapf(err, "error importing filter #%d", i)
+			return config.Config{}, fmt.Errorf("importing filter #%d: %w", i, err)
 		}
 		rules = append(rules, r)
 	}
@@ -131,7 +131,7 @@ func fromActions(c filter.Actions) (config.Actions, error) {
 	var err error
 	res.MarkImportant, err = handleTribool(c.MarkImportant, c.MarkNotImportant)
 	if err != nil {
-		return res, errors.Wrap(err, "error in 'mark important'")
+		return res, fmt.Errorf("in 'mark important': %w", err)
 	}
 	if c.MarkNotSpam {
 		res.MarkSpam = boolPtr(false)

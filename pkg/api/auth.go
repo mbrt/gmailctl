@@ -3,15 +3,14 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
-
-	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
+	"google.golang.org/api/option"
 )
 
 // NewAuthenticator creates an Authenticator instance from credentials JSON file contents.
@@ -21,7 +20,7 @@ import (
 func NewAuthenticator(credentials io.Reader) (*Authenticator, error) {
 	cfg, err := clientFromCredentials(credentials)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating config from credentials")
+		return nil, fmt.Errorf("creating config from credentials: %w", err)
 	}
 	return &Authenticator{cfg}, nil
 }
@@ -38,12 +37,12 @@ type Authenticator struct {
 func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, error) {
 	tok, err := parseToken(token)
 	if err != nil {
-		return nil, errors.Wrap(err, "error decoding token")
+		return nil, fmt.Errorf("decoding token: %w", err)
 	}
 
 	srv, err := gmailv1.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating gmail client")
+		return nil, fmt.Errorf("creating gmail client: %w", err)
 	}
 
 	return &GmailAPI{srv}, nil
@@ -61,7 +60,7 @@ func (a Authenticator) AuthURL() string {
 func (a Authenticator) CacheToken(ctx context.Context, authCode string, token io.Writer) error {
 	tok, err := a.cfg.Exchange(ctx, authCode)
 	if err != nil {
-		return errors.Wrap(err, "unable to retrieve token from web")
+		return fmt.Errorf("unable to retrieve token from web: %w", err)
 	}
 	return json.NewEncoder(token).Encode(tok)
 }
@@ -69,7 +68,7 @@ func (a Authenticator) CacheToken(ctx context.Context, authCode string, token io
 func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
 	credBytes, err := ioutil.ReadAll(credentials)
 	if err != nil {
-		return nil, errors.Wrap(err, "error reading credentials")
+		return nil, fmt.Errorf("reading credentials: %w", err)
 	}
 	return google.ConfigFromJSON(credBytes,
 		gmailv1.GmailSettingsBasicScope,

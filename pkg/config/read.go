@@ -3,11 +3,12 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/google/go-jsonnet"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
@@ -45,11 +46,11 @@ func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
 	vm := jsonnet.MakeVM()
 	jstr, err := vm.EvaluateSnippet(path, string(buf))
 	if err != nil {
-		return res, errors.Wrap(err, "invalid jsonnet")
+		return res, fmt.Errorf("parsing jsonnet: %w", err)
 	}
 	version, err := readJSONVersion(jstr)
 	if err != nil {
-		return res, errors.Wrap(err, "error parsing the config version")
+		return res, fmt.Errorf("parsing the config version: %w", err)
 	}
 
 	switch version {
@@ -61,7 +62,7 @@ func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
 		var v2 cfgv2.Config
 		err = jsonUnmarshalStrict([]byte(jstr), &v2)
 		if err != nil {
-			return res, errors.Wrap(err, "error parsing v1alpha2 config")
+			return res, fmt.Errorf("parsing v1alpha2 config: %w", err)
 		}
 		return importFromV2(v2)
 
@@ -69,12 +70,12 @@ func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
 		var v1 cfgv1.Config
 		err = jsonUnmarshalStrict([]byte(jstr), &v1)
 		if err != nil {
-			return res, errors.Wrap(err, "error parsing v1alpha1 config")
+			return res, fmt.Errorf("parsing v1alpha1 config: %w", err)
 		}
 		return importFromV1(v1)
 
 	default:
-		return res, errors.Errorf("unknown config version: %s", version)
+		return res, fmt.Errorf("unknown config version: %s", version)
 	}
 }
 
@@ -83,7 +84,7 @@ func readYaml(buf []byte) (cfgv3.Config, error) {
 	var res cfgv3.Config
 	version, err := readYamlVersion(buf)
 	if err != nil {
-		return res, errors.Wrap(err, "error parsing the config version")
+		return res, fmt.Errorf("parsing the config version: %w", err)
 	}
 
 	switch version {
@@ -95,7 +96,7 @@ func readYaml(buf []byte) (cfgv3.Config, error) {
 		var v2 cfgv2.Config
 		err = yaml.UnmarshalStrict(buf, &v2)
 		if err != nil {
-			return res, errors.Wrap(err, "error parsing v1alpha2 config")
+			return res, fmt.Errorf("parsing v1alpha2 config: %w", err)
 		}
 		return importFromV2(v2)
 
@@ -103,12 +104,12 @@ func readYaml(buf []byte) (cfgv3.Config, error) {
 		var v1 cfgv1.Config
 		err = yaml.UnmarshalStrict(buf, &v1)
 		if err != nil {
-			return res, errors.Wrap(err, "error parsing v1alpha1 config")
+			return res, fmt.Errorf("parsing v1alpha1 config: %w", err)
 		}
 		return importFromV1(v1)
 
 	default:
-		return res, errors.Errorf("unknown config version: %s", version)
+		return res, fmt.Errorf("unknown config version: %s", version)
 	}
 }
 
@@ -150,8 +151,11 @@ func jsonUnmarshalStrict(b []byte, v interface{}) error {
 
 // IsNotFound returns true if an error is related to a file not found
 func IsNotFound(err error) bool {
-	nfErr, ok := errors.Cause(err).(notFound)
-	return ok && nfErr.NotFound()
+	var nfErr notFound
+	if errors.As(err, &nfErr) {
+		return nfErr.NotFound()
+	}
+	return false
 }
 
 // NotFoundError wraps the given error and makes it into a not found one

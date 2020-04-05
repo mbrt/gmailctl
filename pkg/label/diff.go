@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -127,7 +126,7 @@ type ModifiedLabel struct {
 func Validate(d LabelsDiff, filters filter.Filters) error {
 	for _, l := range d.Removed {
 		if filters.HasLabel(l.Name) {
-			return errors.Errorf("cannot remove label '%s', used in filter", l.Name)
+			return fmt.Errorf("cannot remove label %q, used in filter", l.Name)
 		}
 	}
 	return nil

@@ -1,11 +1,14 @@
 package cmd
 
-import "github.com/pkg/errors"
+import "errors"
 
 // HasUserHelp returns true if an error has a help message for the user.
 func HasUserHelp(err error) bool {
-	uErr, ok := errors.Cause(err).(userHelp)
-	return ok && uErr.Help() != ""
+	var uErr userHelp
+	if errors.As(err, &uErr) {
+		return uErr.Help() != ""
+	}
+	return false
 }
 
 // UserError wraps the given error and makes it into a not found one
@@ -18,8 +21,8 @@ func UserError(err error, help string) error {
 
 // GetUserHelp returns the user help associated with an error.
 func GetUserHelp(err error) string {
-	uErr, ok := errors.Cause(err).(userHelp)
-	if ok {
+	var uErr userHelp
+	if errors.As(err, &uErr) {
 		return uErr.Help()
 	}
 	return ""

@@ -1,10 +1,9 @@
 package apply
 
 import (
+	"fmt"
 	"sort"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -31,11 +30,11 @@ func FromConfig(cfg cfgv3.Config) (ConfigParseRes, error) {
 
 	res.Rules, err = parser.Parse(cfg)
 	if err != nil {
-		return res, errors.Wrap(err, "cannot parse config file")
+		return res, fmt.Errorf("cannot parse config file: %w", err)
 	}
 	res.Filters, err = filter.FromRules(res.Rules)
 	if err != nil {
-		return res, errors.Wrap(err, "error exporting to filters")
+		return res, fmt.Errorf("exporting to filters: %w", err)
 	}
 	res.Labels = label.FromConfig(cfg.Labels)
 
@@ -79,10 +78,10 @@ func (d ConfigDiff) Validate() error {
 		return nil
 	}
 	if err := d.LocalConfig.Labels.Validate(); err != nil {
-		return errors.Wrap(err, "error validating labels")
+		return fmt.Errorf("validating labels: %w", err)
 	}
 	if err := label.Validate(d.LabelsDiff, d.LocalConfig.Filters); err != nil {
-		return errors.Wrap(err, "invalid labels diff")
+		return fmt.Errorf("invalid labels diff: %w", err)
 	}
 	return nil
 }
@@ -96,14 +95,14 @@ func Diff(local, upstream GmailConfig) (ConfigDiff, error) {
 
 	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters)
 	if err != nil {
-		return res, errors.Wrap(err, "cannot compute filters diff")
+		return res, fmt.Errorf("cannot compute filters diff: %w", err)
 	}
 
 	if len(local.Labels) > 0 {
 		// LabelsDiff management opted-in
 		res.LabelsDiff, err = label.Diff(upstream.Labels, local.Labels)
 		if err != nil {
-			return res, errors.Wrap(err, "cannot compute labels diff")
+			return res, fmt.Errorf("cannot compute labels diff: %w", err)
 		}
 	}
 
@@ -130,23 +129,23 @@ func Apply(d ConfigDiff, api API, allowRemoveLabels bool) error {
 	// - remove labels
 
 	if err := addLabels(d.LabelsDiff.Added, api); err != nil {
-		return errors.Wrap(err, "error creating labels")
+		return fmt.Errorf("creating labels: %w", err)
 	}
 	if err := addFilters(d.FiltersDiff.Added, api); err != nil {
-		return errors.Wrap(err, "error creating filters")
+		return fmt.Errorf("creating filters: %w", err)
 	}
 	if err := updateLabels(d.LabelsDiff.Modified, api); err != nil {
-		return errors.Wrap(err, "error updating labels")
+		return fmt.Errorf("updating labels: %w", err)
 	}
 	if err := removeFilters(d.FiltersDiff.Removed, api); err != nil {
-		return errors.Wrap(err, "error deleting filters")
+		return fmt.Errorf("deleting filters: %w", err)
 	}
 
 	if !allowRemoveLabels {
 		return nil
 	}
 	if err := removeLabels(d.LabelsDiff.Removed, api); err != nil {
-		return errors.Wrap(err, "error removing labels")
+		return fmt.Errorf("removing labels: %w", err)
 	}
 
 	return nil

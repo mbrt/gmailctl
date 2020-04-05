@@ -1,8 +1,9 @@
 package v1alpha3
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
 
 	v2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 )
@@ -29,7 +30,7 @@ func (i *importer) Import(cfg v2.Config) (Config, error) {
 		rules = append(rules, i.importRule(r))
 		if err := i.resetError(); err != nil {
 			finalErr = multierror.Append(finalErr,
-				errors.Wrapf(err, "invalid rule: %s", r),
+				fmt.Errorf("in rule %s: %w", r, err),
 			)
 		}
 	}
@@ -49,7 +50,7 @@ func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
 		i.nmap[f.Name] = i.importFilter(f.Query)
 		if err := i.resetError(); err != nil {
 			finalErr = multierror.Append(finalErr,
-				errors.Wrapf(err, "invalid filter '%s': %s", f.Name, f.Query),
+				fmt.Errorf("in filter '%s' %s: %w", f.Name, f.Query, err),
 			)
 		}
 	}
@@ -110,7 +111,7 @@ func (i *importer) importRefName(name string) FilterNode {
 		return n
 	}
 	i.err = multierror.Append(i.err,
-		errors.Errorf("filter name '%s' not found", name))
+		fmt.Errorf("filter name '%s' not found", name))
 	return dummyFilter
 }
 

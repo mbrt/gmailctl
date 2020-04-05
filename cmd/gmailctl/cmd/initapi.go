@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
-
-	"github.com/pkg/errors"
 
 	"github.com/mbrt/gmailctl/pkg/api"
 )
@@ -12,7 +11,7 @@ import (
 func openAPI() (*api.GmailAPI, error) {
 	auth, err := openCredentials()
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid credentials")
+		return nil, fmt.Errorf("invalid credentials: %w", err)
 	}
 	return openToken(auth)
 }
@@ -20,7 +19,7 @@ func openAPI() (*api.GmailAPI, error) {
 func openCredentials() (*api.Authenticator, error) {
 	cred, err := os.Open(credentialsPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot open credentials")
+		return nil, fmt.Errorf("opening credentials: %w", err)
 	}
 	return api.NewAuthenticator(cred)
 }
@@ -28,7 +27,7 @@ func openCredentials() (*api.Authenticator, error) {
 func openToken(auth *api.Authenticator) (*api.GmailAPI, error) {
 	token, err := os.Open(tokenPath)
 	if err != nil {
-		return nil, errors.Wrap(err, "missing or invalid cached token")
+		return nil, fmt.Errorf("missing or invalid cached token: %w", err)
 	}
 
 	return auth.API(context.Background(), token)
