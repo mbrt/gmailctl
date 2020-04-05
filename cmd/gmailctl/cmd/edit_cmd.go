@@ -14,6 +14,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/api"
 	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // Parameters
@@ -140,7 +141,7 @@ func moveFile(from, to string) error {
 func copyToTmp(path string) (string, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", config.NotFoundError(err)
+		return "", reporting.AnnotateErr(config.ErrNotFound, err)
 	}
 
 	// Use the same extension as the original file (yaml | jsonnet)

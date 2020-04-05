@@ -14,10 +14,14 @@ import (
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // LatestVersion points to the latest version of the config format.
 const LatestVersion = cfgv3.Version
+
+// ErrNotFound is returned when a file was not found.
+var ErrNotFound = errors.New("not found")
 
 // ReadFile takes a path and returns the parsed config file.
 //
@@ -27,7 +31,7 @@ func ReadFile(path, libPath string) (cfgv3.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return cfgv3.Config{}, NotFoundError(err)
+		return cfgv3.Config{}, reporting.AnnotateErr(ErrNotFound, err)
 	}
 	if filepath.Ext(path) == ".jsonnet" {
 		// We pass the libPath to jsonnet, because that is the hint
@@ -148,31 +152,3 @@ func jsonUnmarshalStrict(b []byte, v interface{}) error {
 	dec.DisallowUnknownFields()
 	return dec.Decode(v)
 }
-
-// IsNotFound returns true if an error is related to a file not found
-func IsNotFound(err error) bool {
-	var nfErr notFound
-	if errors.As(err, &nfErr) {
-		return nfErr.NotFound()
-	}
-	return false
-}
-
-// NotFoundError wraps the given error and makes it into a not found one
-func NotFoundError(err error) error {
-	if err == nil {
-		return nil
-	}
-	return notFoundError{err}
-}
-
-type notFound interface {
-	NotFound() bool
-}
-
-type notFoundError struct {
-	error
-}
-
-func (e notFoundError) Error() string  { return e.error.Error() }
-func (e notFoundError) NotFound() bool { return true }
