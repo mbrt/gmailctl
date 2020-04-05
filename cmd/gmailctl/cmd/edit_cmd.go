@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/api"
@@ -77,7 +77,7 @@ func edit(path string, test bool) error {
 	// applied now.
 	gmailapi, err := openAPI()
 	if err != nil {
-		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
+		return configurationError(fmt.Errorf("connecting to Gmail: %w", err))
 	}
 
 	// Copy the configuration in a temporary file and edit it.
@@ -94,14 +94,14 @@ func edit(path string, test bool) error {
 			return err
 		}
 		if err = applyEdited(tmpPath, path, test, gmailapi); err != nil {
-			if errors.Cause(err) == errUnchanged {
+			if errors.Is(err, errUnchanged) {
 				// Unchanged, but move the file anyways (it could be a refactoring)
 				return moveFile(tmpPath, path)
 			}
-			if errors.Cause(err) == errAbort {
+			if errors.Is(err, errAbort) {
 				return UserError(err, fmt.Sprintf(abortHelp, tmpPath))
 			}
-			if errors.Cause(err) == errRetry {
+			if errors.Is(err, errRetry) {
 				continue
 			}
 
@@ -146,7 +146,7 @@ func copyToTmp(path string) (string, error) {
 	// Use the same extension as the original file (yaml | jsonnet)
 	tmp, err := ioutil.TempFile("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
 	if err != nil {
-		return "", errors.Wrap(err, "cannot create tmp file")
+		return "", fmt.Errorf("creating tmp file: %w", err)
 	}
 
 	if _, err := tmp.Write(b); err != nil {
@@ -198,7 +198,7 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 
 	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
-		return errors.New("cannot compare upstream with local config")
+		return errors.New("comparing upstream with local config")
 	}
 
 	if diff.Empty() {

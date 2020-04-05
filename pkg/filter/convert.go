@@ -1,10 +1,9 @@
 package filter
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
@@ -15,7 +14,7 @@ func FromRules(rs []parser.Rule) (Filters, error) {
 	for i, rule := range rs {
 		filters, err := FromRule(rule)
 		if err != nil {
-			return res, errors.Wrap(err, fmt.Sprintf("error generating rule #%d", i))
+			return res, fmt.Errorf("generating rule #%d: %w", i, err)
 		}
 		res = append(res, filters...)
 	}
@@ -28,14 +27,14 @@ func FromRule(rule parser.Rule) ([]Filter, error) {
 	for _, c := range splitRootOr(rule.Criteria) {
 		criteria, err := GenerateCriteria(c)
 		if err != nil {
-			return nil, errors.Wrap(err, "error generating criteria")
+			return nil, fmt.Errorf("generating criteria: %w", err)
 		}
 		crits = append(crits, criteria)
 	}
 
 	actions, err := generateActions(rule.Actions)
 	if err != nil {
-		return nil, errors.Wrap(err, "error generating actions")
+		return nil, fmt.Errorf("generating actions: %w", err)
 	}
 
 	return combineCriteriaWithActions(crits, actions), nil
@@ -82,7 +81,7 @@ func generateNode(node *parser.Node) (Criteria, error) {
 
 	case parser.OperationNot:
 		if ln := len(node.Children); ln != 1 {
-			return Criteria{}, errors.Errorf("after 'not' got %d children, expected 1", ln)
+			return Criteria{}, fmt.Errorf("after 'not' got %d children, expected 1", ln)
 		}
 		cq, err := generateCriteriaAsString(node.Children[0])
 		return Criteria{
@@ -90,7 +89,7 @@ func generateNode(node *parser.Node) (Criteria, error) {
 		}, err
 	}
 
-	return Criteria{}, errors.Errorf("unknown node operation %d", node.Operation)
+	return Criteria{}, fmt.Errorf("unknown node operation %d", node.Operation)
 }
 
 func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
@@ -133,7 +132,7 @@ func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
 			Query: query,
 		}, nil
 	default:
-		return Criteria{}, errors.Errorf("unknown function type %d", leaf.Function)
+		return Criteria{}, fmt.Errorf("unknown function type %d", leaf.Function)
 	}
 }
 
@@ -188,7 +187,7 @@ func groupWithOperation(query string, op parser.OperationType) (string, error) {
 	case parser.OperationNot:
 		return fmt.Sprintf("-%s", query), nil
 	default:
-		return "", errors.Errorf("unknown node operation %d", op)
+		return "", fmt.Errorf("unknown node operation %d", op)
 	}
 }
 

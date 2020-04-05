@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/api"
@@ -90,7 +89,7 @@ func resetConfig() error {
 
 func continueConfig() error {
 	if err := handleCfgDir(); err != nil {
-		return errors.Wrap(err, "error configuring the main config directory")
+		return fmt.Errorf("configuring the main config directory: %w", err)
 	}
 	auth, err := openCredentials()
 	if err != nil {
@@ -169,11 +168,11 @@ func setupToken(auth *api.Authenticator) error {
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
-		return errors.Wrap(err, "unable to retrieve token from web")
+		return fmt.Errorf("unable to retrieve token from web: %w", err)
 	}
 
 	if err := saveToken(tokenPath, authCode, auth); err != nil {
-		return errors.Wrap(err, "unable to cache token")
+		return fmt.Errorf("caching token: %w", err)
 	}
 	return nil
 }
@@ -182,7 +181,7 @@ func saveToken(path, authCode string, auth *api.Authenticator) (err error) {
 	fmt.Printf("Saving credential file to %s\n", path)
 	f, e := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if e != nil {
-		return errors.Wrap(err, "unable create token file")
+		return fmt.Errorf("creating token file: %w", err)
 	}
 	defer func() {
 		e = f.Close()

@@ -1,8 +1,6 @@
 package v1alpha1
 
-import (
-	"github.com/pkg/errors"
-)
+import "fmt"
 
 // ResolveConsts returns a copy of the config with all the constants
 // replaced in the filters.
@@ -12,7 +10,7 @@ func ResolveConsts(c Config) (Config, error) {
 	for i, r := range c.Rules {
 		f, err := resolveFilters(r.Filters, c.Consts)
 		if err != nil {
-			return c, errors.Wrapf(err, "error in rule #%d", i)
+			return c, fmt.Errorf("in rule #%d: %w", i, err)
 		}
 		rules = append(rules, Rule{f, r.Actions})
 	}
@@ -46,27 +44,27 @@ func resolveFilters(f Filters, consts Consts) (Filters, error) {
 func resolveFiltersConsts(mf MatchFilters, consts Consts) (MatchFilters, error) {
 	from, err := resolveConsts(mf.From, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'from' clause")
+		return mf, fmt.Errorf("resolving 'from' clause: %w", err)
 	}
 	to, err := resolveConsts(mf.To, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'to' clause")
+		return mf, fmt.Errorf("resolving 'to' clause: %w", err)
 	}
 	cc, err := resolveConsts(mf.Cc, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'cc' clause")
+		return mf, fmt.Errorf("resolving 'cc' clause: %w", err)
 	}
 	sub, err := resolveConsts(mf.Subject, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'subject' clause")
+		return mf, fmt.Errorf("resolving 'subject' clause: %w", err)
 	}
 	has, err := resolveConsts(mf.Has, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'has' clause")
+		return mf, fmt.Errorf("resolving 'has' clause: %w", err)
 	}
 	list, err := resolveConsts(mf.List, consts)
 	if err != nil {
-		return mf, errors.Wrap(err, "error in resolving 'list' clause")
+		return mf, fmt.Errorf("resolving 'list' clause: %w", err)
 	}
 	res := MatchFilters{
 		From:    from,
@@ -84,7 +82,7 @@ func resolveConsts(a []string, consts Consts) ([]string, error) {
 	for _, s := range a {
 		resolved, ok := consts[s]
 		if !ok {
-			return nil, errors.Errorf("failed to resolve const '%s'", s)
+			return nil, fmt.Errorf("failed to resolve const '%s'", s)
 		}
 		res = append(res, resolved.Values...)
 	}

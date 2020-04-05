@@ -1,10 +1,9 @@
 package label
 
 import (
+	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
@@ -30,13 +29,13 @@ func (ls Labels) Validate() error {
 			return errors.New("invalid label without a name")
 		}
 		if strings.HasPrefix(n, "/") {
-			return errors.Errorf("label '%s' shouldn't start with /", n)
+			return fmt.Errorf("label %q shouldn't start with /", n)
 		}
 		if strings.HasSuffix(n, "/") {
-			return errors.Errorf("label '%s' shouldn't end with /", n)
+			return fmt.Errorf("label %q shouldn't end with /", n)
 		}
 		if _, ok := lmap[n]; ok {
-			return errors.Errorf("label '%s' provided multiple times", n)
+			return fmt.Errorf("label %q provided multiple times", n)
 		}
 		lmap[n] = struct{}{}
 	}

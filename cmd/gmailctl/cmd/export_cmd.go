@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/export/xml"
@@ -53,7 +53,7 @@ func export(inputPath, outputPath string, test bool) (err error) {
 	} else {
 		f, e := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if e != nil {
-			return errors.Wrap(err, "cannot open output")
+			return fmt.Errorf("opening output: %w", err)
 		}
 		defer func() {
 			e = f.Close()

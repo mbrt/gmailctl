@@ -1,7 +1,7 @@
 package v1alpha2
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 
 	v1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 )
@@ -10,7 +10,7 @@ import (
 func Import(cfg v1.Config) (Config, error) {
 	cfg, err := v1.ResolveConsts(cfg)
 	if err != nil {
-		return Config{}, errors.Wrap(err, "error resolving consts")
+		return Config{}, fmt.Errorf("resolving consts: %w", err)
 	}
 
 	var rules []Rule

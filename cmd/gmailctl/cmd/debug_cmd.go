@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
@@ -52,7 +51,7 @@ func debug(path string) error {
 	parsedRules := parseRes.Res.Rules
 
 	if exp, got := len(configRules), len(parsedRules); exp != got {
-		return errors.Errorf(
+		return fmt.Errorf(
 			"unexpected number of generated rules: got %d, expected %d",
 			got, exp,
 		)
@@ -62,7 +61,7 @@ func debug(path string) error {
 		parsed := parsedRules[i]
 		criteria, err := filter.GenerateCriteria(parsed.Criteria)
 		if err != nil {
-			return errors.Wrap(err, "error generating criteria")
+			return fmt.Errorf("generating criteria: %w", err)
 		}
 		search := criteria.ToGmailSearch()
 
@@ -71,7 +70,7 @@ func debug(path string) error {
 		cfg := parsedRules[i]
 		b, err := yaml.Marshal(cfg)
 		if err != nil {
-			return errors.Wrap(err, "error marshalling rule")
+			return fmt.Errorf("marshalling rule: %w", err)
 		}
 		fmt.Println(string(b))
 	}

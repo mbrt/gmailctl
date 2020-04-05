@@ -1,10 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path"
-
-	"github.com/pkg/errors"
 
 	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/cfgtest"
@@ -34,7 +33,7 @@ func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 		if config.IsNotFound(err) {
 			return res, configurationError(err)
 		}
-		return res, errors.Wrap(err, "syntax error in config file")
+		return res, fmt.Errorf("syntax error in config file: %w", err)
 	}
 
 	if res.Config.Version != config.LatestVersion {
@@ -58,7 +57,7 @@ func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 		}
 		err = ts.ExecTests(res.Config.Tests)
 		if err != nil {
-			return res, errors.Wrap(err, "config tests failed")
+			return res, fmt.Errorf("config tests failed: %w", err)
 		}
 	}
 

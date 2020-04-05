@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/mbrt/gmailctl/pkg/rimport"
@@ -70,7 +70,7 @@ func download(outputPath string) (err error) {
 	} else {
 		f, e := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if e != nil {
-			return errors.Wrap(err, "cannot open output")
+			return fmt.Errorf("opening output: %w", err)
 		}
 		defer func() {
 			e = f.Close()
@@ -87,7 +87,7 @@ func download(outputPath string) (err error) {
 func downloadWithOut(out io.Writer) error {
 	gmailapi, err := openAPI()
 	if err != nil {
-		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
+		return configurationError(fmt.Errorf("connecting to Gmail: %w", err))
 	}
 
 	upstream, err := upstreamConfig(gmailapi)
@@ -102,7 +102,7 @@ func downloadWithOut(out io.Writer) error {
 
 	err = marshalJsonnet(cfg, out)
 	if err != nil {
-		return errors.Wrap(err, "error converting to Jsonnet")
+		return fmt.Errorf("converting to Jsonnet: %w", err)
 	}
 	return nil
 }

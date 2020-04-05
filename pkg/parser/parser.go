@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"errors"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
@@ -26,12 +26,12 @@ func Parse(config cfg.Config) ([]Rule, error) {
 	for i, rule := range config.Rules {
 		crit, err := parseCriteria(rule.Filter)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error parsing criteria for rule #%d", i)
+			return nil, fmt.Errorf("parsing criteria for rule #%d: %w", i, err)
 		}
 
 		scrit, err := SimplifyCriteria(crit)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error simplifying criteria for rule #%d", i)
+			return nil, fmt.Errorf("simplifying criteria for rule #%d: %w", i, err)
 		}
 
 		res = append(res, Rule{
@@ -82,7 +82,7 @@ func checkSyntax(f cfg.FilterNode) error {
 		if len(fs) == 0 {
 			return errors.New("empty filter node")
 		}
-		return errors.Errorf("multiple fields specified in the same filter node: %s",
+		return fmt.Errorf("multiple fields specified in the same filter node: %s",
 			strings.Join(fs, ","))
 	}
 	if !f.IsEscaped {
@@ -96,7 +96,7 @@ func checkSyntax(f cfg.FilterNode) error {
 			return nil
 		}
 	}
-	return errors.Errorf("'isRaw' can be used only with fields %s", strings.Join(allowed, ", "))
+	return fmt.Errorf("'isRaw' can be used only with fields %s", strings.Join(allowed, ", "))
 }
 
 func parseOperation(f cfg.FilterNode) (OperationType, []cfg.FilterNode) {

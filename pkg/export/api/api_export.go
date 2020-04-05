@@ -1,9 +1,9 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -16,7 +16,7 @@ func Export(filters filter.Filters, lmap LabelMap) ([]*gmailv1.Filter, error) {
 	for i, filter := range filters {
 		ef, err := export(filter, lmap)
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("error exporting filter #%d", i))
+			return nil, fmt.Errorf("exporting filter #%d: %w", i, err)
 		}
 		res[i] = ef
 	}
@@ -33,11 +33,11 @@ func export(filter filter.Filter, lmap LabelMap) (*gmailv1.Filter, error) {
 
 	action, err := exportAction(filter.Action, lmap)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in export action")
+		return nil, fmt.Errorf("in export action: %w", err)
 	}
 	criteria, err := exportCriteria(filter.Criteria)
 	if err != nil {
-		return nil, errors.Wrap(err, "error in export criteria")
+		return nil, fmt.Errorf("in export criteria: %w", err)
 	}
 
 	return &gmailv1.Filter{
@@ -60,7 +60,7 @@ func exportAction(action filter.Actions, lmap LabelMap) (*gmailv1.FilterAction, 
 	if action.AddLabel != "" {
 		id, ok := lmap.NameToID(action.AddLabel)
 		if !ok {
-			return nil, errors.Errorf("label '%s' not found", action.AddLabel)
+			return nil, fmt.Errorf("label %q not found", action.AddLabel)
 		}
 		lops.AddLabel(id)
 	}
@@ -109,7 +109,7 @@ func exportCategory(category gmail.Category) (string, error) {
 	case gmail.CategoryPromotions:
 		return labelIDCategoryPromotions, nil
 	}
-	return "", errors.Errorf("unknown category '%s'", category)
+	return "", fmt.Errorf("unknown category %q", category)
 }
 
 func exportCriteria(criteria filter.Criteria) (*gmailv1.FilterCriteria, error) {

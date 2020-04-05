@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
 	exportapi "github.com/mbrt/gmailctl/pkg/export/api"
@@ -41,7 +40,7 @@ func (g *GmailAPI) DeleteFilters(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do()
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("error deleting filter '%s'", id))
+			return fmt.Errorf("deleting filter %q: %w", id, err)
 		}
 	}
 	return nil
@@ -62,7 +61,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	for i, gfilter := range gfilters {
 		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do()
 		if err != nil {
-			return errors.Wrapf(err, "error creating filter '%d'", i)
+			return fmt.Errorf("creating filter %d: %w", i, err)
 		}
 	}
 
@@ -107,7 +106,7 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Labels.Delete(gmailUser, id).Do()
 		if err != nil {
-			return errors.Wrapf(err, "error deleting label '%s'", id)
+			return fmt.Errorf("deleting label %q: %w", id, err)
 		}
 	}
 	return nil
@@ -119,7 +118,7 @@ func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
 		if err != nil {
-			return errors.Wrapf(err, "error creating label '%s'", lb.Name)
+			return fmt.Errorf("creating label %q: %w", lb.Name, err)
 		}
 	}
 	return nil
@@ -131,11 +130,11 @@ func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		if lb.ID == "" {
-			return errors.Errorf("error, label '%s' has empty ID", lb.Name)
+			return fmt.Errorf("label %q has empty ID", lb.Name)
 		}
 		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do()
 		if err != nil {
-			return errors.Wrapf(err, "error patching label '%s'", lb.Name)
+			return fmt.Errorf("patching label %q: %w", lb.Name, err)
 		}
 	}
 	return nil

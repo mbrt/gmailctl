@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	papply "github.com/mbrt/gmailctl/pkg/apply"
@@ -59,7 +59,7 @@ func apply(path string, interactive, test bool) error {
 
 	gmailapi, err := openAPI()
 	if err != nil {
-		return configurationError(errors.Wrap(err, "cannot connect to Gmail"))
+		return configurationError(fmt.Errorf("cannot connect to Gmail: %w", err))
 	}
 
 	upstream, err := upstreamConfig(gmailapi)
@@ -69,7 +69,7 @@ func apply(path string, interactive, test bool) error {
 
 	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
 	if err != nil {
-		return errors.Wrap(err, "cannot compare upstream with local config")
+		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}
 
 	if diff.Empty() {

@@ -1,9 +1,10 @@
 package api
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
 	"github.com/mbrt/gmailctl/pkg/filter"
@@ -22,7 +23,7 @@ func Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error) {
 		impFilter, err := importFilter(gfilter, lmap)
 		if err != nil {
 			// We don't want to return here, but continue and skip the problematic filter
-			err = errors.Wrap(err, fmt.Sprintf("error importing filter '%s'", gfilter.Id))
+			err = fmt.Errorf("importing filter %q: %w", gfilter.Id, err)
 			reserr = multierror.Append(reserr, err)
 		} else {
 			res = append(res, impFilter)
@@ -35,11 +36,11 @@ func Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error) {
 func importFilter(gf *gmailv1.Filter, lmap LabelMap) (filter.Filter, error) {
 	action, err := importAction(gf.Action, lmap)
 	if err != nil {
-		return filter.Filter{}, errors.Wrap(err, "error importing action")
+		return filter.Filter{}, fmt.Errorf("importing action: %w", err)
 	}
 	criteria, err := importCriteria(gf.Criteria)
 	if err != nil {
-		return filter.Filter{}, errors.Wrap(err, "error importing criteria")
+		return filter.Filter{}, fmt.Errorf("importing criteria: %w", err)
 	}
 	return filter.Filter{
 		ID:       gf.Id,
@@ -72,7 +73,7 @@ func importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) e
 		category := importCategory(labelID)
 		if category != "" {
 			if res.Category != "" {
-				return errors.Errorf("multiple categories: '%s', '%s'", category, res.Category)
+				return fmt.Errorf("multiple categories: '%s', '%s'", category, res.Category)
 			}
 			res.Category = category
 			continue
@@ -89,7 +90,7 @@ func importAddLabels(res *filter.Actions, addLabelIDs []string, lmap LabelMap) e
 			// it should be a label to add
 			labelName, ok := lmap.IDToName(labelID)
 			if !ok {
-				return errors.Errorf("unknown label ID '%s'", labelID)
+				return fmt.Errorf("unknown label ID '%s'", labelID)
 			}
 			res.AddLabel = labelName
 		}
@@ -110,7 +111,7 @@ func importRemoveLabels(res *filter.Actions, removeLabelIDs []string) error {
 			res.MarkNotSpam = true
 		default:
 			// filters not added by us are not supported
-			return errors.Errorf("unupported label to remove '%s'", labelID)
+			return fmt.Errorf("unupported label to remove %q", labelID)
 		}
 	}
 	return nil
