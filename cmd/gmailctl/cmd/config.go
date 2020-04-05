@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -30,7 +31,7 @@ func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 
 	res.Config, err = config.ReadFile(path, originalPath)
 	if err != nil {
-		if config.IsNotFound(err) {
+		if errors.Is(err, config.ErrNotFound) {
 			return res, configurationError(err)
 		}
 		return res, fmt.Errorf("syntax error in config file: %w", err)
