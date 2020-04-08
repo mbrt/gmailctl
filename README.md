@@ -67,7 +67,6 @@ correctly, including the `bin` subdirectory in your `$PATH`.
 ```
 go get -u github.com/mbrt/gmailctl/cmd/gmailctl
 go install github.com/mbrt/gmailctl/cmd/gmailctl
-gmailctl init
 ```
 
 Alternatively, if you're on macOS, you can install easily via Homebrew:
@@ -76,7 +75,13 @@ Alternatively, if you're on macOS, you can install easily via Homebrew:
 brew install gmailctl
 ```
 
-The init will guide you through setting up the Gmail APIs and update your
+Once installed, run the init process:
+
+```
+gmailctl init
+```
+
+This will guide you through setting up the Gmail APIs and update your
 settings without leaving your command line.
 
 ## Usage
