@@ -48,6 +48,12 @@ go install github.com/mbrt/gmailctl/cmd/gmailctl
 gmailctl init
 ```
 
+Alternatively, if you're on macOS, you can install easily via Homebrew:
+
+```
+brew install gmailctl
+```
+
 The init will guide you through setting up the Gmail APIs and update your
 settings without leaving your command line.
 
