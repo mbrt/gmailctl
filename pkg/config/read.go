@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -14,14 +13,14 @@ import (
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
-	"github.com/mbrt/gmailctl/pkg/reporting"
+	"github.com/mbrt/gmailctl/pkg/errors"
 )
 
 // LatestVersion points to the latest version of the config format.
 const LatestVersion = cfgv3.Version
 
 // ErrNotFound is returned when a file was not found.
-var ErrNotFound = errors.New("not found")
+var ErrNotFound = errors.New("config not found")
 
 // ReadFile takes a path and returns the parsed config file.
 //
@@ -31,7 +30,7 @@ func ReadFile(path, libPath string) (cfgv3.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return cfgv3.Config{}, reporting.AnnotateErr(ErrNotFound, err)
+		return cfgv3.Config{}, errors.WithCause(err, ErrNotFound)
 	}
 	if filepath.Ext(path) == ".jsonnet" {
 		// We pass the libPath to jsonnet, because that is the hint

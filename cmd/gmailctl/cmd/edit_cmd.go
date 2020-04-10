@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,7 +13,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/api"
 	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/reporting"
+	"github.com/mbrt/gmailctl/pkg/errors"
 )
 
 // Parameters
@@ -100,7 +99,7 @@ func edit(path string, test bool) error {
 				return moveFile(tmpPath, path)
 			}
 			if errors.Is(err, errAbort) {
-				return UserError(err, fmt.Sprintf(abortHelp, tmpPath))
+				return errors.WithDetails(err, fmt.Sprintf(abortHelp, tmpPath))
 			}
 			if errors.Is(err, errRetry) {
 				continue
@@ -108,7 +107,7 @@ func edit(path string, test bool) error {
 
 			stderrPrintf("Error applying configuration: %v\n", err)
 			if !askYN("Do you want to continue editing?") {
-				return UserError(errAbort, fmt.Sprintf(abortHelp, tmpPath))
+				return errors.WithDetails(errAbort, fmt.Sprintf(abortHelp, tmpPath))
 			}
 			// Retry
 			continue
@@ -141,7 +140,7 @@ func moveFile(from, to string) error {
 func copyToTmp(path string) (string, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", reporting.AnnotateErr(config.ErrNotFound, err)
+		return "", errors.WithCause(err, config.ErrNotFound)
 	}
 
 	// Use the same extension as the original file (yaml | jsonnet)

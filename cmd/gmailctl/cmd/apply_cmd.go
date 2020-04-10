@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
 	papply "github.com/mbrt/gmailctl/pkg/apply"
+	"github.com/mbrt/gmailctl/pkg/errors"
 )
 
 var (
@@ -86,7 +86,7 @@ func apply(path string, interactive, test bool) error {
 	if len(diff.LabelsDiff.Removed) > 0 {
 		fmt.Println(renameLabelWarning)
 		if !applyRemoveLabels {
-			return UserError(errors.New("no changes have been made"),
+			return errors.WithDetails(errors.New("no changes have been made"),
 				"To protect you, deletion is disabled unless you\n"+
 					"explicitly provide the --remove-labels flag.\n")
 		}
@@ -101,5 +101,5 @@ func apply(path string, interactive, test bool) error {
 }
 
 func configurationError(err error) error {
-	return UserError(err, "The configuration can be initialized with 'gmailctl init'")
+	return errors.WithDetails(err, "The configuration can be initialized with 'gmailctl init'")
 }
