@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/mbrt/gmailctl/pkg/errors"
 )
 
 func askYN(prompt string) bool {
@@ -55,9 +57,9 @@ func askOptions(prompt string, choices []string) int {
 }
 
 func fatal(err error) {
-	stderrPrintf("%v\n", err)
-	if HasUserHelp(err) {
-		stderrPrintf("\nNote: %s\n", GetUserHelp(err))
+	stderrPrintf("Error: %v\n", err)
+	if det := errors.Details(err); det != "" {
+		stderrPrintf("\nNote: %s\n", det)
 	}
 	os.Exit(1)
 }
