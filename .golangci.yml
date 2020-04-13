@@ -6,13 +6,16 @@ run:
 linters:
   enable-all: false
   enable:
+    - deadcode
+    - errcheck
+    - gocritic
     - golint
     - gosec
-    - unconvert
+    - gosimple
+    - govet
+    - ineffassign
     - misspell
-
-# Workaround for golangci/golangci-lint#658
-issues:
-  exclude:
-    - "not declared by package utf8"
-    - "unicode/utf8/utf8.go"
+    - staticcheck
+    - structcheck
+    - unconvert
+    - varcheck

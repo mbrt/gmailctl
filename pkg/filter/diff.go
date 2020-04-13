@@ -71,16 +71,16 @@ func changedFilters(upstream, local Filters) (added, removed Filters) {
 		loc := hlocal[j]
 		cmp := strings.Compare(ups.hash, loc.hash)
 
-		if cmp < 0 {
+		switch {
+		case cmp < 0:
 			// Local is ahead: it is missing one filter
 			removed = append(removed, ups.filter)
 			i++
-
-		} else if cmp > 0 {
+		case cmp > 0:
 			// Upstream is ahead: it is missing one filter
 			added = append(added, loc.filter)
 			j++
-		} else {
+		default:
 			// All good
 			i++
 			j++
