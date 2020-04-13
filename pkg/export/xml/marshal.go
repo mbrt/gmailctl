@@ -20,10 +20,7 @@ func DefaultExporter() Exporter {
 	return xmlExporter{now: defaultNow}
 }
 
-// nowFunc returns the current time
-type nowFunc func() time.Time
-
-var defaultNow nowFunc = func() time.Time { return time.Now() }
+var defaultNow func() time.Time = time.Now
 
 type xmlDoc struct {
 	XMLName     xml.Name  `xml:"feed"`
@@ -57,7 +54,7 @@ type xmlProperty struct {
 
 type xmlExporter struct {
 	// Allows to be mocked away
-	now nowFunc
+	now func() time.Time
 }
 
 func (x xmlExporter) Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error {

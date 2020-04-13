@@ -26,15 +26,16 @@ func Diff(upstream, local Labels) (LabelsDiff, error) {
 		loc := local[j]
 		cmp := strings.Compare(ups.Name, loc.Name)
 
-		if cmp < 0 {
+		switch {
+		case cmp < 0:
 			// Local is ahead: it's missing a label
 			res.Removed = append(res.Removed, ups)
 			i++
-		} else if cmp > 0 {
+		case cmp > 0:
 			// Upstream is ahead: it's missing a label
 			res.Added = append(res.Added, loc)
 			j++
-		} else {
+		default:
 			// Same name, check if it's modified
 			if !Equivalent(ups, loc) {
 				res.Modified = append(res.Modified, ModifiedLabel{
@@ -45,7 +46,6 @@ func Diff(upstream, local Labels) (LabelsDiff, error) {
 			i++
 			j++
 		}
-
 	}
 
 	// Consume all upstream that are not present in local
