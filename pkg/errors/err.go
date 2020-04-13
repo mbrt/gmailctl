@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -25,7 +26,7 @@ func WithCause(symptom, cause error) error {
 	}
 }
 
-func WithDetails(err error, details string) error {
+func WithDetails(err error, details ...string) error {
 	if err == nil {
 		return nil
 	}
@@ -33,18 +34,25 @@ func WithDetails(err error, details string) error {
 }
 
 func Details(err error) string {
-	var dErr detailed
-	if errors.As(err, &dErr) {
-		return "\n  - " +
-			strings.ReplaceAll(dErr.details, "\n", "\n    ") +
-			Details(dErr.error)
+	var (
+		buffer bytes.Buffer
+		dErr   detailed
+	)
+	for errors.As(err, &dErr) {
+		// Append all details of this error.
+		for _, d := range dErr.details {
+			buffer.WriteString("\n  - ")
+			buffer.WriteString(strings.ReplaceAll(d, "\n", "\n    "))
+		}
+		// Continue down the chain.
+		err = dErr.error
 	}
-	return ""
+	return buffer.String()
 }
 
 type detailed struct {
 	error
-	details string
+	details []string
 }
 
 type annotated struct {

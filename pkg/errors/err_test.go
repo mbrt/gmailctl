@@ -41,7 +41,9 @@ func TestErrWithDetails(t *testing.T) {
 	err1 := errors.New("err1")
 	err2 := WithDetails(
 		fmt.Errorf("err2: %w", err1),
-		"second descr\nmultiline")
+		"second descr\nmultiline",
+		"another\ndescr",
+	)
 	err3 := WithDetails(
 		fmt.Errorf("err3: %w", err2),
 		"third descr\nmultiline\nmultiline again")
@@ -52,6 +54,8 @@ func TestErrWithDetails(t *testing.T) {
     multiline
     multiline again
   - second descr
-    multiline`
+    multiline
+  - another
+    descr`
 	assert.Equal(t, details, Details(err4))
 }
