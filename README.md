@@ -7,7 +7,7 @@ It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
 simpler to write and maintain than using the Gmail web interface, to categorize,
 label, archive and manage your inbox automatically.
 
-## Table of content
+## Table of contents
 - [Motivation](#motivation)
 - [Install](#install)
 - [Usage](#usage)
