@@ -12,7 +12,7 @@ type errType struct {
 	a int
 }
 
-func (_ errType) Error() string { return "errType" }
+func (errType) Error() string { return "errType" }
 
 func TestAnnotated(t *testing.T) {
 	err1 := errors.New("error1")
