@@ -55,6 +55,7 @@ func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 			for _, err := range errs {
 				stderrPrintf("  %v\n", err)
 			}
+			stderrPrintf("\n")
 		}
 		err = ts.ExecTests(res.Config.Tests)
 		if err != nil {

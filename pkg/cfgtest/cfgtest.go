@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/pmezard/go-difflib/difflib"
+
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/errors"
 	"github.com/mbrt/gmailctl/pkg/gmail"
 	"github.com/mbrt/gmailctl/pkg/parser"
 	"github.com/mbrt/gmailctl/pkg/reporting"
@@ -51,7 +54,7 @@ func (rs Rules) ExecTests(ts []cfg.Test) error {
 			if name == "" {
 				name = fmt.Sprintf("#%d", i)
 			}
-			return fmt.Errorf("test '%s' failed: %w", name, err)
+			return fmt.Errorf("test %q: %w", name, err)
 		}
 	}
 	return nil
@@ -64,11 +67,33 @@ func (rs Rules) ExecTest(t cfg.Test) error {
 	for i, msg := range t.Messages {
 		expected, err := rs.MatchingActions(msg)
 		if err != nil {
-			return fmt.Errorf("message #%d: error evaluating matching filters: %w", i, err)
+			return errors.WithDetails(
+				fmt.Errorf("message #%d: error evaluating matching filters: %w", i, err),
+				messageDetails(msg))
 		}
-		if !expected.Equal(Actions(t.Actions)) {
-			return fmt.Errorf("message #%d is going to get unexpected actions: %s", i, reporting.Prettify(expected, true))
+		if expected.Equal(Actions(t.Actions)) {
+			// All good with this message.
+			continue
 		}
+
+		// Report the error.
+		diff, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
+			A:        difflib.SplitLines(reporting.Prettify(expected, false)),
+			B:        difflib.SplitLines(reporting.Prettify(t.Actions, false)),
+			FromFile: "want",
+			ToFile:   "got",
+			Context:  5,
+		})
+		if err != nil {
+			// The diff failing is not a big deal, but we should return
+			// something.
+			diff = fmt.Sprintf("<cannot compute diff>: %v", err)
+		}
+		return errors.WithDetails(
+			fmt.Errorf("message #%d is going to get unexpected actions: %s", i,
+				reporting.Prettify(expected, true)),
+			messageDetails(msg),
+			fmt.Sprintf("Actions:\n%s", diff))
 	}
 	return nil
 }
@@ -208,4 +233,8 @@ func stringSliceEqual(s1, s2 []string) bool {
 		}
 	}
 	return true
+}
+
+func messageDetails(msg cfg.Message) string {
+	return fmt.Sprintf("Message: %s", reporting.Prettify(msg, false))
 }
