@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
@@ -14,27 +15,35 @@ import (
 
 var (
 	// keep sorted
-	knownCriteriaFields = []string{
-		"ExcludeChats",
-		"ForceSendFields",
-		"From",
-		"HasAttachment",
-		"NegatedQuery",
-		"NullFields",
-		"Query",
-		"Size",
-		"SizeComparison",
-		"Subject",
-		"To",
+	knownCriteriaFields = map[string]bool{
+		"ExcludeChats":    true,
+		"ForceSendFields": true,
+		"From":            true,
+		"HasAttachment":   true,
+		"NegatedQuery":    true,
+		"NullFields":      true,
+		"Query":           true,
+		"Size":            true,
+		"SizeComparison":  true,
+		"Subject":         true,
+		"To":              true,
 	}
 	// keep sorted
-	knownActionFields = []string{
-		"AddLabelIds",
-		"ForceSendFields",
-		"Forward",
-		"NullFields",
-		"RemoveLabelIds",
+	knownActionFields = map[string]bool{
+		"AddLabelIds":     true,
+		"ForceSendFields": true,
+		"Forward":         true,
+		"NullFields":      true,
+		"RemoveLabelIds":  true,
 	}
+	// keep sorted
+	unsupportedCriteriaFields = map[string]bool{
+		"ExcludeChats":   true,
+		"Size":           true,
+		"SizeComparison": true,
+	}
+	// keep sorted
+	unsupportedActionFields = map[string]bool{}
 )
 
 // Import exports Gmail filters into Gmail API objects.
@@ -80,6 +89,10 @@ func importAction(action *gmailv1.FilterAction, lmap LabelMap) (filter.Actions, 
 	if action == nil {
 		return res, errors.New("empty action")
 	}
+	if err := checkUnsupportedFields(*action, unsupportedActionFields); err != nil {
+		return res, fmt.Errorf("criteria: %w", err)
+	}
+
 	if err := importAddLabels(&res, action.AddLabelIds, lmap); err != nil {
 		return res, err
 	}
@@ -167,6 +180,10 @@ func importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
 	if criteria == nil {
 		return filter.Criteria{}, errors.New("empty criteria")
 	}
+	if err := checkUnsupportedFields(*criteria, unsupportedCriteriaFields); err != nil {
+		return filter.Criteria{}, fmt.Errorf("criteria: %w", err)
+	}
+
 	query := appendQuery(nil, criteria.Query)
 
 	// Negated queries:
@@ -187,6 +204,27 @@ func importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
 		Subject: criteria.Subject,
 		Query:   strings.Join(query, " "),
 	}, nil
+}
+
+func checkUnsupportedFields(a interface{}, unsupported map[string]bool) error {
+	t := reflect.TypeOf(a)
+	v := reflect.ValueOf(a)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		name := t.Field(i).Name
+
+		if !unsupported[name] {
+			continue
+		}
+		// Check that the value for unsupported fields is zero.
+		fv := field.Interface()
+		if fv != reflect.Zero(field.Type()).Interface() {
+			return fmt.Errorf("usage of unsupported field %q (value %v)", name, fv)
+		}
+	}
+
+	return nil
 }
 
 func appendQuery(q []string, a string) []string {
