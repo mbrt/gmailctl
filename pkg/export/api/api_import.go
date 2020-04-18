@@ -3,12 +3,38 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-multierror"
 	gmailv1 "google.golang.org/api/gmail/v1"
 
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/gmail"
+)
+
+var (
+	// keep sorted
+	knownCriteriaFields = []string{
+		"ExcludeChats",
+		"ForceSendFields",
+		"From",
+		"HasAttachment",
+		"NegatedQuery",
+		"NullFields",
+		"Query",
+		"Size",
+		"SizeComparison",
+		"Subject",
+		"To",
+	}
+	// keep sorted
+	knownActionFields = []string{
+		"AddLabelIds",
+		"ForceSendFields",
+		"Forward",
+		"NullFields",
+		"RemoveLabelIds",
+	}
 )
 
 // Import exports Gmail filters into Gmail API objects.
@@ -135,24 +161,37 @@ func importCategory(labelID string) gmail.Category {
 }
 
 func importCriteria(criteria *gmailv1.FilterCriteria) (filter.Criteria, error) {
+	// We don't ever generate queries that touch certain fields, so supporting them
+	// only for the import phase is not worth the effort. Instead update the regular
+	// query field with an equivalent expression.
 	if criteria == nil {
 		return filter.Criteria{}, errors.New("empty criteria")
 	}
-	query := criteria.Query
+	query := appendQuery(nil, criteria.Query)
 
-	// We don't ever generate negated queries, so supporting them only for the import
-	// is not worth the effort. Instead update the regular query field with an
-	// equivalent expression.
+	// Negated queries:
 	// Note that elements in the negated query are by default in OR together, according
 	// to GMail behavior.
 	if criteria.NegatedQuery != "" {
-		query = fmt.Sprintf("%s -{%s}", query, criteria.NegatedQuery)
+		query = appendQuery(query, fmt.Sprintf("-{%s}", criteria.NegatedQuery))
+	}
+
+	// HasAttachment:
+	if criteria.HasAttachment {
+		query = appendQuery(query, "has:attachment")
 	}
 
 	return filter.Criteria{
 		From:    criteria.From,
 		To:      criteria.To,
 		Subject: criteria.Subject,
-		Query:   query,
+		Query:   strings.Join(query, " "),
 	}, nil
+}
+
+func appendQuery(q []string, a string) []string {
+	if a == "" {
+		return q
+	}
+	return append(q, a)
 }
