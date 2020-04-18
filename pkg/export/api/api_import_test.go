@@ -163,6 +163,14 @@ func TestImportBad(t *testing.T) {
 				From: "foo@bar.com",
 			},
 		},
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds: []string{labelIDTrash},
+			},
+			Criteria: &gmailv1.FilterCriteria{
+				Size: 123,
+			},
+		},
 	}
 	imported, err := Import(filters, emptyLabelMap())
 	assert.NotNil(t, err)
