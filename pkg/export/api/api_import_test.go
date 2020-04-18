@@ -64,10 +64,11 @@ func TestImportCriteria(t *testing.T) {
 				RemoveLabelIds: []string{},
 			},
 			Criteria: &gmailv1.FilterCriteria{
-				From:    "foo@bar.com",
-				To:      "baz@zuz.it",
-				Subject: "baz",
-				Query:   "my query",
+				From:          "foo@bar.com",
+				To:            "baz@zuz.it",
+				Subject:       "baz",
+				Query:         "my query",
+				HasAttachment: true,
 			},
 		},
 	}
@@ -81,7 +82,7 @@ func TestImportCriteria(t *testing.T) {
 				From:    "foo@bar.com",
 				To:      "baz@zuz.it",
 				Subject: "baz",
-				Query:   "my query",
+				Query:   "my query has:attachment",
 			},
 		},
 	}
