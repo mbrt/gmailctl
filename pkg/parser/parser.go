@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"strings"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
@@ -32,6 +32,10 @@ func Parse(config cfg.Config) ([]Rule, error) {
 		scrit, err := SimplifyCriteria(crit)
 		if err != nil {
 			return nil, fmt.Errorf("simplifying criteria for rule #%d: %w", i, err)
+		}
+
+		if rule.Actions.Empty() {
+			return nil, fmt.Errorf("parsing action for rule #%d: empty action", i)
 		}
 
 		res = append(res, Rule{
