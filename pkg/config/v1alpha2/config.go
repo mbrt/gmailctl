@@ -70,23 +70,9 @@ func (f FilterNode) NonEmptyFields() []string {
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		name := yamlTagName(t.Field(i).Tag)
-
-		switch field.Kind() {
-		case reflect.String:
-			if field.String() == "" {
-				continue
-			}
-		case reflect.Slice:
-			if field.Len() == 0 {
-				continue
-			}
-		case reflect.Ptr:
-			if field.Pointer() == 0 {
-				continue
-			}
+		if !isDefault(field) {
+			res = append(res, name)
 		}
-
-		res = append(res, name)
 	}
 
 	return res
@@ -96,28 +82,13 @@ func (f FilterNode) NonEmptyFields() []string {
 func (f FilterNode) Empty() bool {
 	// Use reflection to minimize maintenance work.
 	count := 0
-
 	v := reflect.ValueOf(f)
 
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
-
-		switch field.Kind() {
-		case reflect.String:
-			if field.String() == "" {
-				continue
-			}
-		case reflect.Slice:
-			if field.Len() == 0 {
-				continue
-			}
-		case reflect.Ptr:
-			if field.Pointer() == 0 {
-				continue
-			}
+		if !isDefault(field) {
+			count++
 		}
-
-		count++
 	}
 
 	return count == 0
@@ -166,4 +137,8 @@ func (a Actions) Empty() bool {
 
 func yamlTagName(t reflect.StructTag) string {
 	return strings.Split(t.Get("yaml"), ",")[0]
+}
+
+func isDefault(v reflect.Value) bool {
+	return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }

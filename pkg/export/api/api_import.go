@@ -218,9 +218,8 @@ func checkUnsupportedFields(a interface{}, unsupported map[string]bool) error {
 			continue
 		}
 		// Check that the value for unsupported fields is zero.
-		fv := field.Interface()
-		if fv != reflect.Zero(field.Type()).Interface() {
-			return fmt.Errorf("usage of unsupported field %q (value %v)", name, fv)
+		if !isDefault(field) {
+			return fmt.Errorf("usage of unsupported field %q (value %v)", name, field.Interface())
 		}
 	}
 
@@ -232,4 +231,8 @@ func appendQuery(q []string, a string) []string {
 		return q
 	}
 	return append(q, a)
+}
+
+func isDefault(v reflect.Value) bool {
+	return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
