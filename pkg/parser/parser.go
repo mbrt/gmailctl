@@ -1,11 +1,12 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	cfg "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/errors"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // Rule is an intermediate representation of a Gmail filter.
@@ -24,27 +25,37 @@ type Actions cfg.Actions
 func Parse(config cfg.Config) ([]Rule, error) {
 	res := []Rule{}
 	for i, rule := range config.Rules {
-		crit, err := parseCriteria(rule.Filter)
+		r, err := parseRule(rule)
 		if err != nil {
-			return nil, fmt.Errorf("parsing criteria for rule #%d: %w", i, err)
+			return nil, errors.WithDetails(
+				fmt.Errorf("rule #%d: %w", i, err),
+				fmt.Sprintf("Rule: %s", reporting.Prettify(rule, false)),
+			)
 		}
+		res = append(res, r)
+	}
+	return res, nil
+}
 
-		scrit, err := SimplifyCriteria(crit)
-		if err != nil {
-			return nil, fmt.Errorf("simplifying criteria for rule #%d: %w", i, err)
-		}
+func parseRule(rule cfg.Rule) (Rule, error) {
+	res := Rule{}
 
-		if rule.Actions.Empty() {
-			return nil, fmt.Errorf("parsing action for rule #%d: empty action", i)
-		}
-
-		res = append(res, Rule{
-			Criteria: scrit,
-			Actions:  Actions(rule.Actions),
-		})
+	crit, err := parseCriteria(rule.Filter)
+	if err != nil {
+		return res, fmt.Errorf("parsing criteria: %w", err)
+	}
+	scrit, err := SimplifyCriteria(crit)
+	if err != nil {
+		return res, fmt.Errorf("simplifying criteria: %w", err)
+	}
+	if rule.Actions.Empty() {
+		return res, errors.New("empty action")
 	}
 
-	return res, nil
+	return Rule{
+		Criteria: scrit,
+		Actions:  Actions(rule.Actions),
+	}, nil
 }
 
 func parseCriteria(f cfg.FilterNode) (CriteriaAST, error) {
