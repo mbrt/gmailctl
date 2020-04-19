@@ -1,13 +1,14 @@
 package rimport
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	config "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/errors"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/label"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // Import converts a list of filters into config rules, best
@@ -17,7 +18,9 @@ func Import(fs filter.Filters, ls label.Labels) (config.Config, error) {
 	for i, f := range fs {
 		r, err := fromFilter(f)
 		if err != nil {
-			return config.Config{}, fmt.Errorf("importing filter #%d: %w", i, err)
+			return config.Config{}, errors.WithDetails(
+				fmt.Errorf("importing filter #%d: %w", i, err),
+				fmt.Sprintf("Filter (internal representation): %s", reporting.Prettify(f, false)))
 		}
 		rules = append(rules, r)
 	}

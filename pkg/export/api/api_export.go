@@ -1,13 +1,14 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 
 	gmailv1 "google.golang.org/api/gmail/v1"
 
+	"github.com/mbrt/gmailctl/pkg/errors"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/gmail"
+	"github.com/mbrt/gmailctl/pkg/reporting"
 )
 
 // Export exports Gmail filters into Gmail API objects
@@ -16,7 +17,11 @@ func Export(filters filter.Filters, lmap LabelMap) ([]*gmailv1.Filter, error) {
 	for i, filter := range filters {
 		ef, err := export(filter, lmap)
 		if err != nil {
-			return nil, fmt.Errorf("exporting filter #%d: %w", i, err)
+			return nil, errors.WithDetails(
+				fmt.Errorf("exporting filter #%d: %w", i, err),
+				fmt.Sprintf("Filter (internal representation): %s",
+					reporting.Prettify(filter, false)),
+			)
 		}
 		res[i] = ef
 	}
