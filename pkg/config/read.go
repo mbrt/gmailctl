@@ -146,8 +146,53 @@ func readJSONVersion(js string) (string, error) {
 	return v.Version, err
 }
 
-func jsonUnmarshalStrict(b []byte, v interface{}) error {
-	dec := json.NewDecoder(bytes.NewReader(b))
+func jsonUnmarshalStrict(buf []byte, v interface{}) error {
+	dec := json.NewDecoder(bytes.NewReader(buf))
 	dec.DisallowUnknownFields()
-	return dec.Decode(v)
+	if err := dec.Decode(v); err != nil {
+		// Make the error more informative.
+		jctx := contextFromJSONErr(err, buf)
+		if jctx == "" {
+			return err
+		}
+		return errors.WithDetails(err,
+			fmt.Sprintf("JSON context:\n%s", jctx))
+	}
+	return nil
+}
+
+func contextFromJSONErr(err error, buf []byte) string {
+	var (
+		jserr  *json.SyntaxError
+		juerr  *json.UnmarshalTypeError
+		offset int
+	)
+	switch {
+	case errors.As(err, &jserr):
+		offset = int(jserr.Offset)
+	case errors.As(err, &juerr):
+		offset = int(juerr.Offset)
+	default:
+		return ""
+	}
+
+	if offset < 0 || offset >= len(buf) {
+		return ""
+	}
+
+	// Collect 6 lines of context
+	begin, end, count := 0, 0, 0
+	for i := offset; i >= 0 && count < 3; i-- {
+		if buf[i] == '\n' {
+			begin = i + 1
+			count++
+		}
+	}
+	for i := offset; i < len(buf) && count < 6; i++ {
+		if buf[i] == '\n' {
+			end = i
+			count++
+		}
+	}
+	return string(buf[begin:end])
 }
