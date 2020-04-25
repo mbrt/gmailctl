@@ -1,6 +1,7 @@
 # gmailctl
 [![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailctl)](https://goreportcard.com/report/github.com/mbrt/gmailctl)
 ![Go](https://github.com/mbrt/gmailctl/workflows/Go/badge.svg)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmbrt%2Fgmailctl.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmbrt%2Fgmailctl?ref=badge_shield)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
 It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
@@ -963,3 +964,7 @@ local spam = {
 The reality is that you have to manually build the Gmail expressions yourself.
 
 [↩](#a2)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmbrt%2Fgmailctl.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmbrt%2Fgmailctl?ref=badge_large)
