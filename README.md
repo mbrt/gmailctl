@@ -31,13 +31,13 @@ label, archive and manage your inbox automatically.
 
 ## Motivation
 
-If you have Gmail and have to maintain (like me) a lot of filters, because you
-want to apply labels, get rid of spam or categorize your emails, then you
-probably have (like me) a very long list of messy filters. Then the day when you
-actually want to understand why a certain message got labeled in a certain way
-comes. You scroll through that horrible mess, you wish you could
-find-and-replace stuff, check the change before applying it, refactor some
-filters together... in a way treat them like you treat your code!
+If you use Gmail and have to maintain (like me) a lot of filters (to apply
+labels, get rid of spam or categorize your emails), then you probably have (like
+me) a very long list of messy filters. At a certain point one of your messages
+got mislabled and you try to understand why. You scroll through that horrible
+mess of filters, you wish you could find-and-replace stuff, test the changes on
+your filters before applying them, refactor some filters together... in a way
+treat them like you treat your code!
 
 Gmail allows to import and export filters in XML format. This can be used to
 maintain them in some better way... but dear Lord, no! Not by hand! That's what
