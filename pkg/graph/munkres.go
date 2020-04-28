@@ -6,10 +6,6 @@ package graph
 
 import (
 	"math"
-
-	"github.com/cpmech/gosl/chk"
-	"github.com/cpmech/gosl/io"
-	"github.com/cpmech/gosl/utl"
 )
 
 // MaskType defines the type of mask
@@ -29,7 +25,7 @@ const (
 
 // Munkres (Hungarian algorithm) method to solve the assignment problem
 //  based on code by Bob Pilgrim from http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
-//  Note: this method runs in O(n²), in the worst case; therefore is not efficient for large matrix
+//  Note: this method runs in O(n³), in the worst case; therefore is not efficient for large matrix
 //   Example:
 //           $ | Clean  Sweep   Wash
 //      -------|--------------------
@@ -63,22 +59,22 @@ type Munkres struct {
 
 // Init initialises Munkres' structure
 func (o *Munkres) Init(nrow, ncol int) {
-	chk.IntAssertLessThan(0, nrow) // nrow > 1
-	chk.IntAssertLessThan(0, ncol) // ncol > 1
+	IntAssertLessThan(0, nrow) // nrow > 1
+	IntAssertLessThan(0, ncol) // ncol > 1
 	o.nrow, o.ncol = nrow, ncol
 	o.nrowOri, o.ncolOri = nrow, ncol
 	if o.nrow != o.ncol { // make it square. padded entries will have zero cost
-		o.nrow = utl.Imax(o.nrow, o.ncol)
+		o.nrow = Imax(o.nrow, o.ncol)
 		o.ncol = o.nrow
 	}
-	o.C = utl.Alloc(o.nrow, o.ncol)
+	o.C = Alloc(o.nrow, o.ncol)
 	o.M = make([][]MaskType, o.nrow)
 	for i := 0; i < o.nrow; i++ {
 		o.M[i] = make([]MaskType, o.ncol)
 	}
 	o.Links = make([]int, o.nrowOri)
 	npath := 2*o.nrow + 1 // TODO: check this
-	o.path = utl.IntAlloc(npath, 2)
+	o.path = IntAlloc(npath, 2)
 	o.rowCovered = make([]bool, o.nrow)
 	o.colCovered = make([]bool, o.ncol)
 }
@@ -92,7 +88,7 @@ func (o *Munkres) SetCostMatrix(C [][]float64) {
 			o.C[i][j] = C[i][j]
 			o.M[i][j] = NoneType
 			if math.IsNaN(o.C[i][j]) {
-				chk.Panic("cannot set cost matrix because of NaN value")
+				Panic("cannot set cost matrix because of NaN value")
 			}
 		}
 		o.rowCovered[i] = false
@@ -187,7 +183,7 @@ func (o *Munkres) step1() (nextStep int) {
 	for i := 0; i < o.nrow; i++ {
 		xmin = o.C[i][0]
 		for j := 1; j < o.ncol; j++ {
-			xmin = utl.Min(xmin, o.C[i][j])
+			xmin = Min(xmin, o.C[i][j])
 		}
 		for j := 0; j < o.ncol; j++ {
 			o.C[i][j] -= xmin
@@ -340,7 +336,7 @@ func (o *Munkres) step6() (nextStep int) {
 	for i := 0; i < o.nrow; i++ {
 		for j := 0; j < o.ncol; j++ {
 			if !o.rowCovered[i] && !o.colCovered[j] {
-				xmin = utl.Min(xmin, o.C[i][j])
+				xmin = Min(xmin, o.C[i][j])
 			}
 		}
 	}
@@ -364,23 +360,23 @@ func (o *Munkres) step6() (nextStep int) {
 // StrCostMatrix returns a representation of cost matrix with masks and covers
 func (o *Munkres) StrCostMatrix() (l string) {
 	numfmt := "%v"
-	l += io.Sf("%4v", " ")
+	l += Sf("%4v", " ")
 	for j := 0; j < o.ncol; j++ {
 		if o.colCovered[j] {
-			l += io.Sf("%8v", "T ")
+			l += Sf("%8v", "T ")
 		} else {
-			l += io.Sf("%8v", "F ")
+			l += Sf("%8v", "F ")
 		}
 	}
-	l += io.Sf("\n")
+	l += Sf("\n")
 	for i := 0; i < o.nrow; i++ {
 		if o.rowCovered[i] {
-			l += io.Sf("%4v", "T")
+			l += Sf("%4v", "T")
 		} else {
-			l += io.Sf("%4v", "F")
+			l += Sf("%4v", "F")
 		}
 		for j := 0; j < o.ncol; j++ {
-			s := io.Sf(numfmt, o.C[i][j])
+			s := Sf(numfmt, o.C[i][j])
 			switch o.M[i][j] {
 			case NoneType:
 				s += " "
@@ -389,9 +385,9 @@ func (o *Munkres) StrCostMatrix() (l string) {
 			case PrimeType:
 				s += "'"
 			}
-			l += io.Sf("%8v", s)
+			l += Sf("%8v", s)
 		}
-		l += io.Sf("\n")
+		l += Sf("\n")
 	}
 	return
 }
