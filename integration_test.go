@@ -1,4 +1,4 @@
-package main
+package integration_test
 
 import (
 	"path/filepath"
@@ -13,11 +13,9 @@ import (
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
-const testdataDir = "../../testdata"
-
 func readConfig(t *testing.T, path string) cfgv3.Config {
 	t.Helper()
-	res, err := cfg.ReadFile(path, filepath.Join(testdataDir, path))
+	res, err := cfg.ReadFile(path, filepath.Join("testdata", path))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +29,7 @@ type testPaths struct {
 
 func globTestdataPaths(t *testing.T, pattern string) []string {
 	t.Helper()
-	fs, err := filepath.Glob(filepath.Join(testdataDir, pattern))
+	fs, err := filepath.Glob(filepath.Join("testdata", pattern))
 	if err != nil {
 		t.Fatal(err)
 	}
