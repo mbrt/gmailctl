@@ -1,11 +1,11 @@
 package filter
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/cnf/structhash"
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/pkg/graph"
@@ -145,11 +145,17 @@ func hashFilter(f Filter) hashedFilter {
 		Action:   f.Action,
 		Criteria: f.Criteria,
 	}
-	h, err := structhash.Hash(noIDFilter, 1)
-	if err != nil {
-		panic("hash cannot fail, unreachable")
-	}
+	h := hashStruct(noIDFilter)
 	return hashedFilter{h, f}
+}
+
+func hashStruct(a interface{}) string {
+	h := sha256.New()
+	if _, err := h.Write([]byte(fmt.Sprintf("%#v", a))); err != nil {
+		// This should be unreachable.
+		panic(err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // reorderWithHungarian reorders the two lists to make them look as similar as

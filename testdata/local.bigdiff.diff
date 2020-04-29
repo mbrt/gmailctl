@@ -3,23 +3,23 @@ Filters:
 +++ TO BE APPLIED
 @@ -1,32 +1,55 @@
  * Criteria:
+-    from: {spammer1 spammer2}
++    from: spammer2
+   Actions:
+     delete
+ 
+ * Criteria:
 -    query: {"buy this thing" "very important!!!"}
-+    query: list:foobaz.mail.com -"action needed"
++    query: "buy this thing"
    Actions:
      delete
  
  * Criteria:
-+    from: spammer1
-     subject: "spam mail"
+-    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
    Actions:
-     delete
- 
- * Criteria:
--    to: myalias@gmail.com
--    query: list:{list1 list2 list3}
-+    from: baz+zuz@mail.com
-   Actions:
-     mark as important
+-    apply label: onemorelabel
++    apply label: thirdlabel
  
  * Criteria:
 -    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
@@ -29,40 +29,37 @@ Filters:
      apply label: maillist
  
  * Criteria:
--    query: list:{list1 list2 list3} -to:{pippo@gmail.com pippo@hotmail.com}
--  Actions:
--    apply label: onemorelabel
--
--* Criteria:
--    from: {spammer1 spammer2}
-+    query: "buy this thing"
+-    to: myalias@gmail.com
+-    query: list:{list1 list2 list3}
++    from: baz+zuz@mail.com
+   Actions:
+     mark as important
+ 
+ * Criteria:
++    from: spammer1
+     subject: "spam mail"
    Actions:
      delete
  
-+* Criteria:
-+    from: spammer2
-+  Actions:
-+    delete
-+
 +* Criteria:
 +    query: list:{list3 list1 list4 list6} -to:none@gmail.com
 +  Actions:
 +    apply label: differentlabel
 +
 +* Criteria:
-+    from: notfriend@gmail.com
-+    subject: "hey there"
++    query: list:foobaz.mail.com -"action needed"
++  Actions:
++    delete
++
++* Criteria:
++    query: -to:none@gmail.com
 +  Actions:
 +    archive
 +    star
 +
 +* Criteria:
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
-+  Actions:
-+    apply label: thirdlabel
-+
-+* Criteria:
-+    query: -to:none@gmail.com
++    from: notfriend@gmail.com
++    subject: "hey there"
 +  Actions:
 +    archive
 +    star
