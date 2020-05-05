@@ -7,7 +7,6 @@ require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/google/go-jsonnet v0.15.0
 	github.com/hashicorp/go-multierror v1.1.0
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/cobra v0.0.7
 	github.com/stretchr/testify v1.5.1

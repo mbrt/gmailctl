@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/user"
 	"path"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -48,12 +48,12 @@ func initConfig() {
 		// Use config file from the flag.
 	} else {
 		// Find home directory.
-		home, err := homedir.Dir()
+		usr, err := user.Current()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		cfgDir = path.Join(home, ".gmailctl")
+		cfgDir = path.Join(usr.HomeDir, ".gmailctl")
 	}
 	credentialsPath = path.Join(cfgDir, "credentials.json")
 	tokenPath = path.Join(cfgDir, "token.json")
