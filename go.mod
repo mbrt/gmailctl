@@ -1,6 +1,6 @@
 module github.com/mbrt/gmailctl
 
-go 1.12
+go 1.13
 
 require (
 	cloud.google.com/go v0.41.0 // indirect
