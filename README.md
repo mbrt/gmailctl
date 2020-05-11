@@ -289,7 +289,7 @@ Example:
 
 ```jsonnet
 {
- h version: 'v1alpha3',
+  version: 'v1alpha3',
   rules: [
     {
       filter: {
