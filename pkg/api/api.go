@@ -2,18 +2,21 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	gmailv1 "google.golang.org/api/gmail/v1"
+	"google.golang.org/api/googleapi"
 
+	"github.com/mbrt/gmailctl/pkg/errors"
 	exportapi "github.com/mbrt/gmailctl/pkg/export/api"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/label"
 )
 
 const (
-	gmailUser = "me"
-
+	gmailUser       = "me"
 	labelTypeSystem = "system"
+	labelDocsURL    = "https://developers.google.com/gmail/api/v1/reference/users/labels#resource"
 )
 
 // GmailAPI is a wrapper around the Gmail APIs.
@@ -118,7 +121,7 @@ func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
 		if err != nil {
-			return fmt.Errorf("creating label %q: %w", lb.Name, err)
+			return labelError(fmt.Errorf("creating label %q: %w", lb.Name, err))
 		}
 	}
 	return nil
@@ -134,7 +137,7 @@ func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 		}
 		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do()
 		if err != nil {
-			return fmt.Errorf("patching label %q: %w", lb.Name, err)
+			return labelError(fmt.Errorf("patching label %q: %w", lb.Name, err))
 		}
 	}
 	return nil
@@ -160,4 +163,13 @@ func labelToGmailAPI(lb label.Label) *gmailv1.Label {
 		Name:  lb.Name,
 		Color: color,
 	}
+}
+
+func labelError(err error) error {
+	var gerr *googleapi.Error
+	if errors.As(err, &gerr) && gerr.Code == http.StatusBadRequest {
+		return errors.WithDetails(err,
+			fmt.Sprintf("See the allowed set of color values here: %s", labelDocsURL))
+	}
+	return err
 }
