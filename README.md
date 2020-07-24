@@ -578,7 +578,7 @@ as possible. This is the list of fields:
 * `to: [<list>]`: a list of recipients of the email.
 * `cc: [<list>]`: a list of emails in cc.
 * `bcc: [<list>]`: a list of emails in bcc.
-* `lists: [<list>]`: a list of mailing lists.
+* `list: [<list>]`: a list of mailing lists.
 * `subject: <string>`: the subject of the email.
 * `body: <string>`: the body of the email.
 
