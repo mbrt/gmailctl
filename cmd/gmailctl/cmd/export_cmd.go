@@ -42,7 +42,7 @@ func init() {
 
 	// Flags and configuration settings
 	exportCmd.PersistentFlags().StringVarP(&exportFilename, "filename", "f", "", "configuration file")
-	exportCmd.PersistentFlags().StringVarP(&exportOutput, "output", "o", "", "output file (defaut to stdout)")
+	exportCmd.PersistentFlags().StringVarP(&exportOutput, "output", "o", "", "output file (default to stdout)")
 	exportCmd.Flags().BoolVarP(&exportSkipTests, "yolo", "", false, "skip configuration tests")
 }
 

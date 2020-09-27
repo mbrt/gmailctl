@@ -272,7 +272,7 @@ func generateActions(actions parser.Actions) ([]Actions, error) {
 	}
 
 	if fromOptionalBool(actions.MarkSpam, true) {
-		return nil, errors.New("Gmail filters don't allow to send messages to spam directly")
+		return nil, errors.New("Gmail filters don't allow one to send messages to spam directly")
 	}
 
 	if len(actions.Labels) == 0 {

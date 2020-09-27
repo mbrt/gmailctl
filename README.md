@@ -39,7 +39,7 @@ mess of filters, you wish you could find-and-replace stuff, test the changes on
 your filters before applying them, refactor some filters together... in a way
 treat them like you treat your code!
 
-Gmail allows to import and export filters in XML format. This can be used to
+Gmail allows one to import and export filters in XML format. This can be used to
 maintain them in some better way... but dear Lord, no! Not by hand! That's what
 most other tools do: providing some kind of DSL that generate XML filters that
 can be imported in your settings... by hand [this is the approach of the popular
@@ -850,9 +850,9 @@ this one are:
 * `gmail-britta` uses a custom DSL (versus Jsonnet in `gmailctl`)
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailctl`)
-* `gmail-britta` allows to write complex chains of filters, but they feel very
-  hardcoded and fails to provide easy ways to write reasonably easy filters <sup
-  id="a2">[2](#f2)</sup>.
+* `gmail-britta` allows one to write complex chains of filters, but they feel
+  very hardcoded and fails to provide easy ways to write reasonably easy filters
+  <sup id="a2">[2](#f2)</sup>.
 * `gmail-britta` exports only to the Gmail XML format. You have to import the
   filters yourself by using the Gmail web interface, manually delete the filters
   you updated and import only the new ones. This process becomes tedious very
