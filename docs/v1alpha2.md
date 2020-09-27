@@ -335,7 +335,7 @@ are the same as the ones in the Gmail interface:
 * `labels: [list, of, labels]`: an array of labels to apply to the message. Note
   that these labels have to be already present in your settings (they won't be
   created automatically), and you can specify multiple labels (normally Gmail
-  allows to specify only one label per filter).
+  allows one to specify only one label per filter).
 
 Example:
 
