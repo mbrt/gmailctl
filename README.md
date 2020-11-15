@@ -422,8 +422,8 @@ are the same as the ones in the Gmail interface:
   categories are "personal", "social", "updates", "forums", "promotions");
 * `labels: [list, of, labels]`: an array of labels to apply to the message. Note
   that these labels have to be already present in your settings (they won't be
-  created automatically), and you can specify multiple labels ((normally Gmail
-  allows one to specify only one label per filter).
+  created automatically), and you can specify multiple labels (normally Gmail
+  allows only one label per filter).
 * `forward: 'forward@to.com'`: forward the message to another email address. The
   forwarding address must be already in your settings (Forwarding and POP/IMAP >
   Add a forwarding address). Gmail allows no more than 20 forwarding filters.
