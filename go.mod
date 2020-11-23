@@ -3,7 +3,7 @@ module github.com/mbrt/gmailctl
 go 1.13
 
 require (
-	github.com/google/go-jsonnet v0.16.0
+	github.com/google/go-jsonnet v0.17.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/cobra v1.1.1
