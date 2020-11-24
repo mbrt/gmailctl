@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 
 	"github.com/google/go-jsonnet"
@@ -44,10 +45,13 @@ func ReadFile(path, libPath string) (cfgv3.Config, error) {
 	return readYaml(b)
 }
 
-func readJsonnet(path string, buf []byte) (cfgv3.Config, error) {
+func readJsonnet(p string, buf []byte) (cfgv3.Config, error) {
 	var res cfgv3.Config
 	vm := jsonnet.MakeVM()
-	jstr, err := vm.EvaluateSnippet(path, string(buf))
+	vm.Importer(&jsonnet.FileImporter{
+		JPaths: []string{path.Dir(p)},
+	})
+	jstr, err := vm.EvaluateAnonymousSnippet(p, string(buf))
 	if err != nil {
 		return res, fmt.Errorf("parsing jsonnet: %w", err)
 	}
