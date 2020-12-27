@@ -39,7 +39,7 @@ To do so, head to https://console.developers.google.com
 6. Save and go back to Credentials
    6a. Click 'Create credentials'
    6b. Select 'OAuth client ID'
-   6c. Select 'Other' as 'Application type' and give it a name.
+   6c. Select 'Desktop app' as 'Application type' and give it a name.
    6d. Create.
 7. Download the credentials file into '%s' and execute the 'init'
    command again.
