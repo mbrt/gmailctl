@@ -8,26 +8,29 @@ simpler to write and maintain than using the Gmail web interface, to categorize,
 label, archive and manage your inbox automatically.
 
 ## Table of contents
-- [Motivation](#motivation)
-- [Install](#install)
-- [Usage](#usage)
-  - [Migrate from another solution](#migrate-from-another-solution)
-  - [Other commands](#other-commands)
-- [Configuration](#configuration)
-  - [Search operators](#search-operators)
-  - [Logic operators](#logic-operators)
-  - [Reusing filters](#reusing-filters)
-  - [Actions](#actions)
-  - [Labels](#labels)
-  - [Tests](#tests)
-- [Tips and tricks](#tips-and-tricks)
-  - [Chain filtering](#chain-filtering)
-  - [To me](#to-me)
-  - [Directly to me](#directly-to-me)
-  - [Automatic labels](#automatic-labels)
-  - [Multiple Gmail accounts](#multiple-gmail-accounts)
-- [Comparison with existing projects](#comparison-with-existing-projects)
-- [Footnotes](#footnotes)
+- [gmailctl](#gmailctl)
+  - [Table of contents](#table-of-contents)
+  - [Motivation](#motivation)
+  - [Install](#install)
+  - [Usage](#usage)
+    - [Migrate from another solution](#migrate-from-another-solution)
+    - [Other commands](#other-commands)
+  - [Configuration](#configuration)
+    - [Search operators](#search-operators)
+    - [Logic operators](#logic-operators)
+    - [Reusing filters](#reusing-filters)
+    - [Actions](#actions)
+    - [Labels](#labels)
+    - [Tests](#tests)
+  - [Tips and tricks](#tips-and-tricks)
+    - [Chain filtering](#chain-filtering)
+    - [To me](#to-me)
+    - [Directly to me](#directly-to-me)
+    - [Automatic labels](#automatic-labels)
+    - [Multiple Gmail accounts](#multiple-gmail-accounts)
+  - [Known issues](#known-issues)
+  - [Comparison with existing projects](#comparison-with-existing-projects)
+  - [Footnotes](#footnotes)
 
 ## Motivation
 
@@ -841,6 +844,17 @@ alias gmailctlu2='gmailctl --config=$HOME/.gmailctlu2'
 
 You will then be able to configure both accounts separately by using one or
 the other alias.
+
+## Known issues
+
+* **Apply filters to existing emails**: gmailctl doesn't support this
+  functionality for security reasons. The project currently needs only very
+  basic permissisons, and applying filters to existing emails requires full
+  Gmail access. Bugs in gmailctl or in your configuration won't screw up your
+  old emails in any way, so this is an important safety feature. If you really
+  want to do this, you can manually export your rules with
+  `gmailctl export > filters.xml`, upload them by using the Gmail Settings UI
+  and select the "apply new filters to existing email" checkbox.
 
 ## Comparison with existing projects
 
