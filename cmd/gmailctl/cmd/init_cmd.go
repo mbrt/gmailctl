@@ -97,7 +97,7 @@ func continueConfig() error {
 		fmt.Printf(credentialsMissingMsg, credentialsPath)
 		return nil
 	}
-	_, err = openToken(auth)
+	_, err = openToken(context.Background(), auth)
 	if err != nil {
 		stderrPrintf("%v\n\n", err)
 		err = setupToken(auth)
