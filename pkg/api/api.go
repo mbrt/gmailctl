@@ -19,9 +19,20 @@ const (
 	labelDocsURL    = "https://developers.google.com/gmail/api/v1/reference/users/labels#resource"
 )
 
+// NewFromService creates a new GmailAPI instance from the given Gmail service.
+func NewFromService(s *gmailv1.Service) *GmailAPI {
+	return &GmailAPI{s, nil}
+}
+
+// NewWithAPIKey creates a new GmailAPI instance from the given Gmail service and API key.
+func NewWithAPIKey(s *gmailv1.Service, key string) *GmailAPI {
+	return &GmailAPI{s, []googleapi.CallOption{keyOption(key)}}
+}
+
 // GmailAPI is a wrapper around the Gmail APIs.
 type GmailAPI struct {
 	service *gmailv1.Service
+	opts    []googleapi.CallOption
 }
 
 // ListFilters returns the list of Gmail filters in the settings.
@@ -31,7 +42,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 		return nil, err
 	}
 
-	apires, err := g.service.Users.Settings.Filters.List(gmailUser).Do()
+	apires, err := g.service.Users.Settings.Filters.List(gmailUser).Do(g.opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +52,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 // DeleteFilters deletes all the given filter IDs.
 func (g *GmailAPI) DeleteFilters(ids []string) error {
 	for _, id := range ids {
-		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do()
+		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("deleting filter %q: %w", id, err)
 		}
@@ -62,7 +73,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	}
 
 	for i, gfilter := range gfilters {
-		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do()
+		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("creating filter %d: %w", i, err)
 		}
@@ -73,7 +84,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 
 // ListLabels lists the user labels.
 func (g *GmailAPI) ListLabels() (label.Labels, error) {
-	apires, err := g.service.Users.Labels.List(gmailUser).Do()
+	apires, err := g.service.Users.Labels.List(gmailUser).Do(g.opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +118,7 @@ func (g *GmailAPI) ListLabels() (label.Labels, error) {
 // DeleteLabels deletes all the given label IDs.
 func (g *GmailAPI) DeleteLabels(ids []string) error {
 	for _, id := range ids {
-		err := g.service.Users.Labels.Delete(gmailUser, id).Do()
+		err := g.service.Users.Labels.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("deleting label %q: %w", id, err)
 		}
@@ -119,7 +130,7 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 // AddLabels creates the given labels.
 func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
-		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do()
+		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
 			return labelError(fmt.Errorf("creating label %q: %w", lb.Name, err))
 		}
@@ -135,7 +146,7 @@ func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 		if lb.ID == "" {
 			return fmt.Errorf("label %q has empty ID", lb.Name)
 		}
-		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do()
+		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
 			return labelError(fmt.Errorf("patching label %q: %w", lb.Name, err))
 		}
@@ -172,4 +183,10 @@ func labelError(err error) error {
 			fmt.Sprintf("See the allowed set of color values here: %s", labelDocsURL))
 	}
 	return err
+}
+
+type keyOption string
+
+func (k keyOption) Get() (string, string) {
+	return "key", string(k)
 }

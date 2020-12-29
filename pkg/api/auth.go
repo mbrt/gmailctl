@@ -45,7 +45,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 		return nil, fmt.Errorf("creating gmail client: %w", err)
 	}
 
-	return &GmailAPI{srv}, nil
+	return NewFromService(srv), nil
 }
 
 // AuthURL returns the URL the user has to visit to authorize the
