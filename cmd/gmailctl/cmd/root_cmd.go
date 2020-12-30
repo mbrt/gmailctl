@@ -15,7 +15,7 @@ var (
 	tokenPath       string
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd is the command run when executing without subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "gmailctl",
 	Short: "Declarative configuration for Gmail",
@@ -31,6 +31,22 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+// RemoveCommand removes a subcommand.
+func RemoveCommand(name string) bool {
+	for _, c := range rootCmd.Commands() {
+		if c.Name() == name {
+			rootCmd.RemoveCommand(c)
+			return true
+		}
+	}
+	return false
+}
+
+// AddCommand adds a subcommand.
+func AddCommand(cmd *cobra.Command) {
+	rootCmd.AddCommand(cmd)
 }
 
 func init() {
