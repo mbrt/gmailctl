@@ -28,6 +28,3 @@ jobs:
       run: |
         go test -v ./...
         hack/check-codegen.sh
-
-    - name: Lint
-      run: ./bin/golangci-lint run
