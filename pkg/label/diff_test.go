@@ -86,7 +86,7 @@ func TestDiff(t *testing.T) {
 
 			if *update {
 				// Update the golden files
-				err = ioutil.WriteFile(diffPath, []byte(diff.String()), 0644)
+				err = ioutil.WriteFile(diffPath, []byte(diff.String()), 0600)
 				assert.Nil(t, err)
 			} else {
 				// Test them

@@ -65,7 +65,7 @@ func TestJsonnetLib(t *testing.T) {
 				// Update the golden files
 				buf, err := json.MarshalIndent(jnparsed, "", "  ")
 				assert.Nil(t, err)
-				err = ioutil.WriteFile(jsfile, buf, 0644)
+				err = ioutil.WriteFile(jsfile, buf, 0600)
 				assert.Nil(t, err)
 			} else {
 				// Test them

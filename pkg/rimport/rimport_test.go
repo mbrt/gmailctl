@@ -46,7 +46,7 @@ func TestImport(t *testing.T) {
 
 	if *update {
 		// Update the golden files
-		err = ioutil.WriteFile("testdata/config.json", b, 0644)
+		err = ioutil.WriteFile("testdata/config.json", b, 0600)
 		assert.Nil(t, err)
 	} else {
 		// Test them
