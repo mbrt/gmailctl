@@ -1,6 +1,6 @@
 module github.com/mbrt/gmailctl
 
-go 1.13
+go 1.15
 
 require (
 	github.com/google/go-jsonnet v0.17.0
