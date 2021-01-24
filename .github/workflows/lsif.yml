@@ -1,0 +1,17 @@
+name: Index and upload LSIF data to sourcegraph.com
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  index-and-upload:
+    runs-on: ubuntu-latest
+    container: sourcegraph/lsif-go@sha256:14ecaa6c0dff7988783ac5d8bd7d02be9bc648addc2074a47657a33597492583
+    steps:
+      - uses: actions/checkout@v1
+      - name: Generate LSIF data
+        run: lsif-go
+      - name: Upload LSIF data to Sourcegraph
+        # Ignore failures to avoid disrupting CI pipelines with non-critical errors.
+        run: src lsif upload -no-progress -github-token=${{ secrets.GITHUB_TOKEN }} -ignore-upload-failure
