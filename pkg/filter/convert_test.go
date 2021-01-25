@@ -161,6 +161,32 @@ func TestQuoting(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func TestSplitLeaf(t *testing.T) {
+	rules := []parser.Rule{
+		{
+			Criteria: &parser.Leaf{
+				Function: parser.FunctionFrom,
+				Grouping: parser.OperationOr,
+				Args:     []string{"a", "b", "c"},
+			},
+			Actions: parser.Actions{Archive: true},
+		},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{From: "{a b}"},
+			Action:   Actions{Archive: true},
+		},
+		{
+			Criteria: Criteria{From: "c"},
+			Action:   Actions{Archive: true},
+		},
+	}
+	got, err := FromRulesWithLimit(rules, 2)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}
+
 func TestSplitActions(t *testing.T) {
 	rules := []parser.Rule{
 		{

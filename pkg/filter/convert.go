@@ -8,11 +8,21 @@ import (
 	"github.com/mbrt/gmailctl/pkg/parser"
 )
 
+// There's no documented limit on filter size on Gmail, but this educated guess
+// is better than nothing.
+const defaultSizeLimit = 20
+
 // FromRules translates rules into entries that map directly into Gmail filters.
 func FromRules(rs []parser.Rule) (Filters, error) {
+	return FromRulesWithLimit(rs, defaultSizeLimit)
+}
+
+// FromRulesWithLimit translates rules into entries that map directly into
+// Gmail, but uses a custom size limit.
+func FromRulesWithLimit(rs []parser.Rule, sizeLimit int) (Filters, error) {
 	res := Filters{}
 	for i, rule := range rs {
-		filters, err := FromRule(rule)
+		filters, err := FromRule(rule, sizeLimit)
 		if err != nil {
 			return res, fmt.Errorf("generating rule #%d: %w", i, err)
 		}
@@ -22,9 +32,9 @@ func FromRules(rs []parser.Rule) (Filters, error) {
 }
 
 // FromRule translates a rule into entries that map directly into Gmail filters.
-func FromRule(rule parser.Rule) ([]Filter, error) {
+func FromRule(rule parser.Rule, sizeLimit int) ([]Filter, error) {
 	var crits []Criteria
-	for _, c := range splitRootOr(rule.Criteria) {
+	for _, c := range splitCriteria(rule.Criteria, sizeLimit) {
 		criteria, err := GenerateCriteria(c)
 		if err != nil {
 			return nil, fmt.Errorf("generating criteria: %w", err)
@@ -236,6 +246,96 @@ func escape(a string) string {
 		return fmt.Sprintf(`"%s"`, a)
 	}
 	return a
+}
+
+func splitCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
+	var res []parser.CriteriaAST
+	for _, c := range splitRootOr(tree) {
+		res = append(res, splitBigCriteria(c, limit)...)
+	}
+	return res
+}
+
+type splitVisitor struct {
+	limit int
+	res   []parser.CriteriaAST
+}
+
+func (v *splitVisitor) VisitNode(n *parser.Node) {
+	rem := n.Children
+	for len(rem) > v.limit {
+		v.res = append(v.res, &parser.Node{
+			Operation: n.Operation,
+			Children:  rem[:v.limit],
+		})
+		rem = rem[v.limit:]
+	}
+	// Add the last chunk.
+	v.res = append(v.res, &parser.Node{
+		Operation: n.Operation,
+		Children:  rem,
+	})
+}
+
+func (v *splitVisitor) VisitLeaf(n *parser.Leaf) {
+	rem := n.Args
+	for len(rem) > v.limit {
+		v.res = append(v.res, &parser.Leaf{
+			Function: n.Function,
+			Grouping: n.Grouping,
+			IsRaw:    n.IsRaw,
+			Args:     rem[:v.limit],
+		})
+		rem = rem[v.limit:]
+	}
+	// Add the last chunk.
+	v.res = append(v.res, &parser.Leaf{
+		Function: n.Function,
+		Grouping: n.Grouping,
+		IsRaw:    n.IsRaw,
+		Args:     rem,
+	})
+}
+
+func splitBigCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
+	// Gmail filters have a size limit, after which they will silently
+	// fail to be applied. To counter that we try to split up filters
+	// that are too big.
+	if size := countNodes(tree); size < limit {
+		// We don't bother with small filters.
+		return []parser.CriteriaAST{tree}
+	}
+	// If the root operation is OR, we can split.
+	if tree.RootOperation() == parser.OperationOr {
+		sv := splitVisitor{limit: limit}
+		tree.AcceptVisitor(&sv)
+		return sv.res
+	}
+	// TODO: Handle the AND case ({a, b, c} d) => ({a, b} d), (c d)
+	// by going down a level.
+
+	// Nothing we can do about this :(
+	return []parser.CriteriaAST{tree}
+}
+
+type countVisitor struct{ res int }
+
+func (v *countVisitor) VisitNode(n *parser.Node) {
+	for _, c := range n.Children {
+		c.AcceptVisitor(v)
+	}
+	v.res++
+}
+func (v *countVisitor) VisitLeaf(n *parser.Leaf) {
+	// Note that in case of l.IsRaw, this number will be imprecise, as
+	// there will be multiple operands in the same expression.
+	v.res += len(n.Args)
+}
+
+func countNodes(tree parser.CriteriaAST) int {
+	cv := countVisitor{}
+	tree.AcceptVisitor(&cv)
+	return cv.res
 }
 
 func splitRootOr(tree parser.CriteriaAST) []parser.CriteriaAST {
