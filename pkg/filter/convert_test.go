@@ -162,15 +162,13 @@ func TestQuoting(t *testing.T) {
 }
 
 func TestSplitLeaf(t *testing.T) {
-	rules := []parser.Rule{
-		{
-			Criteria: &parser.Leaf{
-				Function: parser.FunctionFrom,
-				Grouping: parser.OperationOr,
-				Args:     []string{"a", "b", "c"},
-			},
-			Actions: parser.Actions{Archive: true},
+	rule := parser.Rule{
+		Criteria: &parser.Leaf{
+			Function: parser.FunctionFrom,
+			Grouping: parser.OperationOr,
+			Args:     []string{"a", "b", "c"},
 		},
+		Actions: parser.Actions{Archive: true},
 	}
 	expected := Filters{
 		{
@@ -182,7 +180,98 @@ func TestSplitLeaf(t *testing.T) {
 			Action:   Actions{Archive: true},
 		},
 	}
-	got, err := FromRulesWithLimit(rules, 2)
+	got, err := FromRule(rule, 2)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}
+
+func TestSplitFail(t *testing.T) {
+	rule := parser.Rule{
+		Criteria: &parser.Node{
+			Operation: parser.OperationAnd,
+			Children: []parser.CriteriaAST{
+				&parser.Leaf{
+					Function: parser.FunctionFrom,
+					Grouping: parser.OperationAnd,
+					Args:     []string{"d", "e"},
+				},
+				&parser.Leaf{
+					Function: parser.FunctionList,
+					Grouping: parser.OperationAnd,
+					Args:     []string{"a", "b"},
+				},
+				&parser.Node{
+					Operation: parser.OperationNot,
+					Children: []parser.CriteriaAST{
+						&parser.Leaf{
+							Function: parser.FunctionTo,
+							Args:     []string{"e"},
+						},
+					},
+				},
+			},
+		},
+		Actions: parser.Actions{Archive: true},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{
+				From:  "(d e)",
+				Query: "list:(a b) -to:e",
+			},
+			Action: Actions{Archive: true},
+		},
+	}
+	got, err := FromRule(rule, 3)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}
+
+func TestSplitComplex(t *testing.T) {
+	rule := parser.Rule{
+		Criteria: &parser.Node{
+			Operation: parser.OperationAnd,
+			Children: []parser.CriteriaAST{
+				&parser.Leaf{
+					Function: parser.FunctionFrom,
+					Grouping: parser.OperationOr,
+					Args:     []string{"d", "e"},
+				},
+				&parser.Leaf{
+					Function: parser.FunctionList,
+					Grouping: parser.OperationOr,
+					Args:     []string{"a", "b", "c"},
+				},
+				&parser.Node{
+					Operation: parser.OperationNot,
+					Children: []parser.CriteriaAST{
+						&parser.Leaf{
+							Function: parser.FunctionTo,
+							Args:     []string{"e"},
+						},
+					},
+				},
+			},
+		},
+		Actions: parser.Actions{Archive: true},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{
+				From:  "{d e}",
+				Query: "list:{a b} -to:e",
+			},
+			Action: Actions{Archive: true},
+		},
+		{
+			Criteria: Criteria{
+				From:  "{d e}",
+				Query: "list:c -to:e",
+			},
+			Action: Actions{Archive: true},
+		},
+	}
+	got, err := FromRule(rule, 7)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, got)
 }
