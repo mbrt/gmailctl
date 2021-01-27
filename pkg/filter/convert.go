@@ -32,7 +32,7 @@ func FromRulesWithLimit(rs []parser.Rule, sizeLimit int) (Filters, error) {
 }
 
 // FromRule translates a rule into entries that map directly into Gmail filters.
-func FromRule(rule parser.Rule, sizeLimit int) ([]Filter, error) {
+func FromRule(rule parser.Rule, sizeLimit int) (Filters, error) {
 	var crits []Criteria
 	for _, c := range splitCriteria(rule.Criteria, sizeLimit) {
 		criteria, err := GenerateCriteria(c)
@@ -305,17 +305,89 @@ func splitBigCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
 		// We don't bother with small filters.
 		return []parser.CriteriaAST{tree}
 	}
-	// If the root operation is OR, we can split.
 	if tree.RootOperation() == parser.OperationOr {
+		// If the root operation is OR, we can split.
 		sv := splitVisitor{limit: limit}
 		tree.AcceptVisitor(&sv)
 		return sv.res
 	}
-	// TODO: Handle the AND case ({a, b, c} d) => ({a, b} d), (c d)
-	// by going down a level.
+	if tree.RootOperation() == parser.OperationAnd {
+		// We still have hope to split this and have set of smaller filters.
+		// We just need to find the biggest child with an OR at the root and
+		// split it this way:
+		// ({a, b, c} d) => ({a, b} d), (c d)
+		return splitNestedAnd(tree, limit)
+	}
 
 	// Nothing we can do about this :(
 	return []parser.CriteriaAST{tree}
+}
+
+func splitNestedAnd(root parser.CriteriaAST, limit int) []parser.CriteriaAST {
+	n, ok := root.(*parser.Node)
+	if !ok {
+		// There's no nesting, just a single function, so we can't do anything.
+		return []parser.CriteriaAST{root}
+	}
+
+	// Find the biggest child with the form {a, b, c, d}
+	maxChildren := 0
+	childID := -1
+	for i, c := range n.Children {
+		if count := countNodes(c); count > maxChildren && c.RootOperation() == parser.OperationOr {
+			childID = i
+			maxChildren = count
+		}
+	}
+	if childID < 0 {
+		// We couldn't find any child with an OR as root operation.
+		return []parser.CriteriaAST{root}
+	}
+	bigChild := n.Children[childID]
+
+	// Split it up.
+	// We want to respect the limit for each new split up filter, but not go
+	// over the top and split it completely.
+	siblingsSize := countNodes(root) - maxChildren
+	newLimit := limit - siblingsSize
+	if newLimit < 1 {
+		// We have no hope of respecting the limit, but let's do our best
+		// and split up the biggest child completely
+		newLimit = 1
+	}
+	sv := splitVisitor{limit: newLimit}
+	bigChild.AcceptVisitor(&sv)
+
+	// Combine the split up child with all the rest of the children.
+	//
+	// Take all the children except the one split up.
+	var siblings []parser.CriteriaAST
+	for i, c := range n.Children {
+		if i == childID {
+			continue
+		}
+		siblings = append(siblings, c)
+	}
+	// Combine every element of the split up child with all the siblings.
+	var res []parser.CriteriaAST
+	for _, c := range sv.res {
+		res = append(res, &parser.Node{
+			Operation: parser.OperationAnd,
+			Children: append(
+				[]parser.CriteriaAST{c}, clone(siblings)...,
+			),
+		})
+	}
+
+	return res
+}
+
+func clone(tl []parser.CriteriaAST) []parser.CriteriaAST {
+	var res []parser.CriteriaAST
+	for _, n := range tl {
+		res = append(res, n.Clone())
+	}
+	return res
 }
 
 type countVisitor struct{ res int }

@@ -81,6 +81,8 @@ type CriteriaAST interface {
 	IsLeaf() bool
 	// AcceptVisitor implements the visitor pattern.
 	AcceptVisitor(v Visitor)
+	// Clone returns a deep copy of the tree.
+	Clone() CriteriaAST
 }
 
 // Node is an AST node with children nodes. It can only be a logical operator.
@@ -107,6 +109,18 @@ func (n *Node) IsLeaf() bool {
 // AcceptVisitor implements the visitor pattern.
 func (n *Node) AcceptVisitor(v Visitor) {
 	v.VisitNode(n)
+}
+
+// Clone returns a deep copy of the tree.
+func (n *Node) Clone() CriteriaAST {
+	var children []CriteriaAST
+	for _, c := range n.Children {
+		children = append(children, c.Clone())
+	}
+	return &Node{
+		Operation: n.Operation,
+		Children:  children,
+	}
 }
 
 // Leaf is an AST node with no children.
@@ -139,6 +153,16 @@ func (n *Leaf) IsLeaf() bool {
 // AcceptVisitor implements the visitor pattern.
 func (n *Leaf) AcceptVisitor(v Visitor) {
 	v.VisitLeaf(n)
+}
+
+// Clone returns a deep copy of the leaf node.
+func (n *Leaf) Clone() CriteriaAST {
+	return &Leaf{
+		Function: n.Function,
+		Grouping: n.Grouping,
+		Args:     n.Args,
+		IsRaw:    n.IsRaw,
+	}
 }
 
 // Visitor implements the visitor pattern for CriteriaAST.
