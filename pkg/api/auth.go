@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,12 +24,16 @@ func NewAuthenticator(credentials io.Reader) (*Authenticator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("creating config from credentials: %w", err)
 	}
-	return &Authenticator{cfg}, nil
+	return &Authenticator{
+		State: generateOauthState(),
+		cfg:   cfg,
+	}, nil
 }
 
 // Authenticator encapsulates authentication operations for Gmail APIs.
 type Authenticator struct {
-	cfg *oauth2.Config
+	State string
+	cfg   *oauth2.Config
 }
 
 // API creates a GmailAPI instance from a token JSON file contents.
@@ -51,7 +57,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 // AuthURL returns the URL the user has to visit to authorize the
 // application and obtain an auth code.
 func (a Authenticator) AuthURL() string {
-	return a.cfg.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	return a.cfg.AuthCodeURL(a.State, oauth2.AccessTypeOffline)
 }
 
 // CacheToken creates and caches a token JSON file from an auth code.
@@ -81,4 +87,11 @@ func parseToken(token io.Reader) (*oauth2.Token, error) {
 	tok := &oauth2.Token{}
 	err := json.NewDecoder(token).Decode(tok)
 	return tok, err
+}
+
+func generateOauthState() string {
+	b := make([]byte, 128)
+	rand.Read(b)
+	state := base64.URLEncoding.EncodeToString(b)
+	return state
 }
