@@ -91,7 +91,10 @@ func parseToken(token io.Reader) (*oauth2.Token, error) {
 
 func generateOauthState() string {
 	b := make([]byte, 128)
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// We can't really afford errors in secure random number generation.
+		panic(err)
+	}
 	state := base64.URLEncoding.EncodeToString(b)
 	return state
 }
