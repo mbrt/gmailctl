@@ -20,25 +20,30 @@ const (
 
 To do so, head to https://console.developers.google.com
 
-1. Create a new project if you don't have one
-1. Go to 'Enable API and services' and select Gmail
-2. Go to credentials and create a new one, by selecting 'Help me choose'
-   2a. Select the Gmail API
-   2b. Select 'Other UI'
+1. Create a new project if you don't have one.
+1. Go to 'Enable API and services' and select Gmail.
+2. Go to credentials and create a new one, by selecting 'Help me choose'.
+   2a. Select the Gmail API.
+   2b. Select 'Other UI'.
    2c. Access 'User data'.
-3. Go to 'OAuth consent screen'
+3. Go to 'OAuth consent screen'.
    3a. If your account is managed by an organization, you have to
-       select 'Internal' as 'User Type' and Create (otherwise ignore)
-   3b. Set an application name (e.g. 'gmailctl')
+       select 'Internal' as 'User Type' and Create (otherwise ignore).
+   3b. Set an application name (e.g. 'gmailctl').
    3c. Update 'Scopes for Google API', by adding:
        * https://www.googleapis.com/auth/gmail.labels
        * https://www.googleapis.com/auth/gmail.metadata
        * https://www.googleapis.com/auth/gmail.settings.basic
 5. IMPORTANT: you don't need to submit your changes for verification, as
-   you're not creating a public App.
-6. Save and go back to Credentials
-   6a. Click 'Create credentials'
-   6b. Select 'OAuth client ID'
+   you're only going to access your own data. Save and 'Go back to
+   Dashboard'.
+   5a. Make sure that the 'Publishig status' is set to 'In production'.
+       If it's set to 'Testing', Publish the app and ignore the
+	   verification. Using the testing mode will make your tokens
+	   expire every 7 days and require re-authentication.
+6. Go back to Credentials.
+   6a. Click 'Create credentials'.
+   6b. Select 'OAuth client ID'.
    6c. Select 'Desktop app' as 'Application type' and give it a name.
    6d. Create.
 7. Download the credentials file into '%s' and execute the 'init'
