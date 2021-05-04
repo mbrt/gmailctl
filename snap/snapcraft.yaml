@@ -1,0 +1,22 @@
+name: gmailctl
+confinement: classic
+adopt-info: gmailctl
+summary: Tool to generate and maintain Gmail filters in a declarative way
+description: Tool to generate and maintain Gmail filters in a declarative way
+
+grade: stable
+base: core20
+
+parts:
+  gmailctl:
+    plugin: go
+    source-type: local
+    source: .
+    override-pull: |
+      snapcraftctl pull
+      apt-get install -y git
+      snapcraftctl set-version "$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)"
+
+apps:
+  gmailctl:
+    command: bin/gmailctl
