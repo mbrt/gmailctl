@@ -78,6 +78,19 @@ Alternatively, if you're on macOS, you can install easily via Homebrew:
 brew install gmailctl
 ```
 
+You can also choose to install the snap:
+
+```
+sudo snap install gmailctl
+```
+
+If so, make sure to configure xdg-mime to open the config file with your favorite
+editor. For example, if you'd like to use `vim`:
+
+```
+xdg-mime default vim.desktop text/x-csrc
+```
+
 Once installed, run the init process:
 
 ```

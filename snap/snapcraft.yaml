@@ -1,13 +1,42 @@
 name: gmailctl
-confinement: classic
+confinement: strict
+
+# Use the git version generated during gmailctl part
 adopt-info: gmailctl
-summary: Tool to generate and maintain Gmail filters in a declarative way
-description: Tool to generate and maintain Gmail filters in a declarative way
+
+summary: Tool to generate and maintain Gmail filters in a declarative way.
+description: |
+  This utility helps you generate and maintain Gmail filters in a declarative way.
+  It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
+  simpler to write and maintain than using the Gmail web interface, to categorize,
+  label, archive and manage your inbox automatically.
+license: MIT
 
 grade: stable
 base: core20
 
 parts:
+  # Because Go do not rely on $HOME to find the user's home folder
+  # we need this part as a hack
+  # See: https://forum.snapcraft.io/t/the-homeishome-launcher-fix-snapped-apps-that-wrongly-referring-to-the-users-real-home-directory-instead-of-home/19763
+  homeishome-launch:
+    plugin: nil
+    stage-snaps:
+      - homeishome-launch
+  # Because of the strict confinement, the CLI do not have access
+  # to the user's editors from within the snap. A common workaround to
+  # is to use "xdg-open" because snap allows it to run outside of the
+  # container.
+  # However, "xdg-open" returns as soons as the editor program is opened.
+  # This is a problem for the CLI which expects the file to be edited
+  # when the command returns.
+  # A final workaround is implemented in hack/editor-wrapper.sh.
+  editor-wrapper:
+    plugin: dump
+    source-type: local
+    source: hack/
+    organize:
+      editor-wrapper.sh: usr/bin/editor-wrapper
   gmailctl:
     plugin: go
     source-type: local
@@ -20,3 +49,23 @@ parts:
 apps:
   gmailctl:
     command: bin/gmailctl
+    command-chain:
+      - bin/homeishome-launch
+    environment:
+      # for the editor workaround
+      EDITOR: editor-wrapper
+      # gmailctl copies the file to $TMPDIR before launching the
+      # editor. Because "xdg-open" runs outside of the containerized
+      # environment, it expects a path that is valid on the host.
+      # However, /tmp is not shared between the host and the snap.
+      # Thus, we need to change $TMPDIR to point to a common path
+      # accessible from both the snap env and the host.
+      TMPDIR: $SNAP_USER_DATA
+      # to avoid enoying warning message when editing files
+      LANG: C
+      LC_ALL: C
+    plugs:
+      # we need to access Google APIs
+      - network
+      # to make xdg-open works
+      - desktop
