@@ -597,7 +597,7 @@ Example:
   tests: [
     messages: [
       { from: "foobar" },
-      { to: "me" },
+      { to: ["me"] },
     ],
     actions: {
       // ...
