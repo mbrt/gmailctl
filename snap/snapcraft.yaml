@@ -34,7 +34,7 @@ parts:
   editor-wrapper:
     plugin: dump
     source-type: local
-    source: hack/
+    source: snap/local/
     organize:
       editor-wrapper.sh: usr/bin/editor-wrapper
   gmailctl:
