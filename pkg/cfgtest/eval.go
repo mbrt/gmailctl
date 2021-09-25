@@ -22,6 +22,7 @@ const (
 	matchFieldTo
 	matchFieldCc
 	matchFieldBcc
+	matchFieldReplyTo
 	matchFieldLists
 	matchFieldSubject
 	matchFieldBody
@@ -86,6 +87,8 @@ func (n funcNode) Match(msg cfg.Message) bool {
 		fields = msg.Cc
 	case matchFieldBcc:
 		fields = msg.Bcc
+	case matchFieldReplyTo:
+		fields = msg.ReplyTo
 	case matchFieldLists:
 		fields = msg.Lists
 	case matchFieldSubject:

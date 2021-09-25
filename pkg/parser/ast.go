@@ -35,6 +35,7 @@ const (
 	FunctionTo
 	FunctionCc
 	FunctionBcc
+	FunctionReplyTo
 	FunctionSubject
 	FunctionList
 	FunctionHas
@@ -56,6 +57,8 @@ func (f FunctionType) String() string {
 		return "cc"
 	case FunctionBcc:
 		return "bcc"
+	case FunctionReplyTo:
+		return "replyto"
 	case FunctionSubject:
 		return "subject"
 	case FunctionList:

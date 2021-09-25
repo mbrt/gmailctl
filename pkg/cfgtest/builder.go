@@ -55,7 +55,7 @@ func (r *evalBuilder) VisitLeaf(n *parser.Leaf) {
 	var rules []RuleEvaluator
 
 	switch n.Function {
-	case parser.FunctionFrom, parser.FunctionCc, parser.FunctionBcc, parser.FunctionList:
+	case parser.FunctionFrom, parser.FunctionCc, parser.FunctionBcc, parser.FunctionList, parser.FunctionReplyTo:
 		rules = expandAll(n.Args, func(a string) RuleEvaluator {
 			return emailField(toMatchField(n.Function), a)
 		})
@@ -179,6 +179,8 @@ func toMatchField(f parser.FunctionType) matchField {
 		return matchFieldCc
 	case parser.FunctionBcc:
 		return matchFieldBcc
+	case parser.FunctionReplyTo:
+		return matchFieldReplyTo
 	case parser.FunctionList:
 		return matchFieldLists
 	case parser.FunctionSubject:

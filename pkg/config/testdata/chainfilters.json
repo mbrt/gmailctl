@@ -29,6 +29,18 @@
     },
     {
       "filter": {
+        "and": [
+          {"from": "Google Docs"},
+          {"replyto": "pippo@gmail.com"}
+        ]
+      },
+      "actions": {
+        "markImportant": false,
+        "star": true
+      }
+    },
+    {
+      "filter": {
         "cc": "pippo@gmail.com"
       },
       "actions": {

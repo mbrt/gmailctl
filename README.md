@@ -260,6 +260,7 @@ the following common operators:
 * `list`: the mail is directed to the given mail list
 * `cc`: the mail has the given address as CC destination
 * `bcc`: the mail has the given address as BCC destination
+* `replyto`: the mail has the given address as Reply-To destination
 
 One more special function is given if you need to use less common operators<sup
 id="a1">[1](#f1)</sup>, or want to compose your query manually:

@@ -35,6 +35,7 @@ type FilterNode struct {
 	To      string `json:"to,omitempty"`
 	Cc      string `json:"cc,omitempty"`
 	Bcc     string `json:"bcc,omitempty"`
+	ReplyTo string `json:"replyto,omitempty"`
 	Subject string `json:"subject,omitempty"`
 	List    string `json:"list,omitempty"`
 	Has     string `json:"has,omitempty"`
@@ -182,6 +183,7 @@ type Message struct {
 	To      []string `json:"to,omitempty"`
 	Cc      []string `json:"cc,omitempty"`
 	Bcc     []string `json:"bcc,omitempty"`
+	ReplyTo []string `json:"replyto,omitempty"`
 	Lists   []string `json:"lists,omitempty"`
 	Subject string   `json:"subject,omitempty"`
 	Body    string   `json:"body,omitempty"`
