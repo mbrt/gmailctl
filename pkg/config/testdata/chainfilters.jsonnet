@@ -25,6 +25,21 @@ local ruleC = {
     labels: ['mylist'],
   },
 };
+local ruleD = {
+  filter: {
+    and: [
+      {
+        from: 'Google Docs'
+        },
+      {
+        replyto: me,
+      },
+    ],
+  },
+  actions: {
+      star: true,
+    },
+};
 
 {
   version: 'v1alpha3',
@@ -41,6 +56,8 @@ local ruleC = {
   + lib.chainFilters([])
   // Single rule should not err
   + lib.chainFilters([ruleB])
-  // Chain all 3
+  // Chain 3 rules
   + lib.chainFilters([ruleA, ruleB, ruleC])
+  // Checks replyto is different than from
+  + lib.chainFilters([ruleD])
 }

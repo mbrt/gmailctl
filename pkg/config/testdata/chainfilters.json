@@ -83,6 +83,21 @@
           "mylist"
         ]
       }
+    },
+    {
+      "filter": {
+        "and": [
+          {
+            "from": "Google Docs"
+          },
+          {
+            "replyto": "pippo@gmail.com"
+          }
+        ]
+      },
+      "actions": {
+        "star": true
+      }
     }
   ]
 }
