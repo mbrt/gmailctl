@@ -260,6 +260,7 @@ the following common operators:
 * `list`: the mail is directed to the given mail list
 * `cc`: the mail has the given address as CC destination
 * `bcc`: the mail has the given address as BCC destination
+* `replyto`: the mail has the given address as Reply-To destination
 
 One more special function is given if you need to use less common operators<sup
 id="a1">[1](#f1)</sup>, or want to compose your query manually:
@@ -595,6 +596,7 @@ as possible. This is the list of fields:
 * `to: [<list>]`: a list of recipients of the email.
 * `cc: [<list>]`: a list of emails in cc.
 * `bcc: [<list>]`: a list of emails in bcc.
+* `replyto: <string>`: the email listed in the Reply-To field.
 * `lists: [<list>]`: a list of mailing lists.
 * `subject: <string>`: the subject of the email.
 * `body: <string>`: the body of the email.
