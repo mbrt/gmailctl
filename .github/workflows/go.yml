@@ -28,3 +28,29 @@ jobs:
       run: |
         go test -v ./...
         hack/check-codegen.sh
+
+    - name: Coverage
+      id: coverage
+      run: |
+        go test -v -coverprofile=cov.out ./...
+        go tool cover -html=cov.out -o coverage.html
+        COV=$(go tool cover -func=cov.out | awk '/total/ { gsub("%", "", $3); print $3 }')
+        (( $(echo "${COV} > ${MIN_COV}" | bc -l) )) && STATE=success || STATE=failure
+        echo "::set-output name=COV::${COV}% (Required ${MIN_COV}%)"
+        echo "::set-output name=STATE::${STATE}"
+      env:
+        MIN_COV: 70
+
+    - uses: Sibz/github-status-action@v1
+      with: 
+        authToken: ${{secrets.GITHUB_TOKEN}}
+        description: '${{steps.coverage.outputs.COV}}'
+        context: 'Coverage'
+        state: '${{steps.coverage.outputs.STATE}}'
+        sha: ${{github.event.pull_request.head.sha || github.sha}}
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: coverage
+        path: coverage.html
+        retention-days: 7
