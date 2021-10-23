@@ -16,6 +16,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/gorilla/mux"
 	gmailv1 "google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -25,13 +26,22 @@ func NewService(ctx context.Context, t *testing.T) *gmailv1.Service {
 	t.Helper()
 
 	srv := &gmailServer{
-		g: gmail{
-			labels: make(map[string]*gmailv1.Label),
-			m:      &sync.Mutex{},
+		gmail{
+			labels:     make(map[string]*gmailv1.Label),
+			labelNames: make(map[string]bool),
+			m:          &sync.Mutex{},
 		},
 	}
-	mux := http.NewServeMux()
-	mux.Handle("/gmail/v1/users/me/labels", http.HandlerFunc(srv.handleLabels))
+
+	mux := mux.NewRouter().StrictSlash(true)
+	mux.Handle("/gmail/v1/users/me/labels",
+		http.HandlerFunc(srv.HandleLabelsGet)).Methods(http.MethodGet)
+	mux.Handle("/gmail/v1/users/me/labels",
+		http.HandlerFunc(srv.HandleLabelsPost)).Methods(http.MethodPost)
+	mux.Handle("/gmail/v1/users/me/labels/{id}",
+		http.HandlerFunc(srv.HandleLabelDelete)).Methods(http.MethodDelete)
+	mux.Handle("/gmail/v1/users/me/labels/{id}",
+		http.HandlerFunc(srv.HandleLabelPatch)).Methods(http.MethodPatch)
 
 	ts := httptest.NewServer(mux)
 	t.Cleanup(ts.Close)
@@ -44,32 +54,57 @@ func NewService(ctx context.Context, t *testing.T) *gmailv1.Service {
 }
 
 type gmailServer struct {
-	g gmail
+	gmail
 }
 
-func (g *gmailServer) handleLabels(w http.ResponseWriter, r *http.Request) {
+func (g *gmailServer) HandleLabelsGet(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	resp := &gmailv1.ListLabelsResponse{
+		Labels: g.Labels(),
+	}
+	writeResponse(w, resp)
+}
+
+func (g *gmailServer) HandleLabelsPost(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	switch r.Method {
-	case http.MethodGet:
-		resp := &gmailv1.ListLabelsResponse{
-			Labels: g.g.Labels(),
-		}
-		writeResponse(w, resp)
-
-	case http.MethodPost:
-		var req gmailv1.Label
-		if err := readRequest(&req, r.Body); err != nil {
-			writeErr(w, err)
-			return
-		}
-		if err := g.g.CreateLabel(req); err != nil {
-			writeErr(w, err)
-		}
-
-	default:
-		writeErr(w, fmt.Errorf("unsupported method %q", r.Method))
+	var req gmailv1.Label
+	if err := readRequest(&req, r.Body); err != nil {
+		writeErr(w, err)
+		return
 	}
+	res, err := g.CreateLabel(req)
+	if err != nil {
+		writeErr(w, err)
+		return
+	}
+	writeResponse(w, res)
+}
+
+func (g *gmailServer) HandleLabelDelete(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	id := mux.Vars(r)["id"]
+	if err := g.DeleteLabel(id); err != nil {
+		writeErr(w, err)
+	}
+}
+
+func (g *gmailServer) HandleLabelPatch(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	id := mux.Vars(r)["id"]
+	var req gmailv1.Label
+	if err := readRequest(&req, r.Body); err != nil {
+		writeErr(w, err)
+		return
+	}
+	req.Id = id
+	res, err := g.UpdateLabel(req)
+	if err != nil {
+		writeErr(w, err)
+		return
+	}
+	writeResponse(w, res)
 }
 
 func readRequest(res interface{}, r io.Reader) error {
@@ -86,7 +121,7 @@ func writeResponse(w http.ResponseWriter, r interface{}) {
 }
 
 func writeErr(w http.ResponseWriter, err error) {
-	var se statusErr
+	var se statusError
 	if errors.As(err, &se) {
 		http.Error(w, se.Err.Error(), se.StatusCode)
 		return
@@ -96,6 +131,7 @@ func writeErr(w http.ResponseWriter, err error) {
 
 type gmail struct {
 	labels      map[string]*gmailv1.Label
+	labelNames  map[string]bool
 	labelNextID int
 	m           *sync.Mutex
 }
@@ -111,25 +147,64 @@ func (g *gmail) Labels() []*gmailv1.Label {
 	return res
 }
 
-func (g *gmail) CreateLabel(l gmailv1.Label) error {
+func (g *gmail) CreateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
 	g.m.Lock()
 	defer g.m.Unlock()
 
 	if _, ok := g.labels[l.Id]; ok {
-		return fmt.Errorf("label with ID %q is already present", l.Id)
+		return nil, fmt.Errorf("label with ID %q is already present", l.Id)
 	}
-	// TODO: Check that the name doesn't exist.
+	if _, ok := g.labelNames[l.Name]; ok {
+		return nil, fmt.Errorf("label with name %q is already present", l.Name)
+	}
 	l.Id = fmt.Sprintf("ID%d", g.labelNextID)
 	g.labelNextID++
 	g.labels[l.Id] = &l
+	g.labelNames[l.Name] = true
+
+	return &l, nil
+}
+
+func (g *gmail) DeleteLabel(id string) error {
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	l, ok := g.labels[id]
+	if !ok {
+		return statusError{404, fmt.Errorf("id %q not found", id)}
+	}
+	delete(g.labelNames, l.Name)
+	delete(g.labels, id)
+
 	return nil
 }
 
-type statusErr struct {
+func (g *gmail) UpdateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	if _, ok := g.labels[l.Id]; !ok {
+		return nil, statusError{404, fmt.Errorf("id %q not found", l.Id)}
+	}
+	target := g.labels[l.Id]
+	if l.Color != nil {
+		// Only update the color if it was passed in.
+		target.Color = l.Color
+	}
+	if target.Name != l.Name {
+		delete(g.labelNames, target.Name)
+		g.labelNames[l.Name] = true
+		target.Name = l.Name
+	}
+
+	return &l, nil
+}
+
+type statusError struct {
 	StatusCode int
 	Err        error
 }
 
-func (s statusErr) Error() string {
+func (s statusError) Error() string {
 	return fmt.Sprintf("%v (status %d)", s.Err, s.StatusCode)
 }
