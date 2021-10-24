@@ -1,31 +1,28 @@
 package integration_test
 
 import (
+	"context"
+	"encoding/json"
+	"flag"
+	"io/ioutil"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/mbrt/gmailctl/internal/fakegmail"
+	"github.com/mbrt/gmailctl/pkg/api"
 	"github.com/mbrt/gmailctl/pkg/apply"
-	cfg "github.com/mbrt/gmailctl/pkg/config"
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config"
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
-func readConfig(t *testing.T, path string) cfgv3.Config {
-	t.Helper()
-	res, err := cfg.ReadFile(path, filepath.Join("testdata", path))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return res
-}
-
-type testPaths struct {
-	locals []string
-	diffs  []string
-}
+// update is useful to regenerate the golden files
+// Make sure the new version makes sense!!
+var update = flag.Bool("update", false, "update golden files")
 
 func globTestdataPaths(t *testing.T, pattern string) []string {
 	t.Helper()
@@ -37,49 +34,56 @@ func globTestdataPaths(t *testing.T, pattern string) []string {
 	return fs
 }
 
-func allTestPaths(t *testing.T) testPaths {
-	t.Helper()
-	local := globTestdataPaths(t, "local.*.yaml")
-	local = append(local, globTestdataPaths(t, "local.*.jsonnet")...)
-	tp := testPaths{
-		locals: local,
-		diffs:  globTestdataPaths(t, "local.*.diff"),
-	}
-	if len(tp.locals) != len(tp.diffs) {
-		t.Fatal("expected both yaml and diff to be present")
-	}
-	return tp
-}
+func TestIntegration(t *testing.T) {
+	cfgPaths := globTestdataPaths(t, "valid/*.jsonnet")
+	gapi := api.NewFromService(fakegmail.NewService(context.Background(), t))
 
-func parseConfig(t *testing.T, path string) apply.ConfigParseRes {
-	t.Helper()
-	config := readConfig(t, path)
-	r, err := apply.FromConfig(config)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return r
-}
+	for _, cfgPath := range cfgPaths {
+		name := strings.TrimSuffix(cfgPath, ".jsonnet")
+		t.Run(name, func(t *testing.T) {
+			// Parse the config.
+			cfg, err := config.ReadFile(cfgPath, filepath.Join("testdata", cfgPath))
+			require.Nil(t, err)
+			pres, err := apply.FromConfig(cfg)
+			require.Nil(t, err)
 
-func TestIntegrationImport(t *testing.T) {
-	tps := allTestPaths(t)
+			// Fetch the upstream filters.
+			upres, err := apply.FromAPI(gapi)
+			require.Nil(t, err)
 
-	for i := 0; i < len(tps.locals); i++ {
-		localPath := tps.locals[i]
+			// Apply the diff.
+			d, err := apply.Diff(pres.GmailConfig, upres)
+			require.Nil(t, err)
+			err = apply.Apply(d, gapi, true)
+			require.Nil(t, err)
 
-		t.Run(localPath, func(t *testing.T) {
-			local := parseConfig(t, localPath).GmailConfig
+			// Import.
+			upres, err = apply.FromAPI(gapi)
+			require.Nil(t, err)
+			icfg, err := rimport.Import(upres.Filters, upres.Labels)
+			require.Nil(t, err)
 
-			// Import
-			config, err := rimport.Import(local.Filters, local.Labels)
-			assert.Nil(t, err)
-			// Generate
-			pres, err := apply.FromConfig(config)
-			assert.Nil(t, err)
-			diff, err := apply.Diff(pres.GmailConfig, local)
-			// Re-generating imported filters should not cause any diff
-			assert.Nil(t, err)
-			assert.Equal(t, "", diff.String())
+			// Compare with golden.
+			icfgJson, err := json.MarshalIndent(icfg, "", "  ")
+			require.Nil(t, err)
+
+			if *update {
+				// Import.
+				err := ioutil.WriteFile(name+".json", icfgJson, 0o644)
+				require.Nil(t, err)
+				// Diff.
+				err = ioutil.WriteFile(name+".diff", []byte(d.String()), 0o644)
+				require.Nil(t, err)
+				return
+			}
+			// Import.
+			b, err := ioutil.ReadFile(name + ".json")
+			require.Nil(t, err)
+			assert.Equal(t, string(b), string(icfgJson))
+			// Diff.
+			b, err = ioutil.ReadFile(name + ".diff")
+			require.Nil(t, err)
+			assert.Equal(t, string(b), d.String())
 		})
 	}
 }

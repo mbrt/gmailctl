@@ -1,0 +1,15 @@
+Filters:
+--- Current
++++ TO BE APPLIED
+@@ -1 +1,5 @@
++* Criteria:
++    query: list:maillist@google.com
++  Actions:
++    apply label: maillist
+ 
+
+Labels:
+--- Current
++++ TO BE APPLIED
+@@ -0,0 +1 @@
++maillist

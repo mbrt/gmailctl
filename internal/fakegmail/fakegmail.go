@@ -100,7 +100,7 @@ func (g *gmailServer) HandleLabelsPost(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, err)
 		return
 	}
-	res, err := g.CreateLabel(req)
+	res, err := g.CreateLabel(&req)
 	if err != nil {
 		writeErr(w, err)
 		return
@@ -126,7 +126,7 @@ func (g *gmailServer) HandleLabelPatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Id = id
-	res, err := g.UpdateLabel(req)
+	res, err := g.UpdateLabel(&req)
 	if err != nil {
 		writeErr(w, err)
 		return
@@ -211,7 +211,7 @@ func (g *gmail) Labels() []*gmailv1.Label {
 	return res
 }
 
-func (g *gmail) CreateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
+func (g *gmail) CreateLabel(l *gmailv1.Label) (*gmailv1.Label, error) {
 	g.m.Lock()
 	defer g.m.Unlock()
 
@@ -223,10 +223,10 @@ func (g *gmail) CreateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
 	}
 	l.Id = fmt.Sprintf("ID%d", g.labelNextID)
 	g.labelNextID++
-	g.labels[l.Id] = &l
+	g.labels[l.Id] = l
 	g.labelNames[l.Name] = true
 
-	return &l, nil
+	return l, nil
 }
 
 func (g *gmail) DeleteLabel(id string) error {
@@ -243,7 +243,7 @@ func (g *gmail) DeleteLabel(id string) error {
 	return nil
 }
 
-func (g *gmail) UpdateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
+func (g *gmail) UpdateLabel(l *gmailv1.Label) (*gmailv1.Label, error) {
 	g.m.Lock()
 	defer g.m.Unlock()
 
@@ -261,7 +261,7 @@ func (g *gmail) UpdateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
 		target.Name = l.Name
 	}
 
-	return &l, nil
+	return target, nil
 }
 
 func (g *gmail) Filters() []*gmailv1.Filter {
