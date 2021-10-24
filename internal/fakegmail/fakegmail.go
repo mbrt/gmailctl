@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"sort"
 	"sync"
 	"testing"
 
@@ -45,7 +46,7 @@ func NewService(ctx context.Context, t *testing.T) *gmailv1.Service {
 	srv := &gmailServer{
 		gmail{
 			labels:     make(map[string]*gmailv1.Label),
-			labelNames: make(map[string]bool),
+			labelNames: stringset.New(),
 			filters:    make(map[string]*gmailv1.Filter),
 			m:          &sync.Mutex{},
 		},
@@ -190,7 +191,7 @@ func writeErr(w http.ResponseWriter, err error) {
 
 type gmail struct {
 	labels      map[string]*gmailv1.Label
-	labelNames  map[string]bool
+	labelNames  stringset.Set
 	labelNextID int
 	filters     map[string]*gmailv1.Filter
 	m           *sync.Mutex
@@ -208,6 +209,11 @@ func (g *gmail) Labels() []*gmailv1.Label {
 		}
 		res = append(res, l)
 	}
+	// To make things more deterministic.
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Id < res[j].Id
+	})
+
 	return res
 }
 
@@ -218,13 +224,13 @@ func (g *gmail) CreateLabel(l *gmailv1.Label) (*gmailv1.Label, error) {
 	if l.Id != "" {
 		return nil, statusError{http.StatusBadRequest, fmt.Errorf("cannot create label with non empty ID. Got: %q", l.Id)}
 	}
-	if _, ok := g.labelNames[l.Name]; ok {
+	if g.labelNames.Has(l.Name) {
 		return nil, statusError{http.StatusBadRequest, fmt.Errorf("label with name %q is already present", l.Name)}
 	}
 	l.Id = fmt.Sprintf("ID%d", g.labelNextID)
 	g.labelNextID++
 	g.labels[l.Id] = l
-	g.labelNames[l.Name] = true
+	g.labelNames.Add(l.Name)
 
 	return l, nil
 }
@@ -257,7 +263,7 @@ func (g *gmail) UpdateLabel(l *gmailv1.Label) (*gmailv1.Label, error) {
 	}
 	if target.Name != l.Name {
 		delete(g.labelNames, target.Name)
-		g.labelNames[l.Name] = true
+		g.labelNames.Add(l.Name)
 		target.Name = l.Name
 	}
 
@@ -272,6 +278,11 @@ func (g *gmail) Filters() []*gmailv1.Filter {
 	for _, f := range g.filters {
 		res = append(res, f)
 	}
+	// To make things more deterministic.
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].Id < res[j].Id
+	})
+
 	return res
 }
 
