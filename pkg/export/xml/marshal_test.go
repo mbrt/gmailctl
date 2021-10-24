@@ -20,7 +20,7 @@ func testNow() time.Time {
 }
 
 func TestEmptyEntries(t *testing.T) {
-	exporter := xmlExporter{now: testNow}
+	exporter := Exporter{now: testNow}
 	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	buf := new(bytes.Buffer)
 	err := exporter.Export(author, filter.Filters{}, buf)
@@ -40,7 +40,7 @@ func TestEmptyEntries(t *testing.T) {
 }
 
 func TestSomeEntries(t *testing.T) {
-	exporter := xmlExporter{now: testNow}
+	exporter := Exporter{now: testNow}
 	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
@@ -95,7 +95,7 @@ func TestSomeEntries(t *testing.T) {
 }
 
 func TestAllEntries(t *testing.T) {
-	exporter := xmlExporter{now: testNow}
+	exporter := Exporter{now: testNow}
 	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
