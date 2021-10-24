@@ -7,6 +7,7 @@ package fakegmail
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +20,22 @@ import (
 	"github.com/gorilla/mux"
 	gmailv1 "google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
+
+	"github.com/mbrt/gmailctl/internal/stringset"
+)
+
+var defaultLabels = stringset.New(
+	"INBOX",
+	"TRASH",
+	"IMPORTANT",
+	"UNREAD",
+	"SPAM",
+	"STARRED",
+	"CATEGORY_PERSONAL",
+	"CATEGORY_SOCIAL",
+	"CATEGORY_UPDATES",
+	"CATEGORY_FORUMS",
+	"CATEGORY_PROMOTIONS",
 )
 
 // NewService returns a fake server that implements GMail APIs.
@@ -29,8 +46,12 @@ func NewService(ctx context.Context, t *testing.T) *gmailv1.Service {
 		gmail{
 			labels:     make(map[string]*gmailv1.Label),
 			labelNames: make(map[string]bool),
+			filters:    make(map[string]*gmailv1.Filter),
 			m:          &sync.Mutex{},
 		},
+	}
+	for _, dl := range defaultLabels.ToSlice() {
+		srv.labels[dl] = nil
 	}
 
 	mux := mux.NewRouter().StrictSlash(true)
@@ -42,6 +63,12 @@ func NewService(ctx context.Context, t *testing.T) *gmailv1.Service {
 		http.HandlerFunc(srv.HandleLabelDelete)).Methods(http.MethodDelete)
 	mux.Handle("/gmail/v1/users/me/labels/{id}",
 		http.HandlerFunc(srv.HandleLabelPatch)).Methods(http.MethodPatch)
+	mux.Handle("/gmail/v1/users/me/settings/filters",
+		http.HandlerFunc(srv.HandleFiltersGet)).Methods(http.MethodGet)
+	mux.Handle("/gmail/v1/users/me/settings/filters",
+		http.HandlerFunc(srv.HandleFiltersPost)).Methods(http.MethodPost)
+	mux.Handle("/gmail/v1/users/me/settings/filters/{id}",
+		http.HandlerFunc(srv.HandleFilterDelete)).Methods(http.MethodDelete)
 
 	ts := httptest.NewServer(mux)
 	t.Cleanup(ts.Close)
@@ -107,6 +134,38 @@ func (g *gmailServer) HandleLabelPatch(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, res)
 }
 
+func (g *gmailServer) HandleFiltersGet(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	resp := &gmailv1.ListFiltersResponse{
+		Filter: g.Filters(),
+	}
+	writeResponse(w, resp)
+}
+
+func (g *gmailServer) HandleFiltersPost(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	var req gmailv1.Filter
+	if err := readRequest(&req, r.Body); err != nil {
+		writeErr(w, err)
+		return
+	}
+	res, err := g.CreateFilter(&req)
+	if err != nil {
+		writeErr(w, err)
+		return
+	}
+	writeResponse(w, res)
+}
+
+func (g *gmailServer) HandleFilterDelete(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	id := mux.Vars(r)["id"]
+	if err := g.DeleteFilter(id); err != nil {
+		writeErr(w, err)
+	}
+}
+
 func readRequest(res interface{}, r io.Reader) error {
 	return json.NewDecoder(r).Decode(res)
 }
@@ -133,6 +192,7 @@ type gmail struct {
 	labels      map[string]*gmailv1.Label
 	labelNames  map[string]bool
 	labelNextID int
+	filters     map[string]*gmailv1.Filter
 	m           *sync.Mutex
 }
 
@@ -141,7 +201,11 @@ func (g *gmail) Labels() []*gmailv1.Label {
 	defer g.m.Unlock()
 
 	var res []*gmailv1.Label
-	for _, l := range g.labels {
+	for id, l := range g.labels {
+		if defaultLabels.Has(id) {
+			// Skip default labels.
+			continue
+		}
 		res = append(res, l)
 	}
 	return res
@@ -151,11 +215,11 @@ func (g *gmail) CreateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
 	g.m.Lock()
 	defer g.m.Unlock()
 
-	if _, ok := g.labels[l.Id]; ok {
-		return nil, fmt.Errorf("label with ID %q is already present", l.Id)
+	if l.Id != "" {
+		return nil, statusError{http.StatusBadRequest, fmt.Errorf("cannot create label with non empty ID. Got: %q", l.Id)}
 	}
 	if _, ok := g.labelNames[l.Name]; ok {
-		return nil, fmt.Errorf("label with name %q is already present", l.Name)
+		return nil, statusError{http.StatusBadRequest, fmt.Errorf("label with name %q is already present", l.Name)}
 	}
 	l.Id = fmt.Sprintf("ID%d", g.labelNextID)
 	g.labelNextID++
@@ -200,6 +264,49 @@ func (g *gmail) UpdateLabel(l gmailv1.Label) (*gmailv1.Label, error) {
 	return &l, nil
 }
 
+func (g *gmail) Filters() []*gmailv1.Filter {
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	var res []*gmailv1.Filter
+	for _, f := range g.filters {
+		res = append(res, f)
+	}
+	return res
+}
+
+func (g *gmail) CreateFilter(f *gmailv1.Filter) (*gmailv1.Filter, error) {
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	h := hashFilter(f)
+	if _, ok := g.filters[h]; ok {
+		return nil, statusError{http.StatusBadRequest, fmt.Errorf("filter with hash %q already exists", h)}
+	}
+	// Check whether referenced labels exist.
+	for _, id := range f.Action.AddLabelIds {
+		if _, ok := g.labels[id]; !ok {
+			return nil, statusError{http.StatusBadRequest, fmt.Errorf("invalid label %q", id)}
+		}
+	}
+	f.Id = h
+	g.filters[h] = f
+
+	return f, nil
+}
+
+func (g *gmail) DeleteFilter(id string) error {
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	if _, ok := g.filters[id]; !ok {
+		return statusError{404, fmt.Errorf("id %q not found", id)}
+	}
+	delete(g.filters, id)
+
+	return nil
+}
+
 type statusError struct {
 	StatusCode int
 	Err        error
@@ -207,4 +314,26 @@ type statusError struct {
 
 func (s statusError) Error() string {
 	return fmt.Sprintf("%v (status %d)", s.Err, s.StatusCode)
+}
+
+func hashFilter(gf *gmailv1.Filter) string {
+	// We want to hash only criteria and action and not the rest,
+	// especially not the ID.
+	f := struct {
+		c gmailv1.FilterCriteria
+		a gmailv1.FilterAction
+	}{
+		c: *gf.Criteria,
+		a: *gf.Action,
+	}
+	return hashStruct(f)
+}
+
+func hashStruct(a interface{}) string {
+	h := sha256.New()
+	if _, err := h.Write([]byte(fmt.Sprintf("%#v", a))); err != nil {
+		// This should be unreachable.
+		panic(err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
