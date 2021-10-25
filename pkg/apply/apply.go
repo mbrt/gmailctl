@@ -41,6 +41,32 @@ func FromConfig(cfg cfgv3.Config) (ConfigParseRes, error) {
 	return res, nil
 }
 
+// FetchAPI provides access to Gmail get APIs.
+type FetchAPI interface {
+	ListFilters() (filter.Filters, error)
+	ListLabels() (label.Labels, error)
+}
+
+// FromConfig creates a GmailConfig from Gmail APIs.
+func FromAPI(api FetchAPI) (GmailConfig, error) {
+	l, err := api.ListLabels()
+	if err != nil {
+		return GmailConfig{}, fmt.Errorf("listing labels from Gmail: %v", err)
+	}
+	f, err := api.ListFilters()
+	if err != nil {
+		if len(f) == 0 {
+			return GmailConfig{}, fmt.Errorf("getting filters from Gmail: %w", err)
+		}
+		// Some upstream filters may be invalid and in most cases we just want to ignore
+		// those and carry on.
+	}
+	return GmailConfig{
+		Labels:  l,
+		Filters: f,
+	}, err
+}
+
 // ConfigDiff contains the difference between local and upstream configuration,
 // including both labels and filters.
 //

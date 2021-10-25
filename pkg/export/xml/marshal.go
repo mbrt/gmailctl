@@ -9,15 +9,14 @@ import (
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
-// Exporter exports the given entries to the Gmail xml format.
-type Exporter interface {
-	// Export exports Gmail filters into the Gmail xml format.
-	Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error
+// DefaultExporter returns a default XML exporter.
+func DefaultExporter() Exporter {
+	return Exporter{now: defaultNow}
 }
 
-// DefaultExporter returns a default implementation of the XMLExporter interface.
-func DefaultExporter() Exporter {
-	return xmlExporter{now: defaultNow}
+// NewWithTime returns a new exporter with the given time function.
+func NewWithTime(now func() time.Time) Exporter {
+	return Exporter{now}
 }
 
 var defaultNow func() time.Time = time.Now
@@ -52,12 +51,14 @@ type xmlProperty struct {
 	Value   string   `xml:"value,attr"`
 }
 
-type xmlExporter struct {
+// Exporter exports the given entries to the Gmail xml format.
+type Exporter struct {
 	// Allows to be mocked away
 	now func() time.Time
 }
 
-func (x xmlExporter) Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error {
+// Export exports Gmail filters into the Gmail xml format.
+func (x Exporter) Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error {
 	doc, err := x.toXML(author, filters)
 	if err != nil {
 		return err
@@ -78,7 +79,7 @@ func (x xmlExporter) Export(author cfgv2.Author, filters filter.Filters, w io.Wr
 	return err
 }
 
-func (x xmlExporter) toXML(author cfgv2.Author, filters filter.Filters) (xmlDoc, error) {
+func (x Exporter) toXML(author cfgv2.Author, filters filter.Filters) (xmlDoc, error) {
 	entries, err := x.entriesToXML(filters)
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",
@@ -93,7 +94,7 @@ func (x xmlExporter) toXML(author cfgv2.Author, filters filter.Filters) (xmlDoc,
 	return res, err
 }
 
-func (x xmlExporter) entriesToXML(filters filter.Filters) ([]xmlEntry, error) {
+func (x Exporter) entriesToXML(filters filter.Filters) ([]xmlEntry, error) {
 	res := make([]xmlEntry, len(filters))
 	for i, f := range filters {
 		props, err := x.propertiesToXML(f)
@@ -111,7 +112,7 @@ func (x xmlExporter) entriesToXML(filters filter.Filters) ([]xmlEntry, error) {
 	return res, nil
 }
 
-func (x xmlExporter) propertiesToXML(f filter.Filter) ([]xmlProperty, error) {
+func (x Exporter) propertiesToXML(f filter.Filter) ([]xmlProperty, error) {
 	res := x.criteriaProperties(f.Criteria)
 	ap, err := x.actionProperties(f.Action)
 	if err != nil {
@@ -121,7 +122,7 @@ func (x xmlExporter) propertiesToXML(f filter.Filter) ([]xmlProperty, error) {
 	return res, nil
 }
 
-func (x xmlExporter) criteriaProperties(c filter.Criteria) []xmlProperty {
+func (x Exporter) criteriaProperties(c filter.Criteria) []xmlProperty {
 	res := []xmlProperty{}
 	res = x.appendStringProperty(res, PropertyFrom, c.From)
 	res = x.appendStringProperty(res, PropertyTo, c.To)
@@ -130,7 +131,7 @@ func (x xmlExporter) criteriaProperties(c filter.Criteria) []xmlProperty {
 	return res
 }
 
-func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
+func (x Exporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	res := []xmlProperty{}
 	res = x.appendBoolProperty(res, PropertyArchive, a.Archive)
 	res = x.appendBoolProperty(res, PropertyDelete, a.Delete)
@@ -153,7 +154,7 @@ func (x xmlExporter) actionProperties(a filter.Actions) ([]xmlProperty, error) {
 	return res, nil
 }
 
-func (x xmlExporter) appendStringProperty(res []xmlProperty, name, value string) []xmlProperty {
+func (x Exporter) appendStringProperty(res []xmlProperty, name, value string) []xmlProperty {
 	if value == "" {
 		return res
 	}
@@ -164,7 +165,7 @@ func (x xmlExporter) appendStringProperty(res []xmlProperty, name, value string)
 	return append(res, p)
 }
 
-func (x xmlExporter) appendBoolProperty(res []xmlProperty, name string, value bool) []xmlProperty {
+func (x Exporter) appendBoolProperty(res []xmlProperty, name string, value bool) []xmlProperty {
 	if !value {
 		return res
 	}

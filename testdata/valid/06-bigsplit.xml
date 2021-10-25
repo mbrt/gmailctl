@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
+  <title>Mail Filters</title>
+  <id>tag:mail.google.com,2008:filters:</id>
+  <updated>2018-03-08T17:00:00Z</updated>
+  <author>
+    <name>Me</name>
+    <email>me@gmail.com</email>
+  </author>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list0 list1 list2 list3 list4 list5 list6 list7 list8 list9 list10 list11 list12 list13 list14 list15 list16 list17 list18 list19}"></apps:property>
+    <apps:property name="shouldArchive" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list20 list21 list22 list23 list24 list25 list26 list27 list28 list29 list30 list31 list32 list33 list34 list35 list36 list37 list38 list39}"></apps:property>
+    <apps:property name="shouldArchive" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list40 list41 list42 list43 list44 list45 list46 list47 list48 list49 list50}"></apps:property>
+    <apps:property name="shouldArchive" value="true"></apps:property>
+  </entry>
+</feed>

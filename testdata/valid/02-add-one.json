@@ -1,0 +1,220 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "YOUR NAME HERE (auto imported)",
+    "email": "your-email@gmail.com"
+  },
+  "labels": [
+    {
+      "name": "maillist"
+    },
+    {
+      "name": "label2",
+      "color": {
+        "background": "red",
+        "text": "blue"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "filter": {
+        "to": "someone-else@gmail.com"
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "someone@gmail.com"
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "replyto:replyer@gmail.com"
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "cc:peeker@yahoo.com -subject:\"a subject\""
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "is:muted"
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "bcc:bccer@gmail.com"
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "\"something in the body\""
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "bcc:bccer@gmail.com"
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "list:maillist@google.com"
+      },
+      "actions": {
+        "labels": [
+          "maillist"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "is:muted"
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "from": "someone@gmail.com"
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "\"something in the body\""
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "cc:peeker@yahoo.com -subject:\"a subject\""
+      },
+      "actions": {
+        "labels": [
+          "label2"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "to": "someone-else@gmail.com"
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    },
+    {
+      "filter": {
+        "query": "replyto:replyer@gmail.com"
+      },
+      "actions": {
+        "archive": true,
+        "markRead": true,
+        "star": true,
+        "markSpam": false,
+        "markImportant": true,
+        "category": "social",
+        "labels": [
+          "maillist"
+        ],
+        "forward": "forward-address@gmail.com"
+      }
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+Filters:
+--- Current
++++ TO BE APPLIED
+@@ -1 +1,119 @@
++* Criteria:
++    query: replyto:replyer@gmail.com
++  Actions:
++    apply label: label2
+ 
++* Criteria:
++    query: bcc:bccer@gmail.com
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: is:muted
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    to: someone-else@gmail.com
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    from: someone@gmail.com
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: replyto:replyer@gmail.com
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    to: someone-else@gmail.com
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: cc:peeker@yahoo.com -subject:"a subject"
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    from: someone@gmail.com
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    query: cc:peeker@yahoo.com -subject:"a subject"
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: bcc:bccer@gmail.com
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
++* Criteria:
++    query: "something in the body"
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: is:muted
++  Actions:
++    apply label: label2
++
++* Criteria:
++    query: "something in the body"
++  Actions:
++    archive
++    mark as important
++    never mark as spam
++    mark as read
++    star
++    categorize as: social
++    apply label: maillist
++    forward to: forward-address@gmail.com
++
+
+Labels:
+--- Current
++++ TO BE APPLIED
+@@ -0,0 +1 @@
++label2; color: red, blue

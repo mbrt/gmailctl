@@ -1,0 +1,19 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "YOUR NAME HERE (auto imported)",
+    "email": "your-email@gmail.com"
+  },
+  "labels": [
+    {
+      "name": "maillist"
+    },
+    {
+      "name": "thirdlabel"
+    },
+    {
+      "name": "differentlabel"
+    }
+  ],
+  "rules": null
+}
