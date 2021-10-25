@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
+  <title>Mail Filters</title>
+  <id>tag:mail.google.com,2008:filters:</id>
+  <updated>2018-03-08T17:00:00Z</updated>
+  <author>
+    <name>Me</name>
+    <email>me@gmail.com</email>
+  </author>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:maillist@google.com"></apps:property>
+    <apps:property name="label" value="maillist"></apps:property>
+  </entry>
+</feed>

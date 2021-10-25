@@ -1,0 +1,138 @@
+Filters:
+--- Current
++++ TO BE APPLIED
+@@ -1,82 +1,57 @@
+ * Criteria:
+-    to: someone-else@gmail.com
++    from: spammer2
++  Actions:
++    delete
++
++* Criteria:
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++  Actions:
++    apply label: differentlabel
++
++* Criteria:
++    query: list:foobaz.mail.com -"action needed"
++  Actions:
++    delete
++
++* Criteria:
++    from: baz+zuz@mail.com
++  Actions:
++    mark as important
++    forward to: other@mail.com
++
++* Criteria:
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++  Actions:
++    apply label: thirdlabel
++
++* Criteria:
++    to: pippo+spammy@gmail.com
++  Actions:
++    delete
++
++* Criteria:
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
+   Actions:
+     archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    apply label: maillist
+ 
+ * Criteria:
+-    query: is:muted
++    from: notfriend@gmail.com
++    subject: "hey there"
++    query: -to:none@gmail.com
+   Actions:
+     archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+     star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
+ 
+ * Criteria:
+-    from: someone@gmail.com
++    query: "buy this thing"
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    delete
+ 
+ * Criteria:
+-    query: bcc:bccer@gmail.com
++    from: spammer1
++    subject: "spam mail"
++    query: cc:foo@baz.com bcc:bar@baz.com
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    delete
+ 
+-* Criteria:
+-    query: list:maillist@google.com
+-  Actions:
+-    never mark as important
+-
+-* Criteria:
+-    query: cc:peeker@yahoo.com -subject:"a subject"
+-  Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
+-
+-* Criteria:
+-    query: replyto:replyer@gmail.com
+-  Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
+-
+-* Criteria:
+-    query: "something in the body"
+-  Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
+-
+
+Labels:
+--- Current
++++ TO BE APPLIED
+@@ -1,2 +1,3 @@
+-label2; color: red, blue
+-label3
++maillist
++thirdlabel
++differentlabel

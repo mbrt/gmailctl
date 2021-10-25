@@ -1,0 +1,65 @@
+Filters:
+--- Current
++++ TO BE APPLIED
+@@ -1,57 +1,15 @@
+ * Criteria:
+-    from: notfriend@gmail.com
+-    subject: "hey there"
+-    query: -to:none@gmail.com
++    query: list:{list40 list41 list42 list43 list44 list45 list46 list47 list48 list49 list50}
+   Actions:
+     archive
+-    star
+ 
+ * Criteria:
+-    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++    query: list:{list20 list21 list22 list23 list24 list25 list26 list27 list28 list29 list30 list31 list32 list33 list34 list35 list36 list37 list38 list39}
+   Actions:
+     archive
+-    apply label: maillist
+ 
+ * Criteria:
+-    from: spammer2
++    query: list:{list0 list1 list2 list3 list4 list5 list6 list7 list8 list9 list10 list11 list12 list13 list14 list15 list16 list17 list18 list19}
+   Actions:
+-    delete
++    archive
+ 
+-* Criteria:
+-    query: "buy this thing"
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    query: list:{list3 list1 list4 list6} -to:none@gmail.com
+-  Actions:
+-    apply label: differentlabel
+-
+-* Criteria:
+-    from: spammer1
+-    subject: "spam mail"
+-    query: cc:foo@baz.com bcc:bar@baz.com
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    query: list:foobaz.mail.com -"action needed"
+-  Actions:
+-    delete
+-
+-* Criteria:
+-    from: baz+zuz@mail.com
+-  Actions:
+-    mark as important
+-    forward to: other@mail.com
+-
+-* Criteria:
+-    query: list:{list3 list1 list4 list6} -to:none@gmail.com
+-  Actions:
+-    apply label: thirdlabel
+-
+-* Criteria:
+-    to: pippo+spammy@gmail.com
+-  Actions:
+-    delete
+-

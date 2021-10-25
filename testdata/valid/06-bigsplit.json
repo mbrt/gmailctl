@@ -1,0 +1,44 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "YOUR NAME HERE (auto imported)",
+    "email": "your-email@gmail.com"
+  },
+  "labels": [
+    {
+      "name": "maillist"
+    },
+    {
+      "name": "thirdlabel"
+    },
+    {
+      "name": "differentlabel"
+    }
+  ],
+  "rules": [
+    {
+      "filter": {
+        "query": "list:{list40 list41 list42 list43 list44 list45 list46 list47 list48 list49 list50}"
+      },
+      "actions": {
+        "archive": true
+      }
+    },
+    {
+      "filter": {
+        "query": "list:{list0 list1 list2 list3 list4 list5 list6 list7 list8 list9 list10 list11 list12 list13 list14 list15 list16 list17 list18 list19}"
+      },
+      "actions": {
+        "archive": true
+      }
+    },
+    {
+      "filter": {
+        "query": "list:{list20 list21 list22 list23 list24 list25 list26 list27 list28 list29 list30 list31 list32 list33 list34 list35 list36 list37 list38 list39}"
+      },
+      "actions": {
+        "archive": true
+      }
+    }
+  ]
+}

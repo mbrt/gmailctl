@@ -1,0 +1,24 @@
+{
+  "version": "v1alpha3",
+  "author": {
+    "name": "YOUR NAME HERE (auto imported)",
+    "email": "your-email@gmail.com"
+  },
+  "labels": [
+    {
+      "name": "maillist"
+    }
+  ],
+  "rules": [
+    {
+      "filter": {
+        "query": "list:maillist@google.com"
+      },
+      "actions": {
+        "labels": [
+          "maillist"
+        ]
+      }
+    }
+  ]
+}

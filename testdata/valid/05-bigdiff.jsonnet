@@ -1,3 +1,4 @@
+// This changes all filters and labels.
 local filters = {
   me: {
     or: [
@@ -44,6 +45,11 @@ local filters = {
 // The config
 {
   version: 'v1alpha3',
+  labels: [
+    { name: 'differentlabel' },
+    { name: 'maillist' },
+    { name: 'thirdlabel' },
+  ],
   rules: [
     {
       filter: {

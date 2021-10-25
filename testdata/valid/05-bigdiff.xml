@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:apps="http://schemas.google.com/apps/2006">
+  <title>Mail Filters</title>
+  <id>tag:mail.google.com,2008:filters:</id>
+  <updated>2018-03-08T17:00:00Z</updated>
+  <author>
+    <name>Me</name>
+    <email>me@gmail.com</email>
+  </author>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list3 list1 list4 list6} -to:none@gmail.com"></apps:property>
+    <apps:property name="shouldArchive" value="true"></apps:property>
+    <apps:property name="label" value="maillist"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list3 list1 list4 list6} -to:none@gmail.com"></apps:property>
+    <apps:property name="label" value="differentlabel"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:{list3 list1 list4 list6} -to:none@gmail.com"></apps:property>
+    <apps:property name="label" value="thirdlabel"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="from" value="spammer2"></apps:property>
+    <apps:property name="shouldTrash" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="to" value="pippo+spammy@gmail.com"></apps:property>
+    <apps:property name="shouldTrash" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="&#34;buy this thing&#34;"></apps:property>
+    <apps:property name="shouldTrash" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="from" value="spammer1"></apps:property>
+    <apps:property name="subject" value="&#34;spam mail&#34;"></apps:property>
+    <apps:property name="hasTheWord" value="cc:foo@baz.com bcc:bar@baz.com"></apps:property>
+    <apps:property name="shouldTrash" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="hasTheWord" value="list:foobaz.mail.com -&#34;action needed&#34;"></apps:property>
+    <apps:property name="shouldTrash" value="true"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="from" value="baz+zuz@mail.com"></apps:property>
+    <apps:property name="shouldAlwaysMarkAsImportant" value="true"></apps:property>
+    <apps:property name="forwardTo" value="other@mail.com"></apps:property>
+  </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="from" value="notfriend@gmail.com"></apps:property>
+    <apps:property name="subject" value="&#34;hey there&#34;"></apps:property>
+    <apps:property name="hasTheWord" value="-to:none@gmail.com"></apps:property>
+    <apps:property name="shouldArchive" value="true"></apps:property>
+    <apps:property name="shouldStar" value="true"></apps:property>
+  </entry>
+</feed>
