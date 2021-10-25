@@ -17,7 +17,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/label"
 )
 
-const testdataDir = "../../testdata"
+const testdataDir = "testdata"
 
 // update is useful to regenerate the diff files, whenever necessary.
 // Make sure the new version makes sense!!
