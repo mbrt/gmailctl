@@ -87,7 +87,6 @@ func readJsonnet(p string, buf []byte) (cfgv3.Config, error) {
 }
 
 func readYaml(buf []byte) (cfgv3.Config, error) {
-	// TODO: Get rid of support for YAML config v3
 	var res cfgv3.Config
 	version, err := readYamlVersion(buf)
 	if err != nil {
@@ -95,10 +94,6 @@ func readYaml(buf []byte) (cfgv3.Config, error) {
 	}
 
 	switch version {
-	case cfgv3.Version:
-		err = yaml.UnmarshalStrict(buf, &res)
-		return res, err
-
 	case cfgv2.Version:
 		var v2 cfgv2.Config
 		err = yaml.UnmarshalStrict(buf, &v2)
@@ -116,7 +111,7 @@ func readYaml(buf []byte) (cfgv3.Config, error) {
 		return importFromV1(v1)
 
 	default:
-		return res, fmt.Errorf("unknown config version: %s", version)
+		return res, fmt.Errorf("unsupported config version: %s", version)
 	}
 }
 
