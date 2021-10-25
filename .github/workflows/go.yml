@@ -32,14 +32,14 @@ jobs:
     - name: Coverage
       id: coverage
       run: |
-        go test -v -coverprofile=cov.out ./...
+        go test -v -coverpkg=./... -coverprofile=cov.out ./...
         go tool cover -html=cov.out -o coverage.html
         COV=$(go tool cover -func=cov.out | awk '/total/ { gsub("%", "", $3); print $3 }')
         (( $(echo "${COV} > ${MIN_COV}" | bc -l) )) && STATE=success || STATE=failure
         echo "::set-output name=COV::${COV}% (Required ${MIN_COV}%)"
         echo "::set-output name=STATE::${STATE}"
       env:
-        MIN_COV: 70
+        MIN_COV: 60
 
     - uses: Sibz/github-status-action@v1
       with: 

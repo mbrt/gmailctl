@@ -60,6 +60,7 @@ local filters = {
       },
       actions: {
         labels: ['maillist', 'differentlabel', 'thirdlabel'],
+        category: 'personal',
         archive: true,
       },
     },
@@ -74,6 +75,7 @@ local filters = {
       actions: {
         markImportant: true,
         forward: 'other@mail.com',
+        category: 'social',
       },
     },
     {
@@ -91,6 +93,13 @@ local filters = {
       actions: {
         archive: true,
         star: true,
+        category: 'forums',
+      },
+    },
+    {
+      filter: { bcc: 'aaaa@gmail.com' },
+      actions: {
+        category: 'updates',
       },
     },
   ],

@@ -1,7 +1,7 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,82 +1,57 @@
+@@ -1,82 +1,65 @@
  * Criteria:
 -    to: someone-else@gmail.com
 +    from: spammer2
@@ -9,28 +9,7 @@ Filters:
 +    delete
 +
 +* Criteria:
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
-+  Actions:
-+    apply label: differentlabel
-+
-+* Criteria:
 +    query: list:foobaz.mail.com -"action needed"
-+  Actions:
-+    delete
-+
-+* Criteria:
-+    from: baz+zuz@mail.com
-+  Actions:
-+    mark as important
-+    forward to: other@mail.com
-+
-+* Criteria:
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
-+  Actions:
-+    apply label: thirdlabel
-+
-+* Criteria:
-+    to: pippo+spammy@gmail.com
 +  Actions:
 +    delete
 +
@@ -44,10 +23,18 @@ Filters:
 -    star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
++    categorize as: personal
 +    apply label: maillist
  
  * Criteria:
 -    query: is:muted
++    from: baz+zuz@mail.com
++  Actions:
++    mark as important
++    categorize as: social
++    forward to: other@mail.com
++
++* Criteria:
 +    from: notfriend@gmail.com
 +    subject: "hey there"
 +    query: -to:none@gmail.com
@@ -59,9 +46,49 @@ Filters:
      star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
++    categorize as: forums
  
  * Criteria:
 -    from: someone@gmail.com
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    apply label: thirdlabel
+ 
+ * Criteria:
+-    query: bcc:bccer@gmail.com
++    to: pippo+spammy@gmail.com
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    delete
+ 
+ * Criteria:
+-    query: replyto:replyer@gmail.com
++    query: bcc:aaaa@gmail.com
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    categorize as: updates
+ 
+ * Criteria:
+-    query: "something in the body"
 +    query: "buy this thing"
    Actions:
 -    archive
@@ -74,7 +101,14 @@ Filters:
 +    delete
  
  * Criteria:
--    query: bcc:bccer@gmail.com
+-    query: list:maillist@google.com
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
+   Actions:
+-    never mark as important
++    apply label: differentlabel
+ 
+ * Criteria:
+-    query: cc:peeker@yahoo.com -subject:"a subject"
 +    from: spammer1
 +    subject: "spam mail"
 +    query: cc:foo@baz.com bcc:bar@baz.com
@@ -88,44 +122,6 @@ Filters:
 -    forward to: forward-address@gmail.com
 +    delete
  
--* Criteria:
--    query: list:maillist@google.com
--  Actions:
--    never mark as important
--
--* Criteria:
--    query: cc:peeker@yahoo.com -subject:"a subject"
--  Actions:
--    archive
--    mark as important
--    never mark as spam
--    mark as read
--    star
--    categorize as: social
--    forward to: forward-address@gmail.com
--
--* Criteria:
--    query: replyto:replyer@gmail.com
--  Actions:
--    archive
--    mark as important
--    never mark as spam
--    mark as read
--    star
--    categorize as: social
--    forward to: forward-address@gmail.com
--
--* Criteria:
--    query: "something in the body"
--  Actions:
--    archive
--    mark as important
--    never mark as spam
--    mark as read
--    star
--    categorize as: social
--    forward to: forward-address@gmail.com
--
 
 Labels:
 --- Current

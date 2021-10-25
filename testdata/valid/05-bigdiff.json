@@ -31,6 +31,18 @@
         "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
       },
       "actions": {
+        "archive": true,
+        "category": "personal",
+        "labels": [
+          "maillist"
+        ]
+      }
+    },
+    {
+      "filter": {
+        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
+      },
+      "actions": {
         "labels": [
           "differentlabel"
         ]
@@ -57,6 +69,27 @@
     },
     {
       "filter": {
+        "and": [
+          {
+            "from": "notfriend@gmail.com"
+          },
+          {
+            "subject": "\"hey there\"",
+            "isEscaped": true
+          },
+          {
+            "query": "-to:none@gmail.com"
+          }
+        ]
+      },
+      "actions": {
+        "archive": true,
+        "star": true,
+        "category": "forums"
+      }
+    },
+    {
+      "filter": {
         "query": "\"buy this thing\""
       },
       "actions": {
@@ -73,10 +106,19 @@
     },
     {
       "filter": {
+        "query": "bcc:aaaa@gmail.com"
+      },
+      "actions": {
+        "category": "updates"
+      }
+    },
+    {
+      "filter": {
         "from": "baz+zuz@mail.com"
       },
       "actions": {
         "markImportant": true,
+        "category": "social",
         "forward": "other@mail.com"
       }
     },
@@ -94,37 +136,6 @@
       },
       "actions": {
         "delete": true
-      }
-    },
-    {
-      "filter": {
-        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
-      },
-      "actions": {
-        "archive": true,
-        "labels": [
-          "maillist"
-        ]
-      }
-    },
-    {
-      "filter": {
-        "and": [
-          {
-            "from": "notfriend@gmail.com"
-          },
-          {
-            "subject": "\"hey there\"",
-            "isEscaped": true
-          },
-          {
-            "query": "-to:none@gmail.com"
-          }
-        ]
-      },
-      "actions": {
-        "archive": true,
-        "star": true
       }
     }
   ]

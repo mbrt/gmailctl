@@ -84,40 +84,6 @@ func (f FilterNode) NonEmptyFields() []string {
 	return res
 }
 
-// Empty returns true if all the fields are empty.
-func (f FilterNode) Empty() bool {
-	// Use reflection to minimize maintenance work.
-	count := 0
-
-	v := reflect.ValueOf(f)
-
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-
-		switch field.Kind() {
-		case reflect.String:
-			if field.String() == "" {
-				continue
-			}
-		case reflect.Slice:
-			if field.Len() == 0 {
-				continue
-			}
-		case reflect.Ptr:
-			if field.Pointer() == 0 {
-				continue
-			}
-		case reflect.Bool:
-			// Ignore the 'Raw' marker
-			continue
-		}
-
-		count++
-	}
-
-	return count == 0
-}
-
 // Rule is the actual complete Gmail filter.
 //
 // For every email, if the filter applies correctly, then the specified actions
