@@ -78,26 +78,26 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 			icfg, err := rimport.Import(upres.Filters, upres.Labels)
 			require.Nil(t, err)
-			icfgJson, err := json.MarshalIndent(icfg, "", "  ")
+			icfgJSON, err := json.MarshalIndent(icfg, "", "  ")
 			require.Nil(t, err)
 
 			// Compare the results with the golden files (or update the golden files).
 			if *update {
 				// Import.
-				err := ioutil.WriteFile(name+".json", icfgJson, 0o644)
+				err := ioutil.WriteFile(name+".json", icfgJSON, 0o600)
 				require.Nil(t, err)
 				// Diff.
-				err = ioutil.WriteFile(name+".diff", []byte(d.String()), 0o644)
+				err = ioutil.WriteFile(name+".diff", []byte(d.String()), 0o600)
 				require.Nil(t, err)
 				// Export.
-				err = ioutil.WriteFile(name+".xml", cfgxml.Bytes(), 0o644)
+				err = ioutil.WriteFile(name+".xml", cfgxml.Bytes(), 0o600)
 				require.Nil(t, err)
 				return
 			}
 			// Import.
 			b, err := ioutil.ReadFile(name + ".json")
 			require.Nil(t, err)
-			assert.Equal(t, string(b), string(icfgJson))
+			assert.Equal(t, string(b), string(icfgJSON))
 			// Diff.
 			b, err = ioutil.ReadFile(name + ".diff")
 			require.Nil(t, err)

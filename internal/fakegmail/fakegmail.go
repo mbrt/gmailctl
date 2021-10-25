@@ -177,7 +177,9 @@ func writeResponse(w http.ResponseWriter, r interface{}) {
 		http.Error(w, fmt.Sprintf("unable to marshal response: %v", err), http.StatusInternalServerError)
 		return
 	}
-	w.Write(b)
+	if _, err := w.Write(b); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 }
 
 func writeErr(w http.ResponseWriter, err error) {
