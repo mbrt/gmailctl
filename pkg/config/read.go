@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/google/go-jsonnet"
-	"gopkg.in/yaml.v2"
 
 	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
 	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
@@ -33,19 +32,23 @@ func ReadFile(path, libPath string) (cfgv3.Config, error) {
 	if err != nil {
 		return cfgv3.Config{}, errors.WithCause(err, ErrNotFound)
 	}
-	if filepath.Ext(path) == ".jsonnet" {
-		// We pass the libPath to jsonnet, because that is the hint
-		// to the libraries location. If no library is specified,
-		// we use the original file location.
-		if libPath != "" {
-			return readJsonnet(libPath, b)
-		}
-		return readJsonnet(path, b)
+	if ext := filepath.Ext(path); ext == ".yml" || ext == ".yaml" {
+		return cfgv3.Config{}, errors.WithDetails(errors.New("YAML config is unsupported"),
+			"Please see https://github.com/mbrt/gmailctl#known-issues.\n")
 	}
-	return readYaml(b)
+	// We pass the libPath to jsonnet, because that is the hint
+	// to the libraries location. If no library is specified,
+	// we use the original file location.
+	if libPath == "" {
+		libPath = path
+	}
+	return ReadJsonnet(path, b)
 }
 
-func readJsonnet(p string, buf []byte) (cfgv3.Config, error) {
+// ReadJsonnet parses a buffer containing a jsonnet config.
+//
+// The path is used to resolve imports.
+func ReadJsonnet(p string, buf []byte) (cfgv3.Config, error) {
 	var res cfgv3.Config
 	vm := jsonnet.MakeVM()
 	vm.Importer(&jsonnet.FileImporter{
@@ -86,35 +89,6 @@ func readJsonnet(p string, buf []byte) (cfgv3.Config, error) {
 	}
 }
 
-func readYaml(buf []byte) (cfgv3.Config, error) {
-	var res cfgv3.Config
-	version, err := readYamlVersion(buf)
-	if err != nil {
-		return res, fmt.Errorf("parsing the config version: %w", err)
-	}
-
-	switch version {
-	case cfgv2.Version:
-		var v2 cfgv2.Config
-		err = yaml.UnmarshalStrict(buf, &v2)
-		if err != nil {
-			return res, fmt.Errorf("parsing v1alpha2 config: %w", err)
-		}
-		return importFromV2(v2)
-
-	case cfgv1.Version:
-		var v1 cfgv1.Config
-		err = yaml.UnmarshalStrict(buf, &v1)
-		if err != nil {
-			return res, fmt.Errorf("parsing v1alpha1 config: %w", err)
-		}
-		return importFromV1(v1)
-
-	default:
-		return res, fmt.Errorf("unsupported config version: %s", version)
-	}
-}
-
 func importFromV1(v1 cfgv1.Config) (cfgv3.Config, error) {
 	v2, err := cfgv2.Import(v1)
 	if err != nil {
@@ -125,15 +99,6 @@ func importFromV1(v1 cfgv1.Config) (cfgv3.Config, error) {
 
 func importFromV2(v2 cfgv2.Config) (cfgv3.Config, error) {
 	return cfgv3.Import(v2)
-}
-
-func readYamlVersion(buf []byte) (string, error) {
-	// Try to unmarshal only the version
-	v := struct {
-		Version string `yaml:"version"`
-	}{}
-	err := yaml.Unmarshal(buf, &v)
-	return v.Version, err
 }
 
 func readJSONVersion(js string) (string, error) {
