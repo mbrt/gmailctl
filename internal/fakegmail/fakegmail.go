@@ -245,7 +245,7 @@ func (g *gmail) DeleteLabel(id string) error {
 	if !ok {
 		return statusError{404, fmt.Errorf("id %q not found", id)}
 	}
-	delete(g.labelNames, l.Name)
+	g.labelNames.Remove(l.Name)
 	delete(g.labels, id)
 
 	return nil
