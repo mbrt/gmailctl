@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mbrt/gmailctl/pkg/apply"
-	cfg "github.com/mbrt/gmailctl/pkg/config"
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
-func readConfig(t *testing.T, path string) cfgv3.Config {
+func readConfig(t *testing.T, path string) v1alpha3.Config {
 	t.Helper()
 	path = filepath.Join("testdata", path)
-	res, err := cfg.ReadFile(path, path)
+	res, err := config.ReadFile(path, path)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -9,11 +9,11 @@ import (
 	papply "github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/cfgtest"
 	"github.com/mbrt/gmailctl/pkg/config"
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 type parseResult struct {
-	Config cfgv3.Config
+	Config v1alpha3.Config
 	Res    papply.ConfigParseRes
 }
 

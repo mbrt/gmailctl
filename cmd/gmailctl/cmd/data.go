@@ -2,12 +2,12 @@
 
 package cmd
 
-// gmailctlLib returns the embedded gmailctl.libsonnet file
-func gmailctlLib() string {
+// GmailctlLib returns the embedded gmailctl.libsonnet file
+func GmailctlLib() string {
 	return string(MustAsset("../../../gmailctl.libsonnet"))
 }
 
-// defaultConfig returns the embedded default configuration file
-func defaultConfig() string {
+// DefaultConfig returns the embedded default configuration file
+func DefaultConfig() string {
 	return string(MustAsset("../../../default-config.jsonnet"))
 }
