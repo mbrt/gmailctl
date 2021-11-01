@@ -5,13 +5,13 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
-	v2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 )
 
 var dummyFilter = FilterNode{}
 
 // Import converts a v2 config into a v3.
-func Import(cfg v2.Config) (Config, error) {
+func Import(cfg v1alpha2.Config) (Config, error) {
 	i := importer{}
 	return i.Import(cfg)
 }
@@ -21,7 +21,7 @@ type importer struct {
 	err  error
 }
 
-func (i *importer) Import(cfg v2.Config) (Config, error) {
+func (i *importer) Import(cfg v1alpha2.Config) (Config, error) {
 	i.importNamedFilters(cfg.Filters)
 	finalErr := i.resetError()
 
@@ -42,7 +42,7 @@ func (i *importer) Import(cfg v2.Config) (Config, error) {
 	}, finalErr
 }
 
-func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
+func (i *importer) importNamedFilters(fs []v1alpha2.NamedFilter) {
 	i.nmap = namedFilterMap{}
 	var finalErr error
 
@@ -58,7 +58,7 @@ func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
 	i.err = finalErr
 }
 
-func (i *importer) importRule(r v2.Rule) Rule {
+func (i *importer) importRule(r v1alpha2.Rule) Rule {
 	return Rule{
 		Filter: i.importFilter(r.Filter),
 		Actions: Actions{
@@ -74,7 +74,7 @@ func (i *importer) importRule(r v2.Rule) Rule {
 	}
 }
 
-func (i *importer) importFilter(f v2.FilterNode) FilterNode {
+func (i *importer) importFilter(f v1alpha2.FilterNode) FilterNode {
 	if f.RefName != "" {
 		return i.importRefName(f.RefName)
 	}
@@ -98,7 +98,7 @@ func (i *importer) importFilter(f v2.FilterNode) FilterNode {
 	}
 }
 
-func (i *importer) importFilters(ns []v2.FilterNode) []FilterNode {
+func (i *importer) importFilters(ns []v1alpha2.FilterNode) []FilterNode {
 	var res []FilterNode
 	for _, f := range ns {
 		res = append(res, i.importFilter(f))
