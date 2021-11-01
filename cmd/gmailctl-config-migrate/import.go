@@ -7,9 +7,9 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha1"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha2"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha2"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 

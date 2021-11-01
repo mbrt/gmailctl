@@ -20,7 +20,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/api"
 	"github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/export/xml"
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
@@ -58,7 +58,7 @@ func TestIntegration(t *testing.T) {
 			xmlexp := xml.NewWithTime(func() time.Time { return fixedTime })
 			var cfgxml bytes.Buffer
 			bw := bufio.NewWriter(&cfgxml)
-			author := v1alpha2.Author{Name: "Me", Email: "me@gmail.com"}
+			author := v1alpha3.Author{Name: "Me", Email: "me@gmail.com"}
 			err = xmlexp.Export(author, pres.Filters, bw)
 			bw.Flush() // Make sure everything is written out.
 			require.Nil(t, err)

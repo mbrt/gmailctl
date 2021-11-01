@@ -3,7 +3,7 @@ package v1alpha2
 import (
 	"fmt"
 
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha1"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 )
 
 // Import converts a v1 config into a v2.

@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
-	v2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 func read(path string) []byte {
@@ -22,23 +23,23 @@ func read(path string) []byte {
 	return b
 }
 
-func parseV2(t *testing.T, path string) v2.Config {
-	var res v2.Config
+func parseV2(t *testing.T, path string) v1alpha2.Config {
+	var res v1alpha2.Config
 	if err := yaml.UnmarshalStrict(read(path), &res); err != nil {
 		t.Fatal(err)
 	}
 	return res
 }
 
-func parseV3(t *testing.T, path string) Config {
-	var res Config
+func parseV3(t *testing.T, path string) v1alpha3.Config {
+	var res v1alpha3.Config
 	if err := json.Unmarshal(read(path), &res); err != nil {
 		t.Fatal(err)
 	}
 	return res
 }
 
-func dump(t *testing.T, cfg Config) string {
+func dump(t *testing.T, cfg v1alpha3.Config) string {
 	b, err := yaml.Marshal(cfg)
 	if err != nil {
 		t.Fatal(err)
