@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	v1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
@@ -112,7 +112,7 @@ func (r Rule) String() string {
 }
 
 // Author represents the owner of the gmail account.
-type Author v1.Author
+type Author v1alpha1.Author
 
 // Actions contains the actions to be applied to a set of emails.
 type Actions struct {

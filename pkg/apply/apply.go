@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/label"
 	"github.com/mbrt/gmailctl/pkg/parser"
@@ -24,7 +24,7 @@ type ConfigParseRes struct {
 }
 
 // FromConfig creates a GmailConfig from a parsed configuration file.
-func FromConfig(cfg cfgv3.Config) (ConfigParseRes, error) {
+func FromConfig(cfg v1alpha3.Config) (ConfigParseRes, error) {
 	res := ConfigParseRes{}
 	var err error
 

@@ -862,14 +862,43 @@ the other alias.
 
 ## Known issues
 
-* **Apply filters to existing emails**: gmailctl doesn't support this
-  functionality for security reasons. The project currently needs only very
-  basic permissisons, and applying filters to existing emails requires full
-  Gmail access. Bugs in gmailctl or in your configuration won't screw up your
-  old emails in any way, so this is an important safety feature. If you really
-  want to do this, you can manually export your rules with
-  `gmailctl export > filters.xml`, upload them by using the Gmail Settings UI
-  and select the "apply new filters to existing email" checkbox.
+### Apply filters to existing emails
+
+gmailctl doesn't support this functionality for security reasons. The project
+currently needs only very basic permissisons, and applying filters to existing
+emails requires full Gmail access. Bugs in gmailctl or in your configuration
+won't screw up your old emails in any way, so this is an important safety
+feature. If you really want to do this, you can manually export your rules with
+`gmailctl export > filters.xml`, upload them by using the Gmail Settings UI and
+select the "apply new filters to existing email" checkbox.
+
+### YAML config is unsupported
+
+gmailctl recently deprecated older config versions (`v1alpha1`, `v1alpha2`).
+There's however a migration tool to port those into the latest Jsonnet format.
+To convert your config:
+
+```bash
+$ go run github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate \
+    ~/.gmailct/config.yaml > /tmp/gmailctl-config.jsonnet
+```
+
+**Note:** Adjust your paths if you're not keeping your config file in the
+default directory.
+
+Confirm that the new config file doesn't have errors, nor shows diffs with your
+remote filters.
+
+```bash
+$ gmailctl diff -f /tmp/gmailctl-config.jsonnet
+```
+
+If everything looks good, replace the old with the new config:
+
+```bash
+$ mv /tmp/gmailctl-config.jsonnet ~/.gmailctl/config.jsonnet
+$ rm ~/.gmailctl/config.yaml
+```
 
 ## Comparison with existing projects
 

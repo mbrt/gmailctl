@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
@@ -21,7 +21,7 @@ func testNow() time.Time {
 
 func TestEmptyEntries(t *testing.T) {
 	exporter := Exporter{now: testNow}
-	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := v1alpha3.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	buf := new(bytes.Buffer)
 	err := exporter.Export(author, filter.Filters{}, buf)
 	assert.Nil(t, err)
@@ -41,7 +41,7 @@ func TestEmptyEntries(t *testing.T) {
 
 func TestSomeEntries(t *testing.T) {
 	exporter := Exporter{now: testNow}
-	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := v1alpha3.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
 			Action: filter.Actions{
@@ -96,7 +96,7 @@ func TestSomeEntries(t *testing.T) {
 
 func TestAllEntries(t *testing.T) {
 	exporter := Exporter{now: testNow}
-	author := cfgv2.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
+	author := v1alpha3.Author{Name: "Pippo Pluto", Email: "pippo@mail.com"}
 	filters := filter.Filters{
 		{
 			Action: filter.Actions{

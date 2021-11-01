@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/filter"
 )
 
@@ -58,7 +58,7 @@ type Exporter struct {
 }
 
 // Export exports Gmail filters into the Gmail xml format.
-func (x Exporter) Export(author cfgv2.Author, filters filter.Filters, w io.Writer) error {
+func (x Exporter) Export(author v1alpha3.Author, filters filter.Filters, w io.Writer) error {
 	doc, err := x.toXML(author, filters)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (x Exporter) Export(author cfgv2.Author, filters filter.Filters, w io.Write
 	return err
 }
 
-func (x Exporter) toXML(author cfgv2.Author, filters filter.Filters) (xmlDoc, error) {
+func (x Exporter) toXML(author v1alpha3.Author, filters filter.Filters) (xmlDoc, error) {
 	entries, err := x.entriesToXML(filters)
 	res := xmlDoc{
 		XMLNS:       "http://www.w3.org/2005/Atom",

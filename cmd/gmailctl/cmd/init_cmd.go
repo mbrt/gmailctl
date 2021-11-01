@@ -126,24 +126,13 @@ func handleCfgDir() (err error) {
 		}
 	}
 
-	// Handle legacy yaml configuration
-	if hasYamlConfig(cfgDir) {
-		return nil
-	}
-
 	// Create default config files
 	cfgFile := path.Join(cfgDir, "config.jsonnet")
-	if err := createDefault(cfgFile, defaultConfig()); err != nil {
+	if err := createDefault(cfgFile, DefaultConfig()); err != nil {
 		return err
 	}
 	libFile := path.Join(cfgDir, "gmailctl.libsonnet")
-	return createDefault(libFile, gmailctlLib())
-}
-
-func hasYamlConfig(cfgDir string) bool {
-	path := path.Join(cfgDir, "config.yaml")
-	_, err := os.Stat(path)
-	return err == nil
+	return createDefault(libFile, GmailctlLib())
 }
 
 func createDefault(path, contents string) (err error) {

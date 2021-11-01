@@ -3,12 +3,12 @@ package v1alpha2
 import (
 	"fmt"
 
-	v1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 )
 
 // Import converts a v1 config into a v2.
-func Import(cfg v1.Config) (Config, error) {
-	cfg, err := v1.ResolveConsts(cfg)
+func Import(cfg v1alpha1.Config) (Config, error) {
+	cfg, err := v1alpha1.ResolveConsts(cfg)
 	if err != nil {
 		return Config{}, fmt.Errorf("resolving consts: %w", err)
 	}
@@ -25,7 +25,7 @@ func Import(cfg v1.Config) (Config, error) {
 	}, nil
 }
 
-func convertRule(r v1.Rule) Rule {
+func convertRule(r v1alpha1.Rule) Rule {
 	// Optional parameters need to be set only if the original action was
 	// explicitly set.
 	onlyIfSet := func(a bool) *bool {
@@ -50,7 +50,7 @@ func convertRule(r v1.Rule) Rule {
 	}
 }
 
-func convertFilter(f v1.Filters) FilterNode {
+func convertFilter(f v1alpha1.Filters) FilterNode {
 	// All the filters at this level are in 'and'
 	res := convertMatchFilter(f.CompositeFilters.MatchFilters)
 	if op := convertMatchFilter(f.Not); !op.Empty() {
@@ -61,7 +61,7 @@ func convertFilter(f v1.Filters) FilterNode {
 	return and(res, FilterNode{Query: f.Query})
 }
 
-func convertMatchFilter(f v1.MatchFilters) FilterNode {
+func convertMatchFilter(f v1alpha1.MatchFilters) FilterNode {
 	// This filter is an 'and' of operators, where each of them is an 'or'.
 	var res FilterNode
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 // Labels is a list of labels.
@@ -102,7 +102,7 @@ func Equivalent(upstream, local Label) bool {
 }
 
 // FromConfig creates labels from the config format.
-func FromConfig(ls []cfgv3.Label) Labels {
+func FromConfig(ls []v1alpha3.Label) Labels {
 	var res Labels
 
 	for _, l := range ls {

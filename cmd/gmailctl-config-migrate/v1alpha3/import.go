@@ -5,13 +5,14 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 
-	v2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
-var dummyFilter = FilterNode{}
+var dummyFilter = v1alpha3.FilterNode{}
 
 // Import converts a v2 config into a v3.
-func Import(cfg v2.Config) (Config, error) {
+func Import(cfg v1alpha2.Config) (v1alpha3.Config, error) {
 	i := importer{}
 	return i.Import(cfg)
 }
@@ -21,11 +22,11 @@ type importer struct {
 	err  error
 }
 
-func (i *importer) Import(cfg v2.Config) (Config, error) {
+func (i *importer) Import(cfg v1alpha2.Config) (v1alpha3.Config, error) {
 	i.importNamedFilters(cfg.Filters)
 	finalErr := i.resetError()
 
-	var rules []Rule
+	var rules []v1alpha3.Rule
 	for _, r := range cfg.Rules {
 		rules = append(rules, i.importRule(r))
 		if err := i.resetError(); err != nil {
@@ -35,14 +36,17 @@ func (i *importer) Import(cfg v2.Config) (Config, error) {
 		}
 	}
 
-	return Config{
-		Version: Version,
-		Author:  cfg.Author,
-		Rules:   rules,
+	return v1alpha3.Config{
+		Version: v1alpha3.Version,
+		Author: v1alpha3.Author{
+			Name:  cfg.Author.Name,
+			Email: cfg.Author.Email,
+		},
+		Rules: rules,
 	}, finalErr
 }
 
-func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
+func (i *importer) importNamedFilters(fs []v1alpha2.NamedFilter) {
 	i.nmap = namedFilterMap{}
 	var finalErr error
 
@@ -58,10 +62,10 @@ func (i *importer) importNamedFilters(fs []v2.NamedFilter) {
 	i.err = finalErr
 }
 
-func (i *importer) importRule(r v2.Rule) Rule {
-	return Rule{
+func (i *importer) importRule(r v1alpha2.Rule) v1alpha3.Rule {
+	return v1alpha3.Rule{
 		Filter: i.importFilter(r.Filter),
-		Actions: Actions{
+		Actions: v1alpha3.Actions{
 			Archive:       r.Actions.Archive,
 			Delete:        r.Actions.Delete,
 			MarkRead:      r.Actions.MarkRead,
@@ -74,17 +78,17 @@ func (i *importer) importRule(r v2.Rule) Rule {
 	}
 }
 
-func (i *importer) importFilter(f v2.FilterNode) FilterNode {
+func (i *importer) importFilter(f v1alpha2.FilterNode) v1alpha3.FilterNode {
 	if f.RefName != "" {
 		return i.importRefName(f.RefName)
 	}
 
-	var not *FilterNode
+	var not *v1alpha3.FilterNode
 	if f.Not != nil {
 		nf := i.importFilter(*f.Not)
 		not = &nf
 	}
-	return FilterNode{
+	return v1alpha3.FilterNode{
 		And:     i.importFilters(f.And),
 		Or:      i.importFilters(f.Or),
 		Not:     not,
@@ -98,15 +102,15 @@ func (i *importer) importFilter(f v2.FilterNode) FilterNode {
 	}
 }
 
-func (i *importer) importFilters(ns []v2.FilterNode) []FilterNode {
-	var res []FilterNode
+func (i *importer) importFilters(ns []v1alpha2.FilterNode) []v1alpha3.FilterNode {
+	var res []v1alpha3.FilterNode
 	for _, f := range ns {
 		res = append(res, i.importFilter(f))
 	}
 	return res
 }
 
-func (i *importer) importRefName(name string) FilterNode {
+func (i *importer) importRefName(name string) v1alpha3.FilterNode {
 	if n, ok := i.nmap[name]; ok {
 		return n
 	}
@@ -121,4 +125,4 @@ func (i *importer) resetError() error {
 	return err
 }
 
-type namedFilterMap map[string]FilterNode
+type namedFilterMap map[string]v1alpha3.FilterNode

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
-	v1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
+	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 )
 
 func read(path string) []byte {
@@ -21,8 +21,8 @@ func read(path string) []byte {
 	return b
 }
 
-func parseV1(t *testing.T, path string) v1.Config {
-	var res v1.Config
+func parseV1(t *testing.T, path string) v1alpha1.Config {
+	var res v1alpha1.Config
 	if err := yaml.UnmarshalStrict(read(path), &res); err != nil {
 		t.Fatal(err)
 	}
@@ -72,20 +72,20 @@ func TestConvert(t *testing.T) {
 }
 
 func TestWrongConsts(t *testing.T) {
-	v1c := v1.Config{
-		Consts: v1.Consts{
-			"c1": v1.ConstValue{Values: []string{"foo"}},
+	v1c := v1alpha1.Config{
+		Consts: v1alpha1.Consts{
+			"c1": v1alpha1.ConstValue{Values: []string{"foo"}},
 		},
-		Rules: []v1.Rule{
+		Rules: []v1alpha1.Rule{
 			{
-				Filters: v1.Filters{
-					Consts: v1.CompositeFilters{
-						MatchFilters: v1.MatchFilters{
+				Filters: v1alpha1.Filters{
+					Consts: v1alpha1.CompositeFilters{
+						MatchFilters: v1alpha1.MatchFilters{
 							From: []string{"c2"},
 						},
 					},
 				},
-				Actions: v1.Actions{},
+				Actions: v1alpha1.Actions{},
 			},
 		},
 	}

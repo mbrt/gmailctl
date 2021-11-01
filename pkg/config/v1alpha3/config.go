@@ -4,14 +4,13 @@ import (
 	"reflect"
 	"strings"
 
-	v2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
 	"github.com/mbrt/gmailctl/pkg/gmail"
 )
 
 // Version is the latest supported version.
 const Version = "v1alpha3"
 
-// Config contains the yaml configuration of the Gmail filters.
+// Config contains the Jsonnet configuration of the Gmail filters.
 type Config struct {
 	Version string  `json:"version"`
 	Author  Author  `json:"author,omitempty"`
@@ -94,7 +93,10 @@ type Rule struct {
 }
 
 // Author represents the owner of the gmail account.
-type Author = v2.Author
+type Author struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
 
 // Actions contains the actions to be applied to a set of emails.
 type Actions struct {

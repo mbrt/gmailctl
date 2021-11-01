@@ -20,7 +20,7 @@ import (
 	"github.com/mbrt/gmailctl/pkg/api"
 	"github.com/mbrt/gmailctl/pkg/apply"
 	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha2"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/export/xml"
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
@@ -58,7 +58,7 @@ func TestIntegration(t *testing.T) {
 			xmlexp := xml.NewWithTime(func() time.Time { return fixedTime })
 			var cfgxml bytes.Buffer
 			bw := bufio.NewWriter(&cfgxml)
-			author := v1alpha2.Author{Name: "Me", Email: "me@gmail.com"}
+			author := v1alpha3.Author{Name: "Me", Email: "me@gmail.com"}
 			err = xmlexp.Export(author, pres.Filters, bw)
 			bw.Flush() // Make sure everything is written out.
 			require.Nil(t, err)
@@ -80,6 +80,38 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 			icfgJSON, err := json.MarshalIndent(icfg, "", "  ")
 			require.Nil(t, err)
+
+			// There should be no diff now with upstream.
+			d2, err := apply.Diff(pres.GmailConfig, upres)
+			require.Nil(t, err)
+			assert.Empty(t, d2.FiltersDiff)
+			assert.Empty(t, d2.LabelsDiff)
+
+			// There should be no diff between the original and the imported config.
+			ipres, err := apply.FromConfig(icfg)
+			require.Nil(t, err)
+			d3, err := apply.Diff(ipres.GmailConfig, upres)
+			require.Nil(t, err)
+			assert.Empty(t, d3.FiltersDiff)
+			assert.Empty(t, d3.LabelsDiff)
+
+			// Import and convert to Jsonnet.
+			var buf bytes.Buffer
+			w := bufio.NewWriter(&buf)
+			err = rimport.MarshalJsonnet(icfg, w, "// Download header.\n")
+			require.Nil(t, err)
+			err = w.Flush()
+			require.Nil(t, err)
+
+			// There should be no diff between the original and the converted config.
+			ijcfg, err := config.ReadJsonnet("", buf.Bytes())
+			require.Nil(t, err)
+			ijpres, err := apply.FromConfig(ijcfg)
+			require.Nil(t, err)
+			d4, err := apply.Diff(ijpres.GmailConfig, upres)
+			require.Nil(t, err)
+			assert.Empty(t, d4.FiltersDiff)
+			assert.Empty(t, d4.LabelsDiff)
 
 			// Compare the results with the golden files (or update the golden files).
 			if *update {

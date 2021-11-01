@@ -21,7 +21,7 @@ List of unsupported constructs:
 * Raw queries (pkg/config/v1alpha3/FilterNode.Query).
 
 By default test uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory [config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := testFilename
 		if f == "" {

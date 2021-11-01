@@ -51,7 +51,7 @@ The editor to be used can be overridden with the $EDITOR
 environment variable.
 
 By default edit uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory [config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := editFilename
 		if f == "" {
@@ -143,7 +143,7 @@ func copyToTmp(path string) (string, error) {
 		return "", errors.WithCause(err, config.ErrNotFound)
 	}
 
-	// Use the same extension as the original file (yaml | jsonnet)
+	// Use the same extension as the original file.
 	tmp, err := ioutil.TempFile("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
 	if err != nil {
 		return "", fmt.Errorf("creating tmp file: %w", err)
