@@ -44,7 +44,7 @@ func ReadFile(path, libPath string) (v1alpha3.Config, error) {
 	if libPath == "" {
 		libPath = path
 	}
-	return ReadJsonnet(path, b)
+	return ReadJsonnet(libPath, b)
 }
 
 // ReadJsonnet parses a buffer containing a jsonnet config.
