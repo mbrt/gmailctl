@@ -98,7 +98,7 @@ func TestIntegration(t *testing.T) {
 			// Import and convert to Jsonnet.
 			var buf bytes.Buffer
 			w := bufio.NewWriter(&buf)
-			err = rimport.MarshalJsonnet(icfg, w)
+			err = rimport.MarshalJsonnet(icfg, w, "// Download header.\n")
 			require.Nil(t, err)
 			err = w.Flush()
 			require.Nil(t, err)

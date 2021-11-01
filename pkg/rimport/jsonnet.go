@@ -8,16 +8,6 @@ import (
 	"regexp"
 )
 
-const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
-//
-// WARNING: This functionality is experimental. Before making any
-// changes, check that no diff is detected with the remote filters by
-// using the 'diff' command.
-
-// Uncomment if you want to use the standard library.
-// local lib = import 'gmailctl.libsonnet';
-`
-
 const labelsComment = `  // Note: labels management is optional. If you prefer to use the
   // GMail interface to add and remove labels, you can safely remove
   // this section of the config.
@@ -25,7 +15,7 @@ const labelsComment = `  // Note: labels management is optional. If you prefer t
 
 var labelsLine = "  labels: ["
 
-func MarshalJsonnet(v interface{}, w io.Writer) error {
+func MarshalJsonnet(v interface{}, w io.Writer, header string) error {
 	// Convert to JSON
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -38,7 +28,7 @@ func MarshalJsonnet(v interface{}, w io.Writer) error {
 	keyRe := regexp.MustCompile(`^ *"([a-zA-Z01]+)":`)
 	var line []byte
 
-	_, err = writer.WriteString(downloadHeader)
+	_, err = writer.WriteString(header)
 	if err != nil {
 		return err
 	}

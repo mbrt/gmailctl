@@ -10,6 +10,16 @@ import (
 	"github.com/mbrt/gmailctl/pkg/rimport"
 )
 
+const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
+//
+// WARNING: This functionality is experimental. Before making any
+// changes, check that no diff is detected with the remote filters by
+// using the 'diff' command.
+
+// Uncomment if you want to use the standard library.
+// local lib = import 'gmailctl.libsonnet';
+`
+
 var (
 	downloadOutput string
 )
@@ -79,7 +89,7 @@ func downloadWithOut(out io.Writer) error {
 		return err
 	}
 
-	err = rimport.MarshalJsonnet(cfg, out)
+	err = rimport.MarshalJsonnet(cfg, out, downloadHeader)
 	if err != nil {
 		return fmt.Errorf("converting to Jsonnet: %w", err)
 	}

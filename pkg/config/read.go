@@ -10,14 +10,16 @@ import (
 
 	"github.com/google/go-jsonnet"
 
-	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha1"
-	cfgv2 "github.com/mbrt/gmailctl/pkg/config/v1alpha2"
-	cfgv3 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 	"github.com/mbrt/gmailctl/pkg/errors"
 )
 
-// LatestVersion points to the latest version of the config format.
-const LatestVersion = cfgv3.Version
+const (
+	// LatestVersion points to the latest version of the config format.
+	LatestVersion = v1alpha3.Version
+
+	unsupportedHelp = "Please see https://github.com/mbrt/gmailctl#known-issues.\n"
+)
 
 // ErrNotFound is returned when a file was not found.
 var ErrNotFound = errors.New("config not found")
@@ -26,15 +28,15 @@ var ErrNotFound = errors.New("config not found")
 //
 // If the config file needs to have access to additional libraries,
 // their location can be specified with cfgDirs.
-func ReadFile(path, libPath string) (cfgv3.Config, error) {
+func ReadFile(path, libPath string) (v1alpha3.Config, error) {
 	/* #nosec */
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return cfgv3.Config{}, errors.WithCause(err, ErrNotFound)
+		return v1alpha3.Config{}, errors.WithCause(err, ErrNotFound)
 	}
 	if ext := filepath.Ext(path); ext == ".yml" || ext == ".yaml" {
-		return cfgv3.Config{}, errors.WithDetails(errors.New("YAML config is unsupported"),
-			"Please see https://github.com/mbrt/gmailctl#known-issues.\n")
+		return v1alpha3.Config{}, errors.WithDetails(errors.New("YAML config is unsupported"),
+			unsupportedHelp)
 	}
 	// We pass the libPath to jsonnet, because that is the hint
 	// to the libraries location. If no library is specified,
@@ -48,8 +50,8 @@ func ReadFile(path, libPath string) (cfgv3.Config, error) {
 // ReadJsonnet parses a buffer containing a jsonnet config.
 //
 // The path is used to resolve imports.
-func ReadJsonnet(p string, buf []byte) (cfgv3.Config, error) {
-	var res cfgv3.Config
+func ReadJsonnet(p string, buf []byte) (v1alpha3.Config, error) {
+	var res v1alpha3.Config
 	vm := jsonnet.MakeVM()
 	vm.Importer(&jsonnet.FileImporter{
 		JPaths: []string{path.Dir(p)},
@@ -62,43 +64,12 @@ func ReadJsonnet(p string, buf []byte) (cfgv3.Config, error) {
 	if err != nil {
 		return res, fmt.Errorf("parsing the config version: %w", err)
 	}
-
-	switch version {
-	case cfgv3.Version:
-		err = jsonUnmarshalStrict([]byte(jstr), &res)
-		return res, err
-
-	case cfgv2.Version:
-		var v2 cfgv2.Config
-		err = jsonUnmarshalStrict([]byte(jstr), &v2)
-		if err != nil {
-			return res, fmt.Errorf("parsing v1alpha2 config: %w", err)
-		}
-		return importFromV2(v2)
-
-	case cfgv1.Version:
-		var v1 cfgv1.Config
-		err = jsonUnmarshalStrict([]byte(jstr), &v1)
-		if err != nil {
-			return res, fmt.Errorf("parsing v1alpha1 config: %w", err)
-		}
-		return importFromV1(v1)
-
-	default:
-		return res, fmt.Errorf("unknown config version: %s", version)
+	if version != LatestVersion {
+		return res, errors.WithDetails(fmt.Errorf("unsupported config version: %s", version),
+			unsupportedHelp)
 	}
-}
-
-func importFromV1(v1 cfgv1.Config) (cfgv3.Config, error) {
-	v2, err := cfgv2.Import(v1)
-	if err != nil {
-		return cfgv3.Config{}, err
-	}
-	return importFromV2(v2)
-}
-
-func importFromV2(v2 cfgv2.Config) (cfgv3.Config, error) {
-	return cfgv3.Import(v2)
+	err = jsonUnmarshalStrict([]byte(jstr), &res)
+	return res, err
 }
 
 func readJSONVersion(js string) (string, error) {
