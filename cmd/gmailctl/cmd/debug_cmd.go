@@ -23,7 +23,7 @@ with handy URLs to Gmail search that can be used to test that the
 filter applies to the intended emails.
 
 By default debug uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := debugFilename
 		if f == "" {

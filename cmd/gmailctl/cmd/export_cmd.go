@@ -25,7 +25,7 @@ This allows to import them from within the Gmail settings or to share
 them with other people.
 
 By default export uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory [config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := exportFilename
 		if f == "" {

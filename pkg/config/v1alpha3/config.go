@@ -10,7 +10,7 @@ import (
 // Version is the latest supported version.
 const Version = "v1alpha3"
 
-// Config contains the yaml configuration of the Gmail filters.
+// Config contains the Jsonnet configuration of the Gmail filters.
 type Config struct {
 	Version string  `json:"version"`
 	Author  Author  `json:"author,omitempty"`

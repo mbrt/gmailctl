@@ -30,7 +30,7 @@ var applyCmd = &cobra.Command{
 to make them match your local configuration file.
 
 By default apply uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory [config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := applyFilename
 		if f == "" {

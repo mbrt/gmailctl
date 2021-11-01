@@ -20,7 +20,7 @@ var diffCmd = &cobra.Command{
 configuration and the current Gmail settings of your account.
 
 By default diff uses the configuration file inside the config
-directory [config.(yaml|jsonnet)].`,
+directory [config.jsonnet].`,
 	Run: func(cmd *cobra.Command, args []string) {
 		f := diffFilename
 		if f == "" {

@@ -18,7 +18,7 @@ const (
 	// LatestVersion points to the latest version of the config format.
 	LatestVersion = v1alpha3.Version
 
-	unsupportedHelp = "Please see https://github.com/mbrt/gmailctl#known-issues.\n"
+	unsupportedHelp = "Please see https://github.com/mbrt/gmailctl#yaml-config-is-unsupported.\n"
 )
 
 // ErrNotFound is returned when a file was not found.
