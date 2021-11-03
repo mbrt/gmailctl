@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
 // update is useful to regenerate the json files, whenever necessary.
@@ -69,7 +69,7 @@ func TestJsonnetLib(t *testing.T) {
 				assert.Nil(t, err)
 			} else {
 				// Test them
-				var jsparsed cfgv1.Config
+				var jsparsed v1alpha3.Config
 				err := json.Unmarshal(read(t, jsfile), &jsparsed)
 				assert.Nil(t, err)
 				assert.Equal(t, jsparsed, jnparsed)

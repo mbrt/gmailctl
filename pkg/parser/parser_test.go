@@ -5,12 +5,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cfg "github.com/mbrt/gmailctl/pkg/config"
-	cfgv1 "github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	"github.com/mbrt/gmailctl/pkg/config"
+	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
 )
 
-func readConfig(t *testing.T, path string) cfgv1.Config {
-	res, err := cfg.ReadFile(path, path)
+func readConfig(t *testing.T, path string) v1alpha3.Config {
+	res, err := config.ReadFile(path, path)
 	if err != nil {
 		t.Fatal(err)
 	}
