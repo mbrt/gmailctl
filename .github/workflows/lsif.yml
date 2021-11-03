@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: read
-  metadata: read
 
 jobs:
   index-and-upload:

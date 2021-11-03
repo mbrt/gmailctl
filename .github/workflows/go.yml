@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  metadata: read
 
 jobs:
   build:
