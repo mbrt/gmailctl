@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	gmailv1 "google.golang.org/api/gmail/v1"
+	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/googleapi"
 
 	"github.com/mbrt/gmailctl/pkg/errors"
@@ -20,18 +20,18 @@ const (
 )
 
 // NewFromService creates a new GmailAPI instance from the given Gmail service.
-func NewFromService(s *gmailv1.Service) *GmailAPI {
+func NewFromService(s *gmail.Service) *GmailAPI {
 	return &GmailAPI{s, nil}
 }
 
 // NewWithAPIKey creates a new GmailAPI instance from the given Gmail service and API key.
-func NewWithAPIKey(s *gmailv1.Service, key string) *GmailAPI {
+func NewWithAPIKey(s *gmail.Service, key string) *GmailAPI {
 	return &GmailAPI{s, []googleapi.CallOption{keyOption(key)}}
 }
 
 // GmailAPI is a wrapper around the Gmail APIs.
 type GmailAPI struct {
-	service *gmailv1.Service
+	service *gmail.Service
 	opts    []googleapi.CallOption
 }
 
@@ -162,15 +162,15 @@ func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
 	return exportapi.NewLabelMap(labels), nil
 }
 
-func labelToGmailAPI(lb label.Label) *gmailv1.Label {
-	var color *gmailv1.LabelColor
+func labelToGmailAPI(lb label.Label) *gmail.Label {
+	var color *gmail.LabelColor
 	if lb.Color != nil {
-		color = &gmailv1.LabelColor{
+		color = &gmail.LabelColor{
 			BackgroundColor: lb.Color.Background,
 			TextColor:       lb.Color.Text,
 		}
 	}
-	return &gmailv1.Label{
+	return &gmail.Label{
 		Name:  lb.Name,
 		Color: color,
 	}
