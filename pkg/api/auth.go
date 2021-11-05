@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	gmailv1 "google.golang.org/api/gmail/v1"
+	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
 
@@ -46,7 +46,7 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 		return nil, fmt.Errorf("decoding token: %w", err)
 	}
 
-	srv, err := gmailv1.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
+	srv, err := gmail.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
 	if err != nil {
 		return nil, fmt.Errorf("creating gmail client: %w", err)
 	}
@@ -77,9 +77,8 @@ func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
 		return nil, fmt.Errorf("reading credentials: %w", err)
 	}
 	return google.ConfigFromJSON(credBytes,
-		gmailv1.GmailSettingsBasicScope,
-		gmailv1.GmailMetadataScope,
-		gmailv1.GmailLabelsScope,
+		gmail.GmailSettingsBasicScope,
+		gmail.GmailLabelsScope,
 	)
 }
 

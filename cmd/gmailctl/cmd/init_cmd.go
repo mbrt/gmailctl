@@ -32,7 +32,6 @@ To do so, head to https://console.developers.google.com
    3b. Set an application name (e.g. 'gmailctl').
    3c. Update 'Scopes for Google API', by adding:
        * https://www.googleapis.com/auth/gmail.labels
-       * https://www.googleapis.com/auth/gmail.metadata
        * https://www.googleapis.com/auth/gmail.settings.basic
 5. IMPORTANT: you don't need to submit your changes for verification, as
    you're only going to access your own data. Save and 'Go back to
