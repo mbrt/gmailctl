@@ -3,47 +3,41 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
+
+	"google.golang.org/api/gmail/v1"
 
 	"github.com/mbrt/gmailctl/pkg/api"
 )
 
-// Authenticator is the APIProvider used by all gmailctl commands.
-var Authenticator APIProvider = localCredentialsProvider{}
+// APIProvider is the APIProvider used by all gmailctl commands.
+var APIProvider GmailAPIProvider
 
-// APIProvider is the integration point between gmailctl commands and GMail
+// GmailAPIProvider is the integration point between gmailctl commands and GMail
 // APIs providers.
-type APIProvider interface {
-	Open(ctx context.Context) (*api.GmailAPI, error)
+type GmailAPIProvider interface {
+	// Service returns the GMail API service.
+	Service(ctx context.Context, cfgDir string) (*gmail.Service, error)
+	// ResetConfig cleans up the configuration.
+	ResetConfig(cfgDir string) error
+	// InitConfig initializes the configuration.
+	InitConfig(cfgDir string) error
 }
 
-type localCredentialsProvider struct{}
-
-func (l localCredentialsProvider) Open(ctx context.Context) (*api.GmailAPI, error) {
-	auth, err := openCredentials()
-	if err != nil {
-		return nil, fmt.Errorf("invalid credentials: %w", err)
-	}
-	return openToken(ctx, auth)
+// APIKeyProvider is the interface implemented by API providers with
+// an API key.
+type APIKeyProvider interface {
+	// APIKey returns the API key used to authenticate with GMail APIs.
+	// Returns an empty string if not available.
+	APIKey() string
 }
 
 func openAPI() (*api.GmailAPI, error) {
-	return Authenticator.Open(context.Background())
-}
-
-func openCredentials() (*api.Authenticator, error) {
-	cred, err := os.Open(credentialsPath)
+	srv, err := APIProvider.Service(context.Background(), cfgDir)
 	if err != nil {
-		return nil, fmt.Errorf("opening credentials: %w", err)
+		return nil, fmt.Errorf("in Authenticator.Service: %w", err)
 	}
-	return api.NewAuthenticator(cred)
-}
-
-func openToken(ctx context.Context, auth *api.Authenticator) (*api.GmailAPI, error) {
-	token, err := os.Open(tokenPath)
-	if err != nil {
-		return nil, fmt.Errorf("missing or invalid cached token: %w", err)
+	if kprov, ok := APIProvider.(APIKeyProvider); ok {
+		return api.NewWithAPIKey(srv, kprov.APIKey()), nil
 	}
-
-	return auth.API(ctx, token)
+	return api.NewFromService(srv), nil
 }

@@ -36,21 +36,27 @@ type Authenticator struct {
 	cfg   *oauth2.Config
 }
 
+// Service creates a Gmail API service from a token JSON file contents.
+//
+// If no token is available, AuthURL and CacheToken can be used to
+// obtain one.
+func (a Authenticator) Service(ctx context.Context, token io.Reader) (*gmail.Service, error) {
+	tok, err := parseToken(token)
+	if err != nil {
+		return nil, fmt.Errorf("decoding token: %w", err)
+	}
+	return gmail.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
+}
+
 // API creates a GmailAPI instance from a token JSON file contents.
 //
 // If no token is available, AuthURL and CacheToken can be used to
 // obtain one.
 func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, error) {
-	tok, err := parseToken(token)
-	if err != nil {
-		return nil, fmt.Errorf("decoding token: %w", err)
-	}
-
-	srv, err := gmail.NewService(ctx, option.WithTokenSource(a.cfg.TokenSource(ctx, tok)))
+	srv, err := a.Service(ctx, token)
 	if err != nil {
 		return nil, fmt.Errorf("creating gmail client: %w", err)
 	}
-
 	return NewFromService(srv), nil
 }
 
