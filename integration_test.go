@@ -16,13 +16,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mbrt/gmailctl/internal/api"
+	"github.com/mbrt/gmailctl/internal/apply"
+	"github.com/mbrt/gmailctl/internal/config"
+	"github.com/mbrt/gmailctl/internal/config/v1alpha3"
+	"github.com/mbrt/gmailctl/internal/export/xml"
 	"github.com/mbrt/gmailctl/internal/fakegmail"
-	"github.com/mbrt/gmailctl/pkg/api"
-	"github.com/mbrt/gmailctl/pkg/apply"
-	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
-	"github.com/mbrt/gmailctl/pkg/export/xml"
-	"github.com/mbrt/gmailctl/pkg/rimport"
+	"github.com/mbrt/gmailctl/internal/rimport"
 )
 
 // update is useful to regenerate the golden files

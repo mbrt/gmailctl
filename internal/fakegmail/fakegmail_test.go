@@ -6,11 +6,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mbrt/gmailctl/internal/api"
 	"github.com/mbrt/gmailctl/internal/fakegmail"
-	"github.com/mbrt/gmailctl/pkg/api"
-	"github.com/mbrt/gmailctl/pkg/filter"
-	"github.com/mbrt/gmailctl/pkg/gmail"
-	"github.com/mbrt/gmailctl/pkg/label"
+	"github.com/mbrt/gmailctl/internal/filter"
+	"github.com/mbrt/gmailctl/internal/gmail"
+	"github.com/mbrt/gmailctl/internal/label"
 )
 
 func TestLabels(t *testing.T) {

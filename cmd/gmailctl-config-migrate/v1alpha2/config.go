@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
-	"github.com/mbrt/gmailctl/pkg/gmail"
+	"github.com/mbrt/gmailctl/internal/gmail"
 )
 
 // Version is the latest supported version.

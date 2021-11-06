@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mbrt/gmailctl/pkg/errors"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 func askYN(prompt string) bool {

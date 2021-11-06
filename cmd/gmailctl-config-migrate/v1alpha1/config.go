@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/mbrt/gmailctl/pkg/gmail"
+	"github.com/mbrt/gmailctl/internal/gmail"
 )
 
 // Version is the config format version supported by this package.

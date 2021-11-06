@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	papply "github.com/mbrt/gmailctl/pkg/apply"
+	papply "github.com/mbrt/gmailctl/internal/apply"
 )
 
 var (

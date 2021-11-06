@@ -6,10 +6,10 @@ import (
 	"os"
 	"path"
 
-	papply "github.com/mbrt/gmailctl/pkg/apply"
-	"github.com/mbrt/gmailctl/pkg/cfgtest"
-	"github.com/mbrt/gmailctl/pkg/config"
-	"github.com/mbrt/gmailctl/pkg/config/v1alpha3"
+	papply "github.com/mbrt/gmailctl/internal/apply"
+	"github.com/mbrt/gmailctl/internal/cfgtest"
+	"github.com/mbrt/gmailctl/internal/config"
+	"github.com/mbrt/gmailctl/internal/config/v1alpha3"
 )
 
 type parseResult struct {
