@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/mbrt/gmailctl/pkg/api"
-	papply "github.com/mbrt/gmailctl/pkg/apply"
+	"github.com/mbrt/gmailctl/internal/api"
+	papply "github.com/mbrt/gmailctl/internal/apply"
 )
 
 func upstreamConfig(gmailapi *api.GmailAPI) (papply.GmailConfig, error) {

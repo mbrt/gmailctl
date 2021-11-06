@@ -1,7 +1,7 @@
 run:
   deadline: "3m"
   skip-dirs:
-    - pkg/graph
+    - internal/graph
 
 linters:
   enable-all: false
