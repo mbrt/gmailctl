@@ -1,6 +1,6 @@
 package data
 
-import _ "embed"
+import _ "embed" // required to enable go:embed directives.
 
 var (
 	//go:embed gmailctl.libsonnet
