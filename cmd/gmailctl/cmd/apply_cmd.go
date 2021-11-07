@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	papply "github.com/mbrt/gmailctl/internal/apply"
+	papply "github.com/mbrt/gmailctl/internal/engine/apply"
 	"github.com/mbrt/gmailctl/internal/errors"
 )
 

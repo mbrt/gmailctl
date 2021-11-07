@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/internal/api"
+	"github.com/mbrt/gmailctl/internal/engine/api"
 )
 
 // APIProvider is the APIProvider used by all gmailctl commands.

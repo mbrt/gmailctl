@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/internal/export/xml"
+	"github.com/mbrt/gmailctl/internal/engine/export/xml"
 )
 
 var (
