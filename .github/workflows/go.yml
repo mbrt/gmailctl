@@ -28,9 +28,7 @@ jobs:
         version: v1.34
 
     - name: Test
-      run: |
-        go test -v ./...
-        hack/check-codegen.sh
+      run: go test -v ./...
 
     - name: Coverage
       id: coverage
