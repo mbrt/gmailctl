@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
-	"github.com/mbrt/gmailctl/internal/filter"
+	"github.com/mbrt/gmailctl/internal/engine/filter"
 )
 
 var (

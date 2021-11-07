@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/internal/rimport"
+	"github.com/mbrt/gmailctl/internal/engine/rimport"
 )
 
 const downloadHeader = `// Auto-imported filters by 'gmailctl download'.

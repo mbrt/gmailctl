@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/gmail/v1"
 
 	"github.com/mbrt/gmailctl/cmd/gmailctl/cmd"
-	"github.com/mbrt/gmailctl/internal/api"
+	"github.com/mbrt/gmailctl/internal/engine/api"
 )
 
 const (

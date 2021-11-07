@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/mbrt/gmailctl/internal/api"
-	papply "github.com/mbrt/gmailctl/internal/apply"
-	"github.com/mbrt/gmailctl/internal/config"
+	"github.com/mbrt/gmailctl/internal/engine/api"
+	papply "github.com/mbrt/gmailctl/internal/engine/apply"
+	"github.com/mbrt/gmailctl/internal/engine/config"
 	"github.com/mbrt/gmailctl/internal/errors"
 )
 

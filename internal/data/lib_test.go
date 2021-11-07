@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mbrt/gmailctl/internal/config"
-	"github.com/mbrt/gmailctl/internal/config/v1alpha3"
+	"github.com/mbrt/gmailctl/internal/engine/config"
+	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
 )
 
 // update is useful to regenerate the json files, whenever necessary.
