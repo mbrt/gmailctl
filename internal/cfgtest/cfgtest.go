@@ -6,7 +6,7 @@ import (
 
 	"github.com/pmezard/go-difflib/difflib"
 
-	cfg "github.com/mbrt/gmailctl/internal/config/v1alpha3"
+	"github.com/mbrt/gmailctl/internal/config/v1alpha3"
 	"github.com/mbrt/gmailctl/internal/errors"
 	"github.com/mbrt/gmailctl/internal/gmail"
 	"github.com/mbrt/gmailctl/internal/parser"
@@ -47,7 +47,7 @@ type Rules []Rule
 // ExecTests evaluates all the rules against the given tests.
 //
 // The evaluation stops at the first failing test.
-func (rs Rules) ExecTests(ts []cfg.Test) error {
+func (rs Rules) ExecTests(ts []v1alpha3.Test) error {
 	for i, t := range ts {
 		if err := rs.ExecTest(t); err != nil {
 			name := t.Name
@@ -63,7 +63,7 @@ func (rs Rules) ExecTests(ts []cfg.Test) error {
 // ExecTest evaluates the rules on all the messages of the given test.
 //
 // If the rules apply as expected by the test, no error is returned.
-func (rs Rules) ExecTest(t cfg.Test) error {
+func (rs Rules) ExecTest(t v1alpha3.Test) error {
 	for i, msg := range t.Messages {
 		expected, err := rs.MatchingActions(msg)
 		if err != nil {
@@ -105,7 +105,7 @@ func (rs Rules) ExecTest(t cfg.Test) error {
 // that in Gmail this wouldn't be an error, but a nondeterministic action would be
 // applied. Since this situation is most likely a mistake by the user, we treat it
 // as an error.
-func (rs Rules) MatchingActions(msg cfg.Message) (Actions, error) {
+func (rs Rules) MatchingActions(msg v1alpha3.Message) (Actions, error) {
 	var (
 		res Actions
 		err error
@@ -235,6 +235,6 @@ func stringSliceEqual(s1, s2 []string) bool {
 	return true
 }
 
-func messageDetails(msg cfg.Message) string {
+func messageDetails(msg v1alpha3.Message) string {
 	return fmt.Sprintf("Message: %s", reporting.Prettify(msg, false))
 }

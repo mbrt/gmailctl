@@ -6,6 +6,8 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
+
+	"github.com/mbrt/gmailctl/internal/data"
 )
 
 var initReset bool
@@ -69,11 +71,11 @@ func handleCfgDir() (err error) {
 
 	// Create default config files
 	cfgFile := path.Join(cfgDir, "config.jsonnet")
-	if err := createDefault(cfgFile, DefaultConfig()); err != nil {
+	if err := createDefault(cfgFile, data.DefaultConfig()); err != nil {
 		return err
 	}
 	libFile := path.Join(cfgDir, "gmailctl.libsonnet")
-	return createDefault(libFile, GmailctlLib())
+	return createDefault(libFile, data.GmailctlLib())
 }
 
 func createDefault(path, contents string) (err error) {
