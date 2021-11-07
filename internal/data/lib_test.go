@@ -1,4 +1,4 @@
-package config
+package data
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mbrt/gmailctl/internal/config"
 	"github.com/mbrt/gmailctl/internal/config/v1alpha3"
 )
 
@@ -57,7 +58,7 @@ func TestJsonnetLib(t *testing.T) {
 		jfile := tps.jsonnets[i]
 
 		t.Run(jfile, func(t *testing.T) {
-			jnparsed, err := ReadFile(jfile, "")
+			jnparsed, err := config.ReadFile(jfile, "")
 			assert.Nil(t, err)
 
 			jsfile := tps.jsons[i]
