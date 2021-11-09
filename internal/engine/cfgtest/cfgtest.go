@@ -7,9 +7,9 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
-	"github.com/mbrt/gmailctl/internal/errors"
 	"github.com/mbrt/gmailctl/internal/engine/gmail"
 	"github.com/mbrt/gmailctl/internal/engine/parser"
+	"github.com/mbrt/gmailctl/internal/errors"
 	"github.com/mbrt/gmailctl/internal/reporting"
 )
 
