@@ -5,9 +5,9 @@ import (
 
 	gmailv1 "google.golang.org/api/gmail/v1"
 
-	"github.com/mbrt/gmailctl/internal/errors"
 	"github.com/mbrt/gmailctl/internal/engine/filter"
 	"github.com/mbrt/gmailctl/internal/engine/gmail"
+	"github.com/mbrt/gmailctl/internal/errors"
 	"github.com/mbrt/gmailctl/internal/reporting"
 )
 

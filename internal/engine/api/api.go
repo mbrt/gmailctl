@@ -7,10 +7,10 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/googleapi"
 
-	"github.com/mbrt/gmailctl/internal/errors"
-	exportapi "github.com/mbrt/gmailctl/internal/engine/export/api"
+	"github.com/mbrt/gmailctl/internal/engine/export/api"
 	"github.com/mbrt/gmailctl/internal/engine/filter"
 	"github.com/mbrt/gmailctl/internal/engine/label"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 const (
@@ -46,7 +46,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 	if err != nil {
 		return nil, err
 	}
-	return exportapi.Import(apires.Filter, lmap)
+	return api.Import(apires.Filter, lmap)
 }
 
 // DeleteFilters deletes all the given filter IDs.
@@ -67,7 +67,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 		return err
 	}
 
-	gfilters, err := exportapi.Export(fs, lmap)
+	gfilters, err := api.Export(fs, lmap)
 	if err != nil {
 		return err
 	}
@@ -154,12 +154,12 @@ func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 	return nil
 }
 
-func (g *GmailAPI) getLabelMap() (exportapi.LabelMap, error) {
+func (g *GmailAPI) getLabelMap() (api.LabelMap, error) {
 	labels, err := g.ListLabels()
 	if err != nil {
-		return exportapi.LabelMap{}, err
+		return api.LabelMap{}, err
 	}
-	return exportapi.NewLabelMap(labels), nil
+	return api.NewLabelMap(labels), nil
 }
 
 func labelToGmailAPI(lb label.Label) *gmail.Label {
