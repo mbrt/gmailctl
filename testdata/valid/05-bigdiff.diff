@@ -1,14 +1,9 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,82 +1,65 @@
+@@ -1,82 +1,70 @@
  * Criteria:
 -    to: someone-else@gmail.com
-+    from: spammer2
-+  Actions:
-+    delete
-+
-+* Criteria:
 +    query: list:foobaz.mail.com -"action needed"
 +  Actions:
 +    delete
@@ -28,6 +23,11 @@ Filters:
  
  * Criteria:
 -    query: is:muted
++    to: alias@gmail.com
++  Actions:
++    categorize as: promotions
++
++* Criteria:
 +    from: baz+zuz@mail.com
 +  Actions:
 +    mark as important
@@ -89,7 +89,7 @@ Filters:
  
  * Criteria:
 -    query: "something in the body"
-+    query: "buy this thing"
++    from: spammer2
    Actions:
 -    archive
 -    mark as important
@@ -102,16 +102,14 @@ Filters:
  
  * Criteria:
 -    query: list:maillist@google.com
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++    query: "buy this thing"
    Actions:
 -    never mark as important
-+    apply label: differentlabel
++    delete
  
  * Criteria:
 -    query: cc:peeker@yahoo.com -subject:"a subject"
-+    from: spammer1
-+    subject: "spam mail"
-+    query: cc:foo@baz.com bcc:bar@baz.com
++    query: list:{list3 list1 list4 list6} -to:none@gmail.com
    Actions:
 -    archive
 -    mark as important
@@ -120,8 +118,15 @@ Filters:
 -    star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
-+    delete
++    apply label: differentlabel
  
++* Criteria:
++    from: spammer1
++    subject: "spam mail"
++    query: cc:foo@baz.com bcc:bar@baz.com
++  Actions:
++    delete
++
 
 Labels:
 --- Current
