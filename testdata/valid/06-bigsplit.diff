@@ -1,7 +1,7 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,65 +1,15 @@
+@@ -1,70 +1,15 @@
  * Criteria:
 -    query: bcc:aaaa@gmail.com
 +    query: list:{list40 list41 list42 list43 list44 list45 list46 list47 list48 list49 list50}
@@ -43,6 +43,11 @@ Filters:
 -    query: list:foobaz.mail.com -"action needed"
 -  Actions:
 -    delete
+-
+-* Criteria:
+-    to: alias@gmail.com
+-  Actions:
+-    categorize as: promotions
 -
 -* Criteria:
 -    from: baz+zuz@mail.com

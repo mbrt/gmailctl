@@ -94,4 +94,11 @@
     <apps:property name="hasTheWord" value="bcc:aaaa@gmail.com"></apps:property>
     <apps:property name="smartLabelToApply" value="^smartlabel_notification"></apps:property>
   </entry>
+  <entry>
+    <category term="filter"></category>
+    <title>Mail Filter</title>
+    <content></content>
+    <apps:property name="to" value="alias@gmail.com"></apps:property>
+    <apps:property name="smartLabelToApply" value="^smartlabel_promo"></apps:property>
+  </entry>
 </feed>

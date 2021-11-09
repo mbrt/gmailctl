@@ -124,6 +124,14 @@
     },
     {
       "filter": {
+        "to": "alias@gmail.com"
+      },
+      "actions": {
+        "category": "promotions"
+      }
+    },
+    {
+      "filter": {
         "from": "spammer2"
       },
       "actions": {

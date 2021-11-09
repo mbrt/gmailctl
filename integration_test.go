@@ -21,8 +21,8 @@ import (
 	"github.com/mbrt/gmailctl/internal/engine/config"
 	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
 	"github.com/mbrt/gmailctl/internal/engine/export/xml"
-	"github.com/mbrt/gmailctl/internal/fakegmail"
 	"github.com/mbrt/gmailctl/internal/engine/rimport"
+	"github.com/mbrt/gmailctl/internal/fakegmail"
 )
 
 // update is useful to regenerate the golden files
@@ -82,18 +82,7 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 
 			// There should be no diff now with upstream.
-			d2, err := apply.Diff(pres.GmailConfig, upres)
-			require.Nil(t, err)
-			assert.Empty(t, d2.FiltersDiff)
-			assert.Empty(t, d2.LabelsDiff)
-
-			// There should be no diff between the original and the imported config.
-			ipres, err := apply.FromConfig(icfg)
-			require.Nil(t, err)
-			d3, err := apply.Diff(ipres.GmailConfig, upres)
-			require.Nil(t, err)
-			assert.Empty(t, d3.FiltersDiff)
-			assert.Empty(t, d3.LabelsDiff)
+			assertEmptyDiff(t, pres.GmailConfig, upres)
 
 			// Import and convert to Jsonnet.
 			var buf bytes.Buffer
@@ -102,16 +91,6 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 			err = w.Flush()
 			require.Nil(t, err)
-
-			// There should be no diff between the original and the converted config.
-			ijcfg, err := config.ReadJsonnet("", buf.Bytes())
-			require.Nil(t, err)
-			ijpres, err := apply.FromConfig(ijcfg)
-			require.Nil(t, err)
-			d4, err := apply.Diff(ijpres.GmailConfig, upres)
-			require.Nil(t, err)
-			assert.Empty(t, d4.FiltersDiff)
-			assert.Empty(t, d4.LabelsDiff)
 
 			// Compare the results with the golden files (or update the golden files).
 			if *update {
@@ -140,6 +119,65 @@ func TestIntegration(t *testing.T) {
 			assert.Equal(t, string(b), cfgxml.String())
 		})
 	}
+}
+
+func TestIntegrationImportExport(t *testing.T) {
+	cfgPaths := globTestdataPaths(t, "valid/*.jsonnet")
+	gapi := api.NewFromService(fakegmail.NewService(context.Background(), t))
+
+	for _, cfgPath := range cfgPaths {
+		name := strings.TrimSuffix(cfgPath, ".jsonnet")
+		t.Run(name, func(t *testing.T) {
+			// Parse the config.
+			cfg, err := config.ReadFile(cfgPath, filepath.Join("testdata", cfgPath))
+			require.Nil(t, err)
+			pres, err := apply.FromConfig(cfg)
+			require.Nil(t, err)
+
+			// Fetch the upstream filters.
+			upres, err := apply.FromAPI(gapi)
+			require.Nil(t, err)
+
+			// Apply the diff.
+			d, err := apply.Diff(pres.GmailConfig, upres)
+			require.Nil(t, err)
+			err = apply.Apply(d, gapi, true)
+			require.Nil(t, err)
+
+			// Import.
+			upres, err = apply.FromAPI(gapi)
+			require.Nil(t, err)
+			icfg, err := rimport.Import(upres.Filters, upres.Labels)
+			require.Nil(t, err)
+
+			// There should be no diff between the original and the imported config.
+			ipres, err := apply.FromConfig(icfg)
+			require.Nil(t, err)
+			assertEmptyDiff(t, ipres.GmailConfig, upres)
+
+			// Convert to Jsonnet.
+			var buf bytes.Buffer
+			w := bufio.NewWriter(&buf)
+			err = rimport.MarshalJsonnet(icfg, w, "// Download header.\n")
+			require.Nil(t, err)
+			err = w.Flush()
+			require.Nil(t, err)
+
+			// There should be no diff between the original and the converted config.
+			ijcfg, err := config.ReadJsonnet("", buf.Bytes())
+			require.Nil(t, err)
+			ijpres, err := apply.FromConfig(ijcfg)
+			require.Nil(t, err)
+			assertEmptyDiff(t, ijpres.GmailConfig, upres)
+		})
+	}
+}
+
+func assertEmptyDiff(t *testing.T, local, remote apply.GmailConfig) {
+	d, err := apply.Diff(local, remote)
+	require.Nil(t, err)
+	assert.Empty(t, d.FiltersDiff)
+	assert.Empty(t, d.LabelsDiff)
 }
 
 func mustParseTime(layout, value string) time.Time {

@@ -102,5 +102,11 @@ local filters = {
         category: 'updates',
       },
     },
+    {
+      filter: { to: 'alias@gmail.com' },
+      actions: {
+        category: 'promotions',
+      },
+    },
   ],
 }
