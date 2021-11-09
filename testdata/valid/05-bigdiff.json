@@ -6,6 +6,13 @@
   },
   "labels": [
     {
+      "name": "label4",
+      "color": {
+        "background": "white",
+        "text": "gray"
+      }
+    },
+    {
       "name": "maillist"
     },
     {
@@ -23,28 +30,6 @@
       "actions": {
         "labels": [
           "thirdlabel"
-        ]
-      }
-    },
-    {
-      "filter": {
-        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
-      },
-      "actions": {
-        "archive": true,
-        "category": "personal",
-        "labels": [
-          "maillist"
-        ]
-      }
-    },
-    {
-      "filter": {
-        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
-      },
-      "actions": {
-        "labels": [
-          "differentlabel"
         ]
       }
     },
@@ -114,6 +99,16 @@
     },
     {
       "filter": {
+        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
+      },
+      "actions": {
+        "labels": [
+          "differentlabel"
+        ]
+      }
+    },
+    {
+      "filter": {
         "from": "baz+zuz@mail.com"
       },
       "actions": {
@@ -144,6 +139,18 @@
       },
       "actions": {
         "delete": true
+      }
+    },
+    {
+      "filter": {
+        "query": "list:{list3 list1 list4 list6} -to:none@gmail.com"
+      },
+      "actions": {
+        "archive": true,
+        "category": "personal",
+        "labels": [
+          "maillist"
+        ]
       }
     }
   ]

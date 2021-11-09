@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mbrt/gmailctl/internal/engine/filter"
 )
 
 func TestInvalid(t *testing.T) {
@@ -81,4 +83,18 @@ func TestValid(t *testing.T) {
 			assert.Nil(t, err)
 		})
 	}
+}
+
+func TestValidateUsed(t *testing.T) {
+	d := LabelsDiff{
+		Removed: Labels{{Name: "foo"}},
+	}
+	fs := filter.Filters{
+		{
+			Criteria: filter.Criteria{To: "foobar"},
+			Action:   filter.Actions{AddLabel: "foo"},
+		},
+	}
+	err := Validate(d, fs)
+	assert.NotNil(t, err)
 }

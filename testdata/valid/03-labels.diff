@@ -127,6 +127,7 @@ Filters:
 Labels:
 --- Current
 +++ TO BE APPLIED
-@@ -1 +1 @@
+@@ -1 +1,2 @@
 -maillist
 +label3
++label4; color: white, black

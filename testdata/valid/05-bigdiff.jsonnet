@@ -49,6 +49,14 @@ local filters = {
     { name: 'differentlabel' },
     { name: 'maillist' },
     { name: 'thirdlabel' },
+    {
+      name: 'label4',
+      // Different color.
+      color: {
+        text: 'gray',
+        background: 'white',
+      },
+    },
   ],
   rules: [
     {
