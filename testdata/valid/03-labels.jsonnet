@@ -5,8 +5,16 @@
     // The label 'maillist' is gone.
     // The label 'label2' doesn't change. We just don't specify the color.
     { name: 'label2' },
-    // One more label
+    // One more label.
     { name: 'label3' },
+    // And one more label with a color.
+    {
+      name: 'label4',
+      color: {
+        text: 'black',
+        background: 'white',
+      },
+    },
   ],
   rules: [
     {

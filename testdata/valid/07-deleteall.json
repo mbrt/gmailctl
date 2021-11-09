@@ -6,6 +6,13 @@
   },
   "labels": [
     {
+      "name": "label4",
+      "color": {
+        "background": "white",
+        "text": "gray"
+      }
+    },
+    {
       "name": "maillist"
     },
     {
