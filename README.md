@@ -64,12 +64,12 @@ This project then exists to provide to your Gmail filters:
 
 ## Install
 
-gmailctl is written in Go and requires at least Go version 1.15. Make sure to
+gmailctl is written in Go and requires at least Go version 1.17. Make sure to
 setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly,
 including the `bin` subdirectory in your `$PATH`.
 
 ```
-go get -u github.com/mbrt/gmailctl/cmd/gmailctl
+go install github.com/mbrt/gmailctl/cmd/gmailctl@latest
 ```
 
 Alternatively, if you're on macOS, you can install easily via Homebrew:
