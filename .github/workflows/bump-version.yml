@@ -1,0 +1,36 @@
+# This workflow is manually triggered.
+name: Bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (x.x.x)'
+        required: true
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v2
+
+    - name: Setup Git
+      run: |
+        git config user.name 'GitHub Actions'
+        git config user.email 'actions@github.com'
+
+    - name: Bump version
+      run: |
+        VERSION=${{ github.event.inputs.version }}
+        hack/update-version.sh "${VERSION}"
+        git add cmd/gmailctl/cmd/version.go
+        git commit -m "Bump version to ${VERSION}"
+        git tag "v${VERSION}"
+
+        hack/update-version.sh "${VERSION}-dev"
+        git add cmd/gmailctl/cmd/version.go
+        git commit -m "Bump version to ${VERSION}-dev"
+
+    - name: Push latest version
+      run: git push origin master --follow-tags
