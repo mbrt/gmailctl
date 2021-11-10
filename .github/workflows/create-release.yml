@@ -9,7 +9,6 @@ jobs:
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: publish
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
