@@ -1,6 +1,7 @@
+// Package stringset helps with common set operations on strings.
+//
+// This is inspired by https://github.com/uber/kraken/blob/master/utils/stringset/stringset.go.
 package stringset
-
-import "errors"
 
 // Set is a nifty little wrapper for common set operations on a map. Because it
 // is equivalent to a map, make/range/len will still work with Set.
