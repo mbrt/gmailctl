@@ -26,7 +26,7 @@ jobs:
         hack/update-version.sh "${VERSION}"
         git add cmd/gmailctl/cmd/version.go
         git commit -m "Bump version to ${VERSION}"
-        git tag "v${VERSION}"
+        git tag -a "v${VERSION}" -m "Release version ${VERSION}."
 
         hack/update-version.sh "${VERSION}-dev"
         git add cmd/gmailctl/cmd/version.go
