@@ -33,7 +33,7 @@ To do so, head to https://console.developers.google.com
 5. IMPORTANT: you don't need to submit your changes for verification, as
    you're only going to access your own data. Save and 'Go back to
    Dashboard'.
-   5a. Make sure that the 'Publishig status' is set to 'In production'.
+   5a. Make sure that the 'Publishing status' is set to 'In production'.
        If it's set to 'Testing', Publish the app and ignore the
 	   verification. Using the testing mode will make your tokens
 	   expire every 7 days and require re-authentication.
