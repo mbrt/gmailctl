@@ -20,6 +20,7 @@ const renameLabelWarning = `Warning: You are going to delete labels. This operat
 irreversible, because it also removes those labels from messages.
 
 If you are looking for renaming labels, please use the GMail UI.
+
 `
 
 // applyCmd represents the apply command
@@ -84,7 +85,7 @@ func apply(path string, interactive, test bool) error {
 	}
 
 	if len(diff.LabelsDiff.Removed) > 0 {
-		fmt.Println(renameLabelWarning)
+		fmt.Print(renameLabelWarning)
 		if !applyRemoveLabels {
 			return errors.WithDetails(errors.New("no changes have been made"),
 				"To protect you, deletion is disabled unless you\n"+
