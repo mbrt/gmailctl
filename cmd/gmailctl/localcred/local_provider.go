@@ -10,6 +10,7 @@ import (
 
 	"github.com/mbrt/gmailctl/cmd/gmailctl/cmd"
 	"github.com/mbrt/gmailctl/internal/engine/api"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 const (
@@ -84,6 +85,23 @@ func (Provider) ResetConfig(cfgDir string) error {
 	}
 	if err := deleteFile(tokenPath(cfgDir)); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (Provider) RefreshToken(ctx context.Context, cfgDir string) error {
+	auth, err := openCredentials(credentialsPath(cfgDir))
+	if err != nil {
+		return errors.WithDetails(fmt.Errorf("invalid credentials: %w", err),
+			"Please run 'gmailctl init' to initialize the credentials.")
+	}
+	svc, err := openToken(ctx, auth, tokenPath(cfgDir))
+	if err != nil {
+		return setupToken(auth, tokenPath(cfgDir))
+	}
+	// Check whether the token works by getting a label.
+	if _, err := svc.Users.Labels.Get("me", "INBOX").Context(ctx).Do(); err != nil {
+		return setupToken(auth, tokenPath(cfgDir))
 	}
 	return nil
 }

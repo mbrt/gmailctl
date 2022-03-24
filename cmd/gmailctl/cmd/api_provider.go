@@ -31,6 +31,12 @@ type APIKeyProvider interface {
 	APIKey() string
 }
 
+// TokenRefresher allows to refresh API tokens if they are expired.
+type TokenRefresher interface {
+	// RefreshToken refreshes the token if it is expired.
+	RefreshToken(ctx context.Context, cfgDir string) error
+}
+
 func openAPI() (*api.GmailAPI, error) {
 	srv, err := APIProvider.Service(context.Background(), cfgDir)
 	if err != nil {

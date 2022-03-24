@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -10,7 +11,10 @@ import (
 	"github.com/mbrt/gmailctl/internal/data"
 )
 
-var initReset bool
+var (
+	initReset          bool
+	initRefreshExpired bool
+)
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -23,6 +27,8 @@ setting up the API authorizations and initial settings.`,
 		var err error
 		if initReset {
 			err = resetConfig()
+		} else if initRefreshExpired {
+			err = refreshToken()
 		} else {
 			err = continueConfig()
 		}
@@ -37,6 +43,7 @@ func init() {
 
 	// Flags and configuration settings
 	initCmd.Flags().BoolVar(&initReset, "reset", false, "Reset the configuration.")
+	initCmd.Flags().BoolVar(&initRefreshExpired, "refresh-expired", false, "Refresh auth token if expired.")
 }
 
 func resetConfig() error {
@@ -55,6 +62,13 @@ func continueConfig() error {
 		return err
 	}
 	fmt.Println("\nYou have correctly configured gmailctl to use Gmail APIs.")
+	return nil
+}
+
+func refreshToken() error {
+	if rt, ok := APIProvider.(TokenRefresher); ok {
+		return rt.RefreshToken(context.Background(), cfgDir)
+	}
 	return nil
 }
 
