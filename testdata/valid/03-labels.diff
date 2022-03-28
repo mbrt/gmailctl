@@ -1,7 +1,7 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -5,28 +5,26 @@
+@@ -7,28 +7,26 @@
      mark as important
      never mark as spam
      mark as read
@@ -31,7 +31,7 @@ Filters:
  * Criteria:
      query: replyto:replyer@gmail.com
    Actions:
-@@ -34,11 +32,10 @@
+@@ -36,11 +34,10 @@
      mark as important
      never mark as spam
      mark as read
@@ -43,7 +43,7 @@ Filters:
  * Criteria:
      query: bcc:bccer@gmail.com
    Actions:
-@@ -46,11 +43,10 @@
+@@ -48,11 +45,10 @@
      mark as important
      never mark as spam
      mark as read
@@ -55,7 +55,7 @@ Filters:
  * Criteria:
      from: someone@gmail.com
    Actions:
-@@ -58,11 +54,10 @@
+@@ -60,11 +56,10 @@
      mark as important
      never mark as spam
      mark as read
@@ -67,7 +67,7 @@ Filters:
  * Criteria:
      query: is:muted
    Actions:
-@@ -70,11 +65,10 @@
+@@ -72,11 +67,10 @@
      mark as important
      never mark as spam
      mark as read
@@ -79,7 +79,7 @@ Filters:
  * Criteria:
      to: someone-else@gmail.com
    Actions:
-@@ -82,43 +76,7 @@
+@@ -84,45 +78,7 @@
      mark as important
      never mark as spam
      mark as read
@@ -109,7 +109,9 @@ Filters:
 -    apply label: label2
 -
 -* Criteria:
--    query: cc:peeker@yahoo.com -subject:"a subject"
+-    query: 
+-      cc:peeker@yahoo.com
+-      -subject:"a subject"
 -  Actions:
 -    apply label: label2
 -

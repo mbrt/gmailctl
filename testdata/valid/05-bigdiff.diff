@@ -1,28 +1,43 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1,82 +1,70 @@
+@@ -1,84 +1,95 @@
  * Criteria:
 -    to: someone-else@gmail.com
-+    query: list:foobaz.mail.com -"action needed"
-+  Actions:
-+    delete
-+
-+* Criteria:
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++    from: spammer2
    Actions:
-     archive
+-    archive
 -    mark as important
 -    never mark as spam
 -    mark as read
 -    star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
-+    categorize as: personal
-+    apply label: maillist
++    delete
  
  * Criteria:
 -    query: is:muted
++    query: "buy this thing"
+   Actions:
+-    archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    delete
+ 
+ * Criteria:
+     query: 
+-      cc:peeker@yahoo.com
+-      -subject:"a subject"
++      list:foobaz.mail.com
++      -"action needed"
++  Actions:
++    delete
++
++* Criteria:
 +    to: alias@gmail.com
 +  Actions:
 +    categorize as: promotions
@@ -50,7 +65,66 @@ Filters:
  
  * Criteria:
 -    from: someone@gmail.com
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
++    to: pippo+spammy@gmail.com
++  Actions:
++    delete
++
++* Criteria:
++    query: bcc:aaaa@gmail.com
++  Actions:
++    categorize as: updates
++
++* Criteria:
++    query: 
++      list:{
++        list3
++        list1
++        list4
++        list6
++      }
++      -to:none@gmail.com
++  Actions:
++    apply label: differentlabel
++
++* Criteria:
++    from: spammer1
++    subject: "spam mail"
++    query: 
++      cc:foo@baz.com
++      bcc:bar@baz.com
++  Actions:
++    delete
++
++* Criteria:
++    query: 
++      list:{
++        list3
++        list1
++        list4
++        list6
++      }
++      -to:none@gmail.com
+   Actions:
+     archive
+-    mark as important
+-    never mark as spam
+-    mark as read
+-    star
+-    categorize as: social
+-    forward to: forward-address@gmail.com
++    categorize as: personal
++    apply label: maillist
+ 
+ * Criteria:
+-    query: bcc:bccer@gmail.com
++    query: 
++      list:{
++        list3
++        list1
++        list4
++        list6
++      }
++      -to:none@gmail.com
    Actions:
 -    archive
 -    mark as important
@@ -61,23 +135,9 @@ Filters:
 -    forward to: forward-address@gmail.com
 +    apply label: thirdlabel
  
- * Criteria:
--    query: bcc:bccer@gmail.com
-+    to: pippo+spammy@gmail.com
-   Actions:
--    archive
--    mark as important
--    never mark as spam
--    mark as read
--    star
--    categorize as: social
--    forward to: forward-address@gmail.com
-+    delete
- 
- * Criteria:
+-* Criteria:
 -    query: replyto:replyer@gmail.com
-+    query: bcc:aaaa@gmail.com
-   Actions:
+-  Actions:
 -    archive
 -    mark as important
 -    never mark as spam
@@ -85,12 +145,10 @@ Filters:
 -    star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
-+    categorize as: updates
- 
- * Criteria:
+-
+-* Criteria:
 -    query: "something in the body"
-+    from: spammer2
-   Actions:
+-  Actions:
 -    archive
 -    mark as important
 -    never mark as spam
@@ -98,35 +156,12 @@ Filters:
 -    star
 -    categorize as: social
 -    forward to: forward-address@gmail.com
-+    delete
- 
- * Criteria:
+-
+-* Criteria:
 -    query: list:maillist@google.com
-+    query: "buy this thing"
-   Actions:
+-  Actions:
 -    never mark as important
-+    delete
- 
- * Criteria:
--    query: cc:peeker@yahoo.com -subject:"a subject"
-+    query: list:{list3 list1 list4 list6} -to:none@gmail.com
-   Actions:
--    archive
--    mark as important
--    never mark as spam
--    mark as read
--    star
--    categorize as: social
--    forward to: forward-address@gmail.com
-+    apply label: differentlabel
- 
-+* Criteria:
-+    from: spammer1
-+    subject: "spam mail"
-+    query: cc:foo@baz.com bcc:bar@baz.com
-+  Actions:
-+    delete
-+
+-
 
 Labels:
 --- Current

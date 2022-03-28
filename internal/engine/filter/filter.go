@@ -1,7 +1,9 @@
 package filter
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/mbrt/gmailctl/internal/engine/gmail"
@@ -50,7 +52,8 @@ func (f Filter) String() string {
 	w.WriteParam("from", f.Criteria.From)
 	w.WriteParam("to", f.Criteria.To)
 	w.WriteParam("subject", f.Criteria.Subject)
-	w.WriteParam("query", f.Criteria.Query)
+
+	w.WriteParam("query", indent(f.Criteria.Query, 2))
 
 	w.WriteString("  Actions:\n")
 	w.WriteBool("archive", f.Action.Archive)
@@ -65,6 +68,93 @@ func (f Filter) String() string {
 	w.WriteParam("forward to", f.Action.Forward)
 
 	return w.String()
+}
+
+func indent(query string, level int) string {
+	var indented bytes.Buffer
+	if !indentInternal(strings.NewReader(query), &indented, level+1) {
+		return query
+	}
+	return "\n" + strings.TrimRight(indented.String(), "\n ")
+}
+
+func indentInternal(queryReader io.RuneReader, out *bytes.Buffer, level int) bool {
+	type parseState int
+	const (
+		other parseState = iota
+		skipSpaces
+		inQuotes
+	)
+
+	for i := 0; i < level; i++ {
+		out.Write([]byte("  "))
+	}
+
+	indentationWasNeeded := false
+	writeIndentation := func(n int) {
+		out.WriteByte('\n')
+		for i := 0; i < n; i++ {
+			out.Write([]byte("  "))
+		}
+		indentationWasNeeded = true
+	}
+
+	state := skipSpaces
+
+	for {
+		r, _, err := queryReader.ReadRune()
+		if err != nil {
+			break
+		}
+		switch state {
+		case inQuotes:
+			out.WriteRune(r)
+			if r == '"' {
+				state = other
+			}
+		case skipSpaces, other:
+			switch r {
+			case ' ':
+				if state == skipSpaces {
+					continue
+				}
+				writeIndentation(level)
+
+			case '{', '(':
+				out.WriteRune(r)
+
+				level++
+				writeIndentation(level)
+
+				state = skipSpaces
+
+			case '}', ')':
+				writeIndentation(level - 1)
+				out.WriteRune(r)
+
+				level--
+				writeIndentation(level)
+
+				state = skipSpaces
+
+			case ':':
+				out.WriteByte(':')
+				state = skipSpaces
+
+			case '"':
+				state = inQuotes
+				out.WriteByte('"')
+
+			default:
+				if state != inQuotes {
+					state = other
+				}
+				out.WriteRune(r)
+			}
+		}
+	}
+
+	return indentationWasNeeded
 }
 
 // HasLabel returns true if the given label is used by the filter.
