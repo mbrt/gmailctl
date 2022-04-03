@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"regexp"
 )
@@ -54,7 +55,7 @@ func MarshalJsonnet(v interface{}, w io.Writer, header string) error {
 		line, _, err = reader.ReadLine()
 	}
 
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		return writer.Flush()
 	}
 	return err

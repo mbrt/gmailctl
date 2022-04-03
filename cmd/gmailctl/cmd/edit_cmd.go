@@ -177,7 +177,8 @@ func spawnEditor(path string) error {
 		if err == nil {
 			return nil
 		}
-		if _, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, exitErr) {
 			return errAbort
 		}
 	}
