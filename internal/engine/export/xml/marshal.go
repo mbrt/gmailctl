@@ -19,7 +19,7 @@ func NewWithTime(now func() time.Time) Exporter {
 	return Exporter{now}
 }
 
-var defaultNow func() time.Time = time.Now
+var defaultNow = time.Now
 
 type xmlDoc struct {
 	XMLName     xml.Name  `xml:"feed"`

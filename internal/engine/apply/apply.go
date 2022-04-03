@@ -51,7 +51,7 @@ type FetchAPI interface {
 func FromAPI(api FetchAPI) (GmailConfig, error) {
 	l, err := api.ListLabels()
 	if err != nil {
-		return GmailConfig{}, fmt.Errorf("listing labels from Gmail: %v", err)
+		return GmailConfig{}, fmt.Errorf("listing labels from Gmail: %w", err)
 	}
 	f, err := api.ListFilters()
 	if err != nil {

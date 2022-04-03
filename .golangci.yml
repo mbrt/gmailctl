@@ -8,15 +8,18 @@ linters:
   enable:
     - deadcode
     - errcheck
+    - errname
+    - errorlint
     - gocritic
     - gofmt
-    - golint
     - gosec
     - gosimple
     - govet
     - ineffassign
     - misspell
+    - revive
     - staticcheck
     - structcheck
     - unconvert
+    - unused
     - varcheck

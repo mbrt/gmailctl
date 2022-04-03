@@ -8,24 +8,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type errType struct {
+type someError struct {
 	a int
 }
 
-func (errType) Error() string { return "errType" }
+func (someError) Error() string { return "someError" }
 
 func TestAnnotated(t *testing.T) {
 	err1 := errors.New("error1")
-	err2 := errType{3}
+	err2 := someError{3}
 	wrapped := WithCause(err2, err1)
 
 	// The error is both err1 and err2
-	assert.Equal(t, "error1: errType", wrapped.Error())
+	assert.Equal(t, "error1: someError", wrapped.Error())
 	assert.True(t, errors.Is(wrapped, err1))
 	assert.True(t, errors.Is(wrapped, err2))
 
 	// Contents are preserved.
-	var et errType
+	var et someError
 	assert.True(t, errors.As(wrapped, &et))
 	assert.Equal(t, err2, et)
 
