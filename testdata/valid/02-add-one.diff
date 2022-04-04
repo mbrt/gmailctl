@@ -1,7 +1,7 @@
 Filters:
 --- Current
 +++ TO BE APPLIED
-@@ -1 +1,119 @@
+@@ -1 +1,123 @@
 +* Criteria:
 +    query: replyto:replyer@gmail.com
 +  Actions:
@@ -59,7 +59,9 @@ Filters:
 +    apply label: label2
 +
 +* Criteria:
-+    query: cc:peeker@yahoo.com -subject:"a subject"
++    query: 
++      cc:peeker@yahoo.com
++      -subject:"a subject"
 +  Actions:
 +    archive
 +    mark as important
@@ -83,7 +85,9 @@ Filters:
 +    forward to: forward-address@gmail.com
 +
 +* Criteria:
-+    query: cc:peeker@yahoo.com -subject:"a subject"
++    query: 
++      cc:peeker@yahoo.com
++      -subject:"a subject"
 +  Actions:
 +    apply label: label2
 +

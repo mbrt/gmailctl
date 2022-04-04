@@ -43,7 +43,8 @@ func TestDiffOutput(t *testing.T) {
 		{
 			ID: "abcdefg",
 			Criteria: Criteria{
-				From: "someone@gmail.com",
+				From:  "someone@gmail.com",
+				Query: "(a b) subject:(foo bar)",
 			},
 			Action: Actions{
 				MarkRead: true,
@@ -54,7 +55,8 @@ func TestDiffOutput(t *testing.T) {
 	new := Filters{
 		{
 			Criteria: Criteria{
-				From: "{someone@gmail.com else@gmail.com}",
+				From:  "{someone@gmail.com else@gmail.com}",
+				Query: "(a c) subject:(foo baz)",
 			},
 			Action: Actions{
 				MarkRead: true,
@@ -69,10 +71,21 @@ func TestDiffOutput(t *testing.T) {
 	expected := `
 --- Current
 +++ TO BE APPLIED
-@@ -1,6 +1,6 @@
+@@ -1,15 +1,15 @@
  * Criteria:
 -    from: someone@gmail.com
 +    from: {someone@gmail.com else@gmail.com}
+     query: 
+       (
+         a
+-        b
++        c
+       )
+       subject:(
+         foo
+-        bar
++        baz
+       )
    Actions:
      mark as read
      categorize as: personal`
@@ -321,4 +334,46 @@ func TestDuplicate(t *testing.T) {
 	assert.Nil(t, err)
 	// Only one of the two identical filters is present
 	assert.Equal(t, new[1:], fd.Added)
+}
+
+func TestIndent(t *testing.T) {
+	testCases := []struct{ name, query, want string }{
+		{"no_newline_necessary", `from:"foo bar"`, `from:"foo bar"`},
+		{"quotes", `from:"foo bar" "another foo bar" "good thing gmail doesn't support escaping" "re: something"`, `
+  from:"foo bar"
+  "another foo bar"
+  "good thing gmail doesn't support escaping"
+  "re: something"`},
+		{"parens", `(a b) subject:(foo bar "re: something")`, `
+  (
+    a
+    b
+  )
+  subject:(
+    foo
+    bar
+    "re: something"
+  )`},
+		{"negations_and_braces", `-(x {y -z} l)`, `
+  -(
+    x
+    {
+      y
+      -z
+    }
+    l
+  )`},
+		{"unicode", `日(本)語`, `
+  日(
+    本
+  )
+  語`},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := indent(tc.query, 0)
+			assert.Equal(t, tc.want, got)
+		})
+	}
 }
