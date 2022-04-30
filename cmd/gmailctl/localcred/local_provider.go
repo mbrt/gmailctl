@@ -123,14 +123,21 @@ func openToken(ctx context.Context, auth *api.Authenticator, path string) (*gmai
 }
 
 func setupToken(auth *api.Authenticator, path string) error {
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\nAuthorization code: ", auth.AuthURL())
-
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		return fmt.Errorf("unable to retrieve token from web: %w", err)
+	localSrv := newOauth2Server(auth.State)
+	addr, err := localSrv.Start()
+	if err != nil {
+		return errors.WithDetails(fmt.Errorf("starting local server: %w", err),
+			"gmailctl requires a temporary local HTTP server for the authentication flow.")
 	}
+	defer localSrv.Close()
 
+	fmt.Printf("Go to the following link in your browser and authorize gmailctl: \n"+
+		"%v\n\n"+
+		"NOTE: If you are running on a remote machine this will not work.\n"+
+		"Please execute this command on your desktop and copy the\n"+
+		"credentials to the remote machine.\n", auth.AuthURL("http://"+addr))
+
+	authCode := localSrv.WaitForCode()
 	if err := saveToken(path, authCode, auth); err != nil {
 		return fmt.Errorf("caching token: %w", err)
 	}
