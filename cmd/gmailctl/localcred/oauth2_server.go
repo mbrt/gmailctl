@@ -2,6 +2,7 @@ package localcred
 
 import (
 	"fmt"
+	"html"
 	"net"
 	"net/http"
 )
@@ -74,5 +75,5 @@ func (s *oauth2Server) WaitForCode() string {
 
 func writeError(resp http.ResponseWriter, err error, code int) {
 	resp.WriteHeader(code)
-	_, _ = resp.Write([]byte(fmt.Sprintf("Error: %v", err)))
+	_, _ = resp.Write([]byte(html.EscapeString(fmt.Sprintf("Error: %v", err))))
 }
