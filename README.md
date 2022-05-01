@@ -872,6 +872,34 @@ feature. If you really want to do this, you can manually export your rules with
 `gmailctl export > filters.xml`, upload them by using the Gmail Settings UI and
 select the "apply new filters to existing email" checkbox.
 
+### OAuth2 authentication errors
+
+Gmail APIs require strict controls, even if you are only accessing your own
+data. If you're getting errors similar to:
+
+```
+oauth2: cannot fetch token: 400 Bad Request
+Response: {
+  "error": "invalid_grant",
+  "error_description": "Bad Request"
+}
+```
+
+it's likely your auth token expired. Try refreshing it with:
+
+```bash
+$ gmailctl init --refresh-expired
+```
+
+and follow the instructions on screen.
+
+If this doesn't help, retry the authorization workflow from the start:
+
+```bash
+$ gmailctl init --reset
+$ gmailctl init
+```
+
 ### YAML config is unsupported
 
 gmailctl recently deprecated older config versions (`v1alpha1`, `v1alpha2`).

@@ -14,40 +14,53 @@ import (
 )
 
 const (
+	// Keep in sync with https://rclone.org/drive/#making-your-own-client-id.
+	// They hit the exact same issues with Google Drive.
 	credentialsMissingMsg = `The credentials are not initialized.
 
 To do so, head to https://console.developers.google.com
 
 1. Create a new project if you don't have one.
-1. Go to 'Enable API and services' and select Gmail.
-2. Go to credentials and create a new one, by selecting 'Help me choose'.
-   2a. Select the Gmail API.
-   2b. Select 'Other UI'.
-   2c. Access 'User data'.
-3. Go to 'OAuth consent screen'.
-   3a. If your account is managed by an organization, you have to
-       select 'Internal' as 'User Type' and Create (otherwise ignore).
-   3b. Set an application name (e.g. 'gmailctl').
-   3c. Update 'Scopes for Google API', by adding:
-       * https://www.googleapis.com/auth/gmail.labels
-       * https://www.googleapis.com/auth/gmail.settings.basic
-5. IMPORTANT: you don't need to submit your changes for verification, as
-   you're only going to access your own data. Save and 'Go back to
-   Dashboard'.
-   5a. Make sure that the 'Publishing status' is set to 'In production'.
-       If it's set to 'Testing', Publish the app and ignore the
-	   verification. Using the testing mode will make your tokens
-	   expire every 7 days and require re-authentication.
-6. Go back to Credentials.
-   6a. Click 'Create credentials'.
-   6b. Select 'OAuth client ID'.
-   6c. Select 'Desktop app' as 'Application type' and give it a name.
-   6d. Create.
-7. Download the credentials file into '%s' and execute the 'init'
+1. Go to 'Enable API and services', search for Gmail and enable it.
+2. Go to 'OAuth consent screen'.
+    2a. If your account is managed by an organization, you have to
+        select 'Internal' as 'User Type'. For individual accounts
+        select 'External'.
+    2b. Set an application name (e.g. 'gmailctl').
+    2c. Use your email for 'User support email' and 'Developer
+        contact information'. Save and continue.
+    3c. Select 'Add or remove scopes' and add:
+        * https://www.googleapis.com/auth/gmail.labels
+        * https://www.googleapis.com/auth/gmail.settings.basic
+    3d. Save and continue until you're back to the dashboard.
+3. You now have a choice. You can either:
+    * Click on 'Publish App' and avoid 'Submitting for
+      verification'. This will result in scary confirmation
+      screens or error messaages when you authorize gmailctl with
+      your account (but for some users it works), OR
+    * You could add your email as 'Test user' and keep the app in
+      'Testing' mode. In this case everything will work, but
+      you'll have to login and confirm the access every week (token
+      expiration).
+4.  Go to Credentials on the left.
+    4a. Click 'Create credentials'.
+    4b. Select 'OAuth client ID'.
+    4c. Select 'Desktop app' as 'Application type' and give it a name.
+    4d. Create.
+5. Download the credentials file into %q and execute the 'init'
    command again.
 
 Documentation about Gmail API authorization can be found
 at: https://developers.google.com/gmail/api/auth/about-auth
+`
+	authMessage = `Go to the following link in your browser and authorize gmailctl:
+
+%v
+
+NOTE that gmailctl runs a webserver on your local machine to
+collect the token as returned from Google. This only runs until
+the token is saved. If your browser is on another machine
+without access to the local network, this will not work.
 `
 )
 
@@ -123,14 +136,16 @@ func openToken(ctx context.Context, auth *api.Authenticator, path string) (*gmai
 }
 
 func setupToken(auth *api.Authenticator, path string) error {
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\nAuthorization code: ", auth.AuthURL())
-
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		return fmt.Errorf("unable to retrieve token from web: %w", err)
+	localSrv := newOauth2Server(auth.State)
+	addr, err := localSrv.Start()
+	if err != nil {
+		return errors.WithDetails(fmt.Errorf("starting local server: %w", err),
+			"gmailctl requires a temporary local HTTP server for the authentication flow.")
 	}
+	defer localSrv.Close()
 
+	fmt.Printf(authMessage, auth.AuthURL("http://"+addr))
+	authCode := localSrv.WaitForCode()
 	if err := saveToken(path, authCode, auth); err != nil {
 		return fmt.Errorf("caching token: %w", err)
 	}
@@ -145,7 +160,7 @@ func saveToken(path, authCode string, auth *api.Authenticator) (err error) {
 	}
 	defer func() {
 		e = f.Close()
-		// do not hide more important error
+		// Do not hide more important errors.
 		if err == nil {
 			err = e
 		}

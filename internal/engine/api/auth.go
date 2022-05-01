@@ -62,7 +62,8 @@ func (a Authenticator) API(ctx context.Context, token io.Reader) (*GmailAPI, err
 
 // AuthURL returns the URL the user has to visit to authorize the
 // application and obtain an auth code.
-func (a Authenticator) AuthURL() string {
+func (a Authenticator) AuthURL(redirectURL string) string {
+	a.cfg.RedirectURL = redirectURL
 	return a.cfg.AuthCodeURL(a.State, oauth2.AccessTypeOffline)
 }
 

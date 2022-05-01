@@ -1,3 +1,4 @@
 /gmailctl
 mycfg.jsonnet
 *.snap
+/tmp

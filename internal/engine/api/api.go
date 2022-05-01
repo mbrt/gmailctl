@@ -3,7 +3,9 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
+	"golang.org/x/oauth2"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/googleapi"
 
@@ -17,6 +19,7 @@ const (
 	gmailUser       = "me"
 	labelTypeSystem = "system"
 	labelDocsURL    = "https://developers.google.com/gmail/api/v1/reference/users/labels#resource"
+	authExpiredURL  = "https://github.com/mbrt/gmailctl#oauth2-authentication-errors"
 )
 
 // NewFromService creates a new GmailAPI instance from the given Gmail service.
@@ -44,7 +47,7 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 
 	apires, err := g.service.Users.Settings.Filters.List(gmailUser).Do(g.opts...)
 	if err != nil {
-		return nil, err
+		return nil, annotateError(err)
 	}
 	return api.Import(apires.Filter, lmap)
 }
@@ -54,7 +57,7 @@ func (g *GmailAPI) DeleteFilters(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
-			return fmt.Errorf("deleting filter %q: %w", id, err)
+			return fmt.Errorf("deleting filter %q: %w", id, annotateError(err))
 		}
 	}
 	return nil
@@ -75,7 +78,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 	for i, gfilter := range gfilters {
 		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do(g.opts...)
 		if err != nil {
-			return fmt.Errorf("creating filter %d: %w", i, err)
+			return fmt.Errorf("creating filter %d: %w", i, annotateError(err))
 		}
 	}
 
@@ -86,7 +89,7 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 func (g *GmailAPI) ListLabels() (label.Labels, error) {
 	apires, err := g.service.Users.Labels.List(gmailUser).Do(g.opts...)
 	if err != nil {
-		return nil, err
+		return nil, annotateError(err)
 	}
 
 	var res label.Labels
@@ -120,7 +123,7 @@ func (g *GmailAPI) DeleteLabels(ids []string) error {
 	for _, id := range ids {
 		err := g.service.Users.Labels.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
-			return fmt.Errorf("deleting label %q: %w", id, err)
+			return fmt.Errorf("deleting label %q: %w", id, annotateError(err))
 		}
 	}
 	return nil
@@ -132,7 +135,7 @@ func (g *GmailAPI) AddLabels(lbs label.Labels) error {
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
-			return labelError(fmt.Errorf("creating label %q: %w", lb.Name, err))
+			return annotateError(fmt.Errorf("creating label %q: %w", lb.Name, err))
 		}
 	}
 	return nil
@@ -148,7 +151,7 @@ func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 		}
 		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
-			return labelError(fmt.Errorf("patching label %q: %w", lb.Name, err))
+			return annotateError(fmt.Errorf("patching label %q: %w", lb.Name, err))
 		}
 	}
 	return nil
@@ -176,11 +179,29 @@ func labelToGmailAPI(lb label.Label) *gmail.Label {
 	}
 }
 
-func labelError(err error) error {
+func annotateError(err error) error {
+	var oerr *oauth2.RetrieveError
+	if errors.As(err, &oerr) {
+		if strings.Contains(string(oerr.Body), "invalid_grant") {
+			return errors.WithDetails(err,
+				"Possible expired token. Try refreshing with `gmailctl init --refresh-expired`",
+				"More help at "+authExpiredURL,
+			)
+		}
+	}
+
 	var gerr *googleapi.Error
-	if errors.As(err, &gerr) && gerr.Code == http.StatusBadRequest {
-		return errors.WithDetails(err,
-			fmt.Sprintf("See the allowed set of color values here: %s", labelDocsURL))
+	if !errors.As(err, &gerr) {
+		return err
+	}
+	if gerr.Code != http.StatusBadRequest {
+		return err
+	}
+	for _, e := range gerr.Errors {
+		if e.Reason == "invalidArgument" && strings.Contains(e.Message, "color palette") {
+			return errors.WithDetails(err,
+				fmt.Sprintf("See the allowed set of color values here: %s", labelDocsURL))
+		}
 	}
 	return err
 }
