@@ -23,9 +23,9 @@ To do so, head to https://console.developers.google.com
 1. Create a new project if you don't have one.
 1. Go to 'Enable API and services', search for Gmail and enable it.
 2. Go to 'OAuth consent screen'.
-   	2a. If your account is managed by an organization you have to
+    2a. If your account is managed by an organization, you have to
         select 'Internal' as 'User Type'. For individual accounts
-	    select 'External'.
+        select 'External'.
     2b. Set an application name (e.g. 'gmailctl').
     2c. Use your email for 'User support email' and 'Developer
         contact information'. Save and continue.
@@ -33,19 +33,20 @@ To do so, head to https://console.developers.google.com
         * https://www.googleapis.com/auth/gmail.labels
         * https://www.googleapis.com/auth/gmail.settings.basic
     3d. Save and continue until you're back to the dashboard.
-3. You now have a choice. You can
-   	* Either click on 'Publish App' and avoid 'Submitting for
-   	  verification'. This will result in scary confirmation
-   	  screens or error messaages when you authorize gmailctl with
-   	  your account (but for some users it works), OR
-   	* You could add your email as 'Test user'. In this case
-   	  everything will work, but you'll have to login and confirm
-	  the access every week (token expiration).
-4. 	Go to Credentials on the left.
-   	4a. Click 'Create credentials'.
-   	4b. Select 'OAuth client ID'.
-   	4c. Select 'Desktop app' as 'Application type' and give it a name.
-   	4d. Create.
+3. You now have a choice. You can either:
+    * Click on 'Publish App' and avoid 'Submitting for
+      verification'. This will result in scary confirmation
+      screens or error messaages when you authorize gmailctl with
+      your account (but for some users it works), OR
+    * You could add your email as 'Test user' and keep the app in
+      'Testing' mode. In this case everything will work, but
+      you'll have to login and confirm the access every week (token
+      expiration).
+4.  Go to Credentials on the left.
+    4a. Click 'Create credentials'.
+    4b. Select 'OAuth client ID'.
+    4c. Select 'Desktop app' as 'Application type' and give it a name.
+    4d. Create.
 5. Download the credentials file into %q and execute the 'init'
    command again.
 

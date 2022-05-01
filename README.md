@@ -900,10 +900,6 @@ $ gmailctl init --reset
 $ gmailctl init
 ```
 
-If authentication never worked, it may be that there's a mistake in the
-configuration of your GCP project. Please start from scratch with a new project
-and follow the instructions of `gmailctl init`.
-
 ### YAML config is unsupported
 
 gmailctl recently deprecated older config versions (`v1alpha1`, `v1alpha2`).
