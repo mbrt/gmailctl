@@ -42,7 +42,7 @@ func newOauth2Server(expectedState string) *oauth2Server {
 
 				resp.Header().Add("Content-Type", "text/plain")
 				resp.WriteHeader(200)
-				resp.Write([]byte(successMsg))
+				_, _ = resp.Write([]byte(successMsg))
 			}),
 		},
 	}
@@ -50,11 +50,14 @@ func newOauth2Server(expectedState string) *oauth2Server {
 
 // Start the oauth2Server asynchronously.
 func (s *oauth2Server) Start() (string, error) {
-	l, err := net.Listen("tcp", ":0")
+	l, err := net.Listen("tcp", ":0") //nolint:gosec
 	if err != nil {
 		return "", err
 	}
-	go s.srv.Serve(l)
+	go func() {
+		// This always returns an error when the server is closed.
+		_ = s.srv.Serve(l)
+	}()
 	return fmt.Sprintf("localhost:%d", l.Addr().(*net.TCPAddr).Port), nil
 }
 
@@ -71,5 +74,5 @@ func (s *oauth2Server) WaitForCode() string {
 
 func writeError(resp http.ResponseWriter, err error, code int) {
 	resp.WriteHeader(code)
-	resp.Write([]byte(fmt.Sprintf("Error: %v", err)))
+	_, _ = resp.Write([]byte(fmt.Sprintf("Error: %v", err)))
 }
