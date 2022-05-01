@@ -43,11 +43,20 @@ To do so, head to https://console.developers.google.com
    6b. Select 'OAuth client ID'.
    6c. Select 'Desktop app' as 'Application type' and give it a name.
    6d. Create.
-7. Download the credentials file into '%s' and execute the 'init'
+7. Download the credentials file into %q and execute the 'init'
    command again.
 
 Documentation about Gmail API authorization can be found
 at: https://developers.google.com/gmail/api/auth/about-auth
+`
+	authMessage = `Go to the following link in your browser and authorize gmailctl:
+
+%v
+
+NOTE that gmailctl runs a webserver on your local machine to
+collect the token as returned from Google. This only runs until
+the token is saved. If your browser is on another machine
+without access to the local network, this will not work.
 `
 )
 
@@ -131,12 +140,7 @@ func setupToken(auth *api.Authenticator, path string) error {
 	}
 	defer localSrv.Close()
 
-	fmt.Printf("Go to the following link in your browser and authorize gmailctl: \n"+
-		"%v\n\n"+
-		"NOTE: If you are running on a remote machine this will not work.\n"+
-		"Please execute this command on your desktop and copy the\n"+
-		"credentials to the remote machine.\n", auth.AuthURL("http://"+addr))
-
+	fmt.Printf(authMessage, auth.AuthURL("http://"+addr))
 	authCode := localSrv.WaitForCode()
 	if err := saveToken(path, authCode, auth); err != nil {
 		return fmt.Errorf("caching token: %w", err)
@@ -152,7 +156,7 @@ func saveToken(path, authCode string, auth *api.Authenticator) (err error) {
 	}
 	defer func() {
 		e = f.Close()
-		// do not hide more important error
+		// Do not hide more important errors.
 		if err == nil {
 			err = e
 		}

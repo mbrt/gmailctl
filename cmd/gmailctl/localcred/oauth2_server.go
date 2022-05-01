@@ -24,20 +24,17 @@ func newOauth2Server(expectedState string) *oauth2Server {
 			Addr: ":0",
 			Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 				if err := req.ParseForm(); err != nil {
-					resp.Write([]byte(err.Error()))
-					resp.WriteHeader(400)
+					writeError(resp, err, http.StatusBadRequest)
 					return
 				}
 				state := req.Form.Get("state")
 				if state != expectedState {
-					resp.Write([]byte("Invalid state"))
-					resp.WriteHeader(400)
+					writeError(resp, fmt.Errorf("invalid state: %q", state), http.StatusBadRequest)
 					return
 				}
 				code := req.Form.Get("code")
 				if code == "" {
-					resp.Write([]byte("Missing code in request"))
-					resp.WriteHeader(400)
+					writeError(resp, fmt.Errorf("missing code"), http.StatusBadRequest)
 					return
 				}
 				ch <- code
@@ -51,6 +48,7 @@ func newOauth2Server(expectedState string) *oauth2Server {
 	}
 }
 
+// Start the oauth2Server asynchronously.
 func (s *oauth2Server) Start() (string, error) {
 	l, err := net.Listen("tcp", ":0")
 	if err != nil {
@@ -60,10 +58,18 @@ func (s *oauth2Server) Start() (string, error) {
 	return fmt.Sprintf("localhost:%d", l.Addr().(*net.TCPAddr).Port), nil
 }
 
+// Close shuts down the oauth2Server.
 func (s *oauth2Server) Close() {
 	_ = s.srv.Close()
 }
 
+// WaitForCode waits for the oauth2Server to receive a code.
+// This is a blocking call. Errors are ignored.
 func (s *oauth2Server) WaitForCode() string {
 	return <-s.code
+}
+
+func writeError(resp http.ResponseWriter, err error, code int) {
+	resp.WriteHeader(code)
+	resp.Write([]byte(fmt.Sprintf("Error: %v", err)))
 }
