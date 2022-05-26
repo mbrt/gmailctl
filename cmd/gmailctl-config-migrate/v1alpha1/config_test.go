@@ -1,10 +1,11 @@
 package v1alpha1
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func TestParse(t *testing.T) {
@@ -23,7 +24,9 @@ rules:
       archive: true
 `)
 	var res Config
-	assert.Nil(t, yaml.UnmarshalStrict(yml, &res))
+	dec := yaml.NewDecoder(bytes.NewBuffer(yml))
+	dec.KnownFields(true)
+	assert.NoError(t, dec.Decode(&res))
 	filters := Filters{
 		CompositeFilters: CompositeFilters{
 			MatchFilters: MatchFilters{
@@ -59,5 +62,7 @@ rules:
         - foobar@g.com
 `)
 	var res Config
-	assert.NotNil(t, yaml.UnmarshalStrict(yml, &res))
+	dec := yaml.NewDecoder(bytes.NewBuffer(yml))
+	dec.KnownFields(true)
+	assert.NotNil(t, dec.Decode(&res))
 }

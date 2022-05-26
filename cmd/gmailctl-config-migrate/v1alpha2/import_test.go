@@ -1,29 +1,33 @@
 package v1alpha2
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 )
 
-func read(path string) []byte {
+func read(path string) io.Reader {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
-	return b
+	return bytes.NewBuffer(b)
 }
 
 func parseV1(t *testing.T, path string) v1alpha1.Config {
 	var res v1alpha1.Config
-	if err := yaml.UnmarshalStrict(read(path), &res); err != nil {
+	dec := yaml.NewDecoder(read(path))
+	dec.KnownFields(true)
+	if err := dec.Decode(&res); err != nil {
 		t.Fatal(err)
 	}
 	return res
@@ -31,7 +35,9 @@ func parseV1(t *testing.T, path string) v1alpha1.Config {
 
 func parseV2(t *testing.T, path string) Config {
 	var res Config
-	if err := yaml.UnmarshalStrict(read(path), &res); err != nil {
+	dec := yaml.NewDecoder(read(path))
+	dec.KnownFields(true)
+	if err := dec.Decode(&res); err != nil {
 		t.Fatal(err)
 	}
 	return res
