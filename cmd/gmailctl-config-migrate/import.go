@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha1"
 	"github.com/mbrt/gmailctl/cmd/gmailctl-config-migrate/v1alpha2"
@@ -47,28 +48,27 @@ func readYaml(buf []byte) (v1alpha3.Config, error) {
 	if err != nil {
 		return res, fmt.Errorf("parsing the config version: %w", err)
 	}
+	dec := yaml.NewDecoder(bytes.NewReader(buf))
+	dec.KnownFields(true)
 
 	switch version {
 	case v1alpha3.Version:
 		var v3 v1alpha3.Config
-		err = yaml.UnmarshalStrict(buf, &v3)
-		if err != nil {
+		if err := dec.Decode(&v3); err != nil {
 			return res, fmt.Errorf("parsing the v1alpha3 config: %w", err)
 		}
 		return v3, nil
 
 	case v1alpha2.Version:
 		var v2 v1alpha2.Config
-		err = yaml.UnmarshalStrict(buf, &v2)
-		if err != nil {
+		if err := dec.Decode(&v2); err != nil {
 			return res, fmt.Errorf("parsing v1alpha2 config: %w", err)
 		}
 		return importFromV2(v2)
 
 	case v1alpha1.Version:
 		var v1 v1alpha1.Config
-		err = yaml.UnmarshalStrict(buf, &v1)
-		if err != nil {
+		if err := dec.Decode(&v1); err != nil {
 			return res, fmt.Errorf("parsing v1alpha1 config: %w", err)
 		}
 		return importFromV1(v1)
