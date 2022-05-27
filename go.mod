@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-jsonnet v0.18.0
+	github.com/gopherjs/gopherjs v1.17.2
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pmezard/go-difflib v1.0.0

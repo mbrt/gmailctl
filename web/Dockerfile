@@ -4,6 +4,6 @@ RUN apk --no-cache add git && \
     go install github.com/gopherjs/gopherjs@v1.17.2
 
 WORKDIR /src/project
-COPY web .
+COPY . .
 
-RUN gopherjs build -m .
+RUN gopherjs build -m ./web
