@@ -15,7 +15,7 @@ var (
 // diffCmd represents the diff command
 var diffCmd = &cobra.Command{
 	Use:   "diff",
-	Short: "Shows a diff between the local configuaration and Gmail settings",
+	Short: "Shows a diff between the local configuration and Gmail settings",
 	Long: `The diff command shows the difference between the local
 configuration and the current Gmail settings of your account.
 
