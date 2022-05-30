@@ -173,7 +173,7 @@ All the available commands (you can also check with `gmailctl help`):
 ```
   apply       Apply a configuration file to Gmail settings
   debug       Shows an annotated version of the configuration
-  diff        Shows a diff between the local configuaration and Gmail settings
+  diff        Shows a diff between the local configuration and Gmail settings
   download    Download filters from Gmail to a local config file
   edit        Edit the configuration and apply it to Gmail
   export      Export filters into the Gmail XML format
