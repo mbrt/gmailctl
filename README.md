@@ -78,6 +78,12 @@ Alternatively, if you're on macOS, you can install easily via Homebrew:
 brew install gmailctl
 ```
 
+On Fedora Linux, you can install from the official repositories:
+
+```
+sudo dnf install gmailctl
+```
+
 You can also choose to install the snap:
 
 ```
