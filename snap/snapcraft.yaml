@@ -69,3 +69,6 @@ apps:
       - network
       # to make xdg-open works
       - desktop
+      # required for initialisation. The authentication process starts
+      # a temporary local HTTP server.
+      - network-bind
