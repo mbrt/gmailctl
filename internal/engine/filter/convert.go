@@ -104,9 +104,11 @@ func generateNode(node *parser.Node) (Criteria, error) {
 
 func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
 	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
-	query := joinStrings(needEscape, leaf.Args...)
+	query, err := joinStrings(needEscape, leaf.Args...)
+	if err != nil {
+		return Criteria{}, err
+	}
 	if len(leaf.Args) > 1 {
-		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
 			return Criteria{}, err
 		}
@@ -174,9 +176,11 @@ func generateNodeAsString(node *parser.Node) (string, error) {
 
 func generateLeafAsString(leaf *parser.Leaf) (string, error) {
 	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
-	query := joinStrings(needEscape, leaf.Args...)
+	query, err := joinStrings(needEscape, leaf.Args...)
+	if err != nil {
+		return "", err
+	}
 	if len(leaf.Args) > 1 {
-		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
 			return "", err
 		}
@@ -226,11 +230,16 @@ func joinQueries(f1, f2 string) string {
 	return fmt.Sprintf("%s %s", f1, f2)
 }
 
-func joinStrings(escape bool, a ...string) string {
+func joinStrings(escape bool, a ...string) (string, error) {
 	if escape {
-		return joinEscaped(a...)
+		for _, a := range a {
+			if strings.Contains(a, `"`) {
+				return "", fmt.Errorf("invalid quote in %q", a)
+			}
+		}
+		return joinEscaped(a...), nil
 	}
-	return strings.Join(a, " ")
+	return strings.Join(a, " "), nil
 }
 
 func joinEscaped(a ...string) string {
