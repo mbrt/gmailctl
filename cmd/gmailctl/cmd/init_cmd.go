@@ -14,6 +14,7 @@ import (
 var (
 	initReset          bool
 	initRefreshExpired bool
+	initUpdateLib      bool
 )
 
 // initCmd represents the init command
@@ -29,6 +30,8 @@ setting up the API authorizations and initial settings.`,
 			err = resetConfig()
 		} else if initRefreshExpired {
 			err = refreshToken()
+		} else if initUpdateLib {
+			err = updateLib()
 		} else {
 			err = continueConfig()
 		}
@@ -44,6 +47,7 @@ func init() {
 	// Flags and configuration settings
 	initCmd.Flags().BoolVar(&initReset, "reset", false, "Reset the configuration.")
 	initCmd.Flags().BoolVar(&initRefreshExpired, "refresh-expired", false, "Refresh auth token if expired.")
+	initCmd.Flags().BoolVar(&initUpdateLib, "update-lib", false, "Update the library file.")
 }
 
 func resetConfig() error {
@@ -72,7 +76,7 @@ func refreshToken() error {
 	return nil
 }
 
-func handleCfgDir() (err error) {
+func handleCfgDir() error {
 	// Create the config dir
 	if _, err := os.Stat(cfgDir); err != nil {
 		if !os.IsNotExist(err) {
@@ -92,23 +96,36 @@ func handleCfgDir() (err error) {
 	return createDefault(libFile, data.GmailctlLib())
 }
 
-func createDefault(path, contents string) (err error) {
+func createDefault(path, contents string) error {
 	if _, err := os.Stat(path); err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		f, err := os.Create(path)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			e := f.Close()
-			if err == nil {
-				err = e
-			}
-		}()
-		_, err = f.WriteString(contents)
-		return err
+		return createFile(path, contents)
 	}
 	return nil
+}
+
+func updateLib() error {
+	if err := handleCfgDir(); err != nil {
+		return err
+	}
+	libFile := path.Join(cfgDir, "gmailctl.libsonnet")
+	return createFile(libFile, data.GmailctlLib())
+}
+
+func createFile(path, contents string) (err error) {
+	var f *os.File
+	f, err = os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		e := f.Close()
+		if err == nil {
+			err = e
+		}
+	}()
+	_, err = f.WriteString(contents)
+	return err
 }
