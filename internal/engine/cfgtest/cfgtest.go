@@ -1,8 +1,11 @@
 package cfgtest
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"sort"
+	"strings"
 
 	"github.com/pmezard/go-difflib/difflib"
 
@@ -18,18 +21,20 @@ import (
 // This function is best effort. Every criteria that is not convertible is going
 // to be ignored and an error is returned in its place. The resulting rules will
 // contain only the valid rules.
-func NewFromParserRules(rs []parser.Rule) (Rules, []error) {
+func NewFromParserRules(rs []parser.Rule) (Rules, error) {
 	var res Rules
-	var errs []error
+	var errs error
 
 	for i, pr := range rs {
 		re, err := NewEvaluator(pr.Criteria)
 		if err != nil {
-			errs = append(errs, fmt.Errorf(
-				"cannot evaluate criteria #%d: %w", i, err))
-		} else {
-			res = append(res, Rule{re, Actions(pr.Actions)})
+			errs = errors.Combine(
+				errs,
+				fmt.Errorf("cannot evaluate criteria #%d: %w", i, err),
+			)
+			continue
 		}
+		res = append(res, Rule{re, Actions(pr.Actions)})
 	}
 
 	return res, errs
@@ -47,29 +52,42 @@ type Rules []Rule
 // ExecTests evaluates all the rules against the given tests.
 //
 // The evaluation stops at the first failing test.
-func (rs Rules) ExecTests(ts []v1alpha3.Test) error {
+func (rs Rules) ExecTests(ts []v1alpha3.Test) Result {
+	var failed []FailedTest
+
 	for i, t := range ts {
-		if err := rs.ExecTest(t); err != nil {
-			name := t.Name
-			if name == "" {
-				name = fmt.Sprintf("#%d", i)
-			}
-			return fmt.Errorf("test %q: %w", name, err)
+		if errs := rs.ExecTest(t); len(errs) > 0 {
+			failed = append(failed, FailedTest{
+				ID:     i,
+				Name:   t.Name,
+				Errors: errs,
+			})
 		}
 	}
-	return nil
+
+	return Result{
+		OK:       len(failed) == 0,
+		NumTests: len(ts),
+		Failed:   failed,
+	}
 }
 
 // ExecTest evaluates the rules on all the messages of the given test.
 //
 // If the rules apply as expected by the test, no error is returned.
-func (rs Rules) ExecTest(t v1alpha3.Test) error {
+func (rs Rules) ExecTest(t v1alpha3.Test) []error {
+	var res error
+
 	for i, msg := range t.Messages {
 		expected, err := rs.MatchingActions(msg)
 		if err != nil {
-			return errors.WithDetails(
-				fmt.Errorf("message #%d: error evaluating matching filters: %w", i, err),
-				messageDetails(msg))
+			res = errors.Combine(
+				res,
+				errors.WithDetails(
+					fmt.Errorf("message #%d: error evaluating matching filters: %w", i, err),
+					messageDetails(msg)),
+			)
+			continue
 		}
 		if expected.Equal(Actions(t.Actions)) {
 			// All good with this message.
@@ -89,13 +107,17 @@ func (rs Rules) ExecTest(t v1alpha3.Test) error {
 			// something.
 			diff = fmt.Sprintf("<cannot compute diff>: %v", err)
 		}
-		return errors.WithDetails(
-			fmt.Errorf("message #%d is going to get unexpected actions: %s", i,
-				reporting.Prettify(expected, true)),
-			messageDetails(msg),
-			fmt.Sprintf("Actions:\n%s", diff))
+		res = errors.Combine(
+			res,
+			errors.WithDetails(
+				fmt.Errorf("message #%d is going to get unexpected actions: %s", i,
+					reporting.Prettify(expected, true)),
+				messageDetails(msg),
+				fmt.Sprintf("Actions:\n%s", strings.TrimRight(diff, "\n"))),
+		)
 	}
-	return nil
+
+	return errors.Errors(res)
 }
 
 // MatchingActions returns the actions that would be applied by the rules if
@@ -118,6 +140,49 @@ func (rs Rules) MatchingActions(msg v1alpha3.Message) (Actions, error) {
 		}
 	}
 	return res, nil
+}
+
+// Result represents the result of a series of tests.
+type Result struct {
+	OK       bool
+	NumTests int
+	Failed   []FailedTest
+}
+
+func (r Result) String() string {
+	var buf bytes.Buffer
+
+	if r.OK {
+		fmt.Fprintf(&buf, "Success: %d/%d", r.NumTests, r.NumTests)
+		return buf.String()
+	}
+	fmt.Fprintf(&buf, "Failed: %d/%d\n", len(r.Failed), r.NumTests)
+	for _, t := range r.Failed {
+		t.dump(&buf)
+	}
+
+	return buf.String()
+}
+
+// FailedTest includes all the errors of a failed test.
+type FailedTest struct {
+	ID     int
+	Name   string
+	Errors []error
+}
+
+func (t FailedTest) String() string {
+	var buf bytes.Buffer
+	t.dump(&buf)
+	return buf.String()
+}
+
+func (t FailedTest) dump(w io.Writer) {
+	name := t.Name
+	if name == "" {
+		name = fmt.Sprintf("#%d", t.ID)
+	}
+	fmt.Fprintf(w, "\nFailed test %q:\n%+v\n", name, errors.Combine(t.Errors...))
 }
 
 // Actions represent the actions applied by a filter.
