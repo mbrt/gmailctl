@@ -5,6 +5,7 @@ import (
 	"html"
 	"net"
 	"net/http"
+	"time"
 )
 
 const successMsg = `Successfully authenticated with Google OAuth2.
@@ -22,7 +23,8 @@ func newOauth2Server(expectedState string) *oauth2Server {
 	return &oauth2Server{
 		code: ch,
 		srv: &http.Server{
-			Addr: ":0",
+			Addr:              ":0",
+			ReadHeaderTimeout: 10 * time.Second,
 			Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 				if err := req.ParseForm(); err != nil {
 					writeError(resp, err, http.StatusBadRequest)
