@@ -59,3 +59,32 @@ func TestErrWithDetails(t *testing.T) {
     descr`
 	assert.Equal(t, details, Details(err4))
 }
+
+func TestCombine(t *testing.T) {
+	err1 := errors.New("err1")
+	err2 := errors.New("err2")
+
+	// Combine should ignore nils.
+	assert.NoError(t, Combine())
+	assert.NoError(t, Combine(nil))
+	assert.NoError(t, Combine(nil, nil))
+	assert.EqualError(t, Combine(err1, nil), err1.Error())
+
+	// Combine two.
+	assert.ElementsMatch(t, Errors(Combine(err1, err2)), []error{err1, err2})
+	assert.ElementsMatch(t, Errors(Combine(err1, nil, err2)), []error{err1, err2})
+
+	// Nesting.
+	err3 := Combine(err1, err2)
+	err4 := Combine(err1, err2, err3, nil)
+	assert.ElementsMatch(t, Errors(err4), []error{err1, err1, err2, err2})
+
+	// Print.
+	assert.EqualError(t, err4, "multiple errors (4); sample: err1")
+	verbose := `multiple errors (4):
+- err1
+- err2
+- err1
+- err2`
+	assert.Equal(t, fmt.Sprintf("%+v", err4), verbose)
+}
