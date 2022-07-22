@@ -43,5 +43,19 @@ local filters = {
         archive: true,
       },
     },
+    {
+      name: 'another wrong test',
+      messages: [
+        {
+          lists: ['list1'],
+        },
+        {
+          lists: ['list2'],
+        },
+      ],
+      actions: {
+        markImportant: true,
+      },
+    },
   ],
 }

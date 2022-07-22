@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -10,6 +9,7 @@ import (
 	"github.com/mbrt/gmailctl/internal/engine/cfgtest"
 	"github.com/mbrt/gmailctl/internal/engine/config"
 	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 type parseResult struct {
@@ -49,17 +49,15 @@ func parseConfig(path, originalPath string, test bool) (parseResult, error) {
 		return res, err
 	}
 	if test && len(res.Config.Tests) > 0 {
-		ts, errs := cfgtest.NewFromParserRules(res.Res.Rules)
-		if len(errs) > 0 {
-			stderrPrintf("WARNING: %d filters are excluded from the tests:\n", len(errs))
-			for _, err := range errs {
-				stderrPrintf("  %v\n", err)
-			}
-			stderrPrintf("\n")
-		}
-		err = ts.ExecTests(res.Config.Tests)
+		ts, err := cfgtest.NewFromParserRules(res.Res.Rules)
 		if err != nil {
-			return res, fmt.Errorf("config tests failed: %w", err)
+			stderrPrintf("WARNING: %d filters are excluded from the tests:\n", len(errors.Errors(err)))
+			stderrPrintf("%+v\n", err)
+		}
+		tres := ts.ExecTests(res.Config.Tests)
+		if !tres.OK {
+			stderrPrintf("Test results: %s\n", tres)
+			return res, fmt.Errorf("%d/%d config tests failed", len(tres.Failed), tres.NumTests)
 		}
 	}
 
