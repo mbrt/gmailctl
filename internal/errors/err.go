@@ -45,7 +45,9 @@ func WriteDetails(w io.Writer, err error) {
 		// Append all details of this error.
 		iw := indentWriter{w}
 		for _, d := range dErr.details {
+			//nolint:errcheck
 			io.WriteString(iw, "\n- ")
+			//nolint:errcheck
 			io.WriteString(indentWriter{iw}, d)
 		}
 		// Continue down the chain.
@@ -77,7 +79,7 @@ func Combine(errs ...error) error {
 		}
 		// Flatten by taking out the multi-error from the list
 		// if any is present.
-		merr, ok := err.(multi)
+		merr, ok := err.(multi) //nolint:errorlint
 		if ok {
 			res = merr
 			continue
@@ -105,7 +107,7 @@ func Errors(err error) []error {
 	if err == nil {
 		return nil
 	}
-	merr, ok := err.(multi)
+	merr, ok := err.(multi) //nolint:errorlint
 	if !ok {
 		return []error{err}
 	}
@@ -140,6 +142,7 @@ func (m multi) Format(f fmt.State, c rune) {
 	if (c == 'v' || c == 'w') && f.Flag('+') {
 		m.writeMultiline(f)
 	} else {
+		//nolint:errcheck
 		io.WriteString(f, m.Error())
 	}
 }
@@ -148,7 +151,9 @@ func (m multi) writeMultiline(w io.Writer) {
 	fmt.Fprintf(w, "multiple errors (%d):", len(m))
 	wi := indentWriter{w}
 	for _, err := range m {
+		//nolint:errcheck
 		io.WriteString(w, "\n- ")
+		//nolint:errcheck
 		fmt.Fprintf(wi, "%+v", err)
 	}
 }
@@ -162,6 +167,7 @@ func (d detailed) Format(f fmt.State, c rune) {
 	if (c == 'v' || c == 'w') && f.Flag('+') {
 		d.writeMultiline(f)
 	} else {
+		//nolint:errcheck
 		io.WriteString(f, d.Error())
 	}
 }
@@ -172,10 +178,13 @@ func (d detailed) writeMultiline(w io.Writer) {
 		return
 	}
 
+	//nolint:errcheck
 	io.WriteString(w, "\nNote:")
 	iw := indentWriter{w}
 	for _, d := range d.details {
+		//nolint:errcheck
 		io.WriteString(w, "\n- ")
+		//nolint:errcheck
 		io.WriteString(iw, d)
 	}
 }
