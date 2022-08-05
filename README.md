@@ -971,9 +971,7 @@ filters.
 <b id="f1">1</b>: See [Search operators you can use with
 Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
 
-<b id="f2">2</b>:
-
-Try to write the equivalent of this filter with `gmail-britta`:
+<b id="f2">2</b>: Try to write the equivalent of this filter with `gmail-britta` [↩](#a2)
 
 ```jsonnet
 local spam = {
@@ -1083,4 +1081,3 @@ local spam_filter = import 'spam.libjsonnet';
   ],
 }
 ```
-[↩](#a2)
