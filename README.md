@@ -424,6 +424,7 @@ The example is effectively equivalent to this one:
   ],
 }
 ```
+Relying on Jsonnet also allows [importing code and raw data](https://jsonnet.org/learning/tutorial.html#imports) from other files<sup id="a3">[3](#f3)</sup>.
 
 ### Actions
 
@@ -970,9 +971,7 @@ filters.
 <b id="f1">1</b>: See [Search operators you can use with
 Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
 
-<b id="f2">2</b>:
-
-Try to write the equivalent of this filter with `gmail-britta`:
+<b id="f2">2</b>: Try to write the equivalent of this filter with `gmail-britta` [↩](#a2)
 
 ```jsonnet
 local spam = {
@@ -1055,4 +1054,30 @@ local spam = {
 
 The reality is that you have to manually build the Gmail expressions yourself.
 
-[↩](#a2)
+<b id="f3">3</b>: Import variables from  a `.libjsonnet` file [↩](#a3)
+
+File: `spam.libjsonnet`
+```jsonnet
+{
+  or: [
+    { from: 'foo@gmail.com' },
+    { from: 'bar@hotmail.com' },
+    { subject: 'buy this' },
+    { subject: 'buy that' },
+  ],
+}
+```
+
+File `config.jsonnet`
+```jsonnet
+local spam_filter = import 'spam.libjsonnet';
+{
+  version: 'v1alpha3',
+  rules: [
+    {
+      filter: spam_filter,
+      actions: { delete: true },
+    },
+  ],
+}
+```
