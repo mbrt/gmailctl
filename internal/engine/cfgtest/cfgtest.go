@@ -96,8 +96,8 @@ func (rs Rules) ExecTest(t v1alpha3.Test) []error {
 
 		// Report the error.
 		diff, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
-			A:        difflib.SplitLines(reporting.Prettify(expected, false)),
-			B:        difflib.SplitLines(reporting.Prettify(t.Actions, false)),
+			A:        difflib.SplitLines(reporting.Prettify(t.Actions, false)),
+			B:        difflib.SplitLines(reporting.Prettify(expected, false)),
 			FromFile: "want",
 			ToFile:   "got",
 			Context:  5,
