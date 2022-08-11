@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -30,7 +30,7 @@ var ErrNotFound = errors.New("config not found")
 // their location can be specified with cfgDirs.
 func ReadFile(path, libPath string) (v1alpha3.Config, error) {
 	/* #nosec */
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return v1alpha3.Config{}, errors.WithCause(err, ErrNotFound)
 	}

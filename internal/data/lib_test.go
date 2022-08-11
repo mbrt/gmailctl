@@ -3,7 +3,7 @@ package data
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -45,7 +45,7 @@ func allTestPaths(t *testing.T) testPaths {
 
 func read(t *testing.T, path string) []byte {
 	t.Helper()
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestJsonnetLib(t *testing.T) {
 				// Update the golden files
 				buf, err := json.MarshalIndent(jnparsed, "", "  ")
 				assert.Nil(t, err)
-				err = ioutil.WriteFile(jsfile, buf, 0600)
+				err = os.WriteFile(jsfile, buf, 0600)
 				assert.Nil(t, err)
 			} else {
 				// Test them

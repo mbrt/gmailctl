@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -79,7 +78,7 @@ func (a Authenticator) CacheToken(ctx context.Context, authCode string, token io
 }
 
 func clientFromCredentials(credentials io.Reader) (*oauth2.Config, error) {
-	credBytes, err := ioutil.ReadAll(credentials)
+	credBytes, err := io.ReadAll(credentials)
 	if err != nil {
 		return nil, fmt.Errorf("reading credentials: %w", err)
 	}

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -122,7 +121,7 @@ func edit(path string, test bool) error {
 func moveFile(from, to string) error {
 	// Swap the configuration files. Since these two can be in different
 	// filesystems, we need to rewrite the file, instead of a simple rename.
-	b, err := ioutil.ReadFile(from)
+	b, err := os.ReadFile(from)
 	if err != nil {
 		return err
 	}
@@ -138,13 +137,13 @@ func moveFile(from, to string) error {
 }
 
 func copyToTmp(path string) (string, error) {
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return "", errors.WithCause(err, config.ErrNotFound)
 	}
 
 	// Use the same extension as the original file.
-	tmp, err := ioutil.TempFile("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
+	tmp, err := os.CreateTemp("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
 	if err != nil {
 		return "", fmt.Errorf("creating tmp file: %w", err)
 	}
