@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -95,26 +95,26 @@ func TestIntegration(t *testing.T) {
 			// Compare the results with the golden files (or update the golden files).
 			if *update {
 				// Import.
-				err := ioutil.WriteFile(name+".json", icfgJSON, 0o600)
+				err := os.WriteFile(name+".json", icfgJSON, 0o600)
 				require.Nil(t, err)
 				// Diff.
-				err = ioutil.WriteFile(name+".diff", []byte(d.String()), 0o600)
+				err = os.WriteFile(name+".diff", []byte(d.String()), 0o600)
 				require.Nil(t, err)
 				// Export.
-				err = ioutil.WriteFile(name+".xml", cfgxml.Bytes(), 0o600)
+				err = os.WriteFile(name+".xml", cfgxml.Bytes(), 0o600)
 				require.Nil(t, err)
 				return
 			}
 			// Import.
-			b, err := ioutil.ReadFile(name + ".json")
+			b, err := os.ReadFile(name + ".json")
 			require.Nil(t, err)
 			assert.Equal(t, string(b), string(icfgJSON))
 			// Diff.
-			b, err = ioutil.ReadFile(name + ".diff")
+			b, err = os.ReadFile(name + ".diff")
 			require.Nil(t, err)
 			assert.Equal(t, string(b), d.String())
 			// Export
-			b, err = ioutil.ReadFile(name + ".xml")
+			b, err = os.ReadFile(name + ".xml")
 			require.Nil(t, err)
 			assert.Equal(t, string(b), cfgxml.String())
 		})

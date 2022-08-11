@@ -77,8 +77,8 @@ multiple errors (2):
     +++ got
     @@ -1,3 +1,3 @@
      {
-    -  "markImportant": false
-    +  "markImportant": true
+    -  "markImportant": true
+    +  "markImportant": false
      }
 - message #1 is going to get unexpected actions: {"markImportant":false}
   Note:
@@ -92,8 +92,8 @@ multiple errors (2):
     +++ got
     @@ -1,3 +1,3 @@
      {
-    -  "markImportant": false
-    +  "markImportant": true
+    -  "markImportant": true
+    +  "markImportant": false
      }
 `,
 		},

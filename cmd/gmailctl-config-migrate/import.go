@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 
@@ -35,7 +35,7 @@ func importConfig(path string, out io.Writer) error {
 
 func readConfig(path string) (v1alpha3.Config, error) {
 	/* #nosec */
-	buf, err := ioutil.ReadFile(path)
+	buf, err := os.ReadFile(path)
 	if err != nil {
 		return v1alpha3.Config{}, err
 	}
