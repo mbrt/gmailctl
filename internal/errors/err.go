@@ -59,6 +59,7 @@ func Details(err error) string {
 	buffer := bufferPool.Get().(*bytes.Buffer)
 	WriteDetails(buffer, err)
 	res := buffer.String()
+	buffer.Reset()
 	bufferPool.Put(buffer)
 	return res
 }
