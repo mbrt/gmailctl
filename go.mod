@@ -9,8 +9,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2
-	google.golang.org/api v0.93.0
+	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
+	google.golang.org/api v0.94.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
