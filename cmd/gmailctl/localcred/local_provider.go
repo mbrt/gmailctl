@@ -36,7 +36,7 @@ To do so, head to https://console.developers.google.com
 3. You now have a choice. You can either:
     * Click on 'Publish App' and avoid 'Submitting for
       verification'. This will result in scary confirmation
-      screens or error messaages when you authorize gmailctl with
+      screens or error messages when you authorize gmailctl with
       your account (but for some users it works), OR
     * You could add your email as 'Test user' and keep the app in
       'Testing' mode. In this case everything will work, but
