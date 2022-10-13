@@ -72,10 +72,15 @@ including the `bin` subdirectory in your `$PATH`.
 go install github.com/mbrt/gmailctl/cmd/gmailctl@latest
 ```
 
-Alternatively, if you're on macOS, you can install easily via Homebrew:
+Alternatively, if you're on macOS, you can install easily via Homebrew or Macports:
 
 ```
+# Install with Homebrew
 brew install gmailctl
+```
+```
+# Install with Macports
+sudo port install gmailctl
 ```
 
 On Fedora Linux, you can install from the official repositories:
