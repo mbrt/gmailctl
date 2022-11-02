@@ -363,21 +363,3 @@ func TestActions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, got)
 }
-
-func TestDoubleQuoteError(t *testing.T) {
-	rules := []parser.Rule{
-		{
-			Criteria: &parser.Leaf{
-				Function: parser.FunctionSubject,
-				Args:     []string{`a"b`},
-				IsRaw:    false,
-			},
-			Actions: parser.Actions{
-				// action choice is irrelevant
-				Labels: []string{"l1"},
-			},
-		},
-	}
-	_, err := FromRules(rules)
-	assert.ErrorContains(t, err, "invalid quote")
-}
