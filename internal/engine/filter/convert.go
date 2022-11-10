@@ -228,25 +228,31 @@ func joinQueries(f1, f2 string) string {
 
 func joinStrings(escape bool, a ...string) string {
 	if escape {
-		return joinEscaped(a...)
+		return joinQuoted(a...)
 	}
 	return strings.Join(a, " ")
 }
 
-func joinEscaped(a ...string) string {
-	return strings.Join(escapeStrings(a...), " ")
+func joinQuoted(a ...string) string {
+	return strings.Join(quoteStrings(a...), " ")
 }
 
-func escapeStrings(a ...string) []string {
+func quoteStrings(a ...string) []string {
 	res := make([]string, len(a))
 	for i, s := range a {
-		res[i] = escape(s)
+		res[i] = quote(s)
 	}
 	return res
 }
 
-func escape(a string) string {
+func quote(a string) string {
 	if strings.ContainsAny(a, " \t{}()") {
+		return fmt.Sprintf(`"%s"`, a)
+	}
+	// We need to quote the plus sign, _unless_ it's within a full email
+	// address. This is necessary because "foo+bar" is considered like
+	// "foo OR bar", but "foo+bar@gmail.com" is not.
+	if strings.Contains(a, "+") && !strings.Contains(a, "@") {
 		return fmt.Sprintf(`"%s"`, a)
 	}
 	return a
@@ -448,7 +454,7 @@ func generateActions(actions parser.Actions) ([]Actions, error) {
 	}
 
 	if fromOptionalBool(actions.MarkSpam, true) {
-		return nil, errors.New("Gmail filters don't allow one to send messages to spam directly")
+		return nil, errors.New("gmail filters don't allow one to send messages to spam directly")
 	}
 
 	if len(actions.Labels) == 0 {

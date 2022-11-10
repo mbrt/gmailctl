@@ -13,23 +13,29 @@ func boolptr(a bool) *bool {
 	return &a
 }
 
-func TestSimpleFilter(t *testing.T) {
+func TestQuotes(t *testing.T) {
 	rules := []parser.Rule{
 		{
 			Criteria: &parser.Leaf{
 				Function: parser.FunctionFrom,
 				Grouping: parser.OperationOr,
-				Args:     []string{"a", "b", "with spaces"},
+				Args: []string{
+					"a",
+					"with spaces",
+					"with+plus",
+					"with+plus@email.com",
+				},
 			},
 			Actions: parser.Actions{
 				Archive: true,
 			},
 		},
 	}
+	// The plus sign is quoted, except for when in full email addresses.
 	expected := Filters{
 		{
 			Criteria: Criteria{
-				From: `{a b "with spaces"}`,
+				From: `{a "with spaces" "with+plus" with+plus@email.com}`,
 			},
 			Action: Actions{
 				Archive: true,
