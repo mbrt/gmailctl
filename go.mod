@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-jsonnet v0.20.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/cobra v1.7.0
