@@ -4,7 +4,7 @@
 
 {
   // chainFilters is a function that, given a list of rules,
-  // returns a new list where the rules are chained togheter,
+  // returns a new list where the rules are chained together,
   // which means that they can be interpreted as a chain
   // of "if elsif elsif".
   // The result is basically a list of rules where each filter
