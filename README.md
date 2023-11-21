@@ -675,7 +675,7 @@ For example you want to:
 
 * mark the email as important if directed to you;
 * or if it's coming from a list of favourite addresses, label as interesting;
-* of if it's directed to a certain alias, archive it.
+* or if it's directed to a certain alias, archive it.
 
 Luckily you don't have to do that by hand, thanks to the utility library coming
 with `gmailctl`. There's a `chainFilters` function that does exactly that: takes
