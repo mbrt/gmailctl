@@ -195,9 +195,9 @@ All the available commands (you can also check with `gmailctl help`):
 
 ## Configuration
 
-**NOTE:** The configuration format is still in alpha and might change in the
-future. If you are looking for the deprecated versions `v1alpha1`, or
-`v1alpha2`, please refer to [docs/v1alpha1.md](docs/v1alpha1.md) and
+**NOTE:** Despite the name, the configuration format is stable at `v1alpha3`.
+If you are looking for the deprecated versions `v1alpha1`, or `v1alpha2`,
+please refer to [docs/v1alpha1.md](docs/v1alpha1.md) and
 [docs/v1alpha2.md](docs/v1alpha2.md).
 
 The configuration file is written in Jsonnet, that is a very powerful
