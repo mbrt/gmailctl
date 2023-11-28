@@ -34,7 +34,7 @@ func FromRulesWithLimit(rs []parser.Rule, sizeLimit int) (Filters, error) {
 // FromRule translates a rule into entries that map directly into Gmail filters.
 func FromRule(rule parser.Rule, sizeLimit int) (Filters, error) {
 	var crits []Criteria
-	for _, c := range splitCriteria(rule.Criteria, sizeLimit) {
+	for _, c := range splitCriteria(rule.Criteria, sizeLimit, rule.AvoidSplitting) {
 		criteria, err := GenerateCriteria(c)
 		if err != nil {
 			return nil, fmt.Errorf("generating criteria: %w", err)
@@ -258,9 +258,9 @@ func quote(a string) string {
 	return a
 }
 
-func splitCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
+func splitCriteria(tree parser.CriteriaAST, limit int, avoidSplitting bool) []parser.CriteriaAST {
 	var res []parser.CriteriaAST
-	for _, c := range splitRootOr(tree) {
+	for _, c := range splitRootOr(tree, avoidSplitting) {
 		res = append(res, splitBigCriteria(c, limit)...)
 	}
 	return res
@@ -420,7 +420,7 @@ func countNodes(tree parser.CriteriaAST) int {
 	return cv.res
 }
 
-func splitRootOr(tree parser.CriteriaAST) []parser.CriteriaAST {
+func splitRootOr(tree parser.CriteriaAST, avoidSplitting bool) []parser.CriteriaAST {
 	// Since Gmail filters are all applied when they match, we can reduce
 	// the size of a rule and make it more readable by splitting a single
 	// rule where wee have an OR as the top-level operation, with a set of
@@ -432,7 +432,7 @@ func splitRootOr(tree parser.CriteriaAST) []parser.CriteriaAST {
 	// - to:b => archive
 	// - list:c => archive
 	root, ok := tree.(*parser.Node)
-	if !ok || root.Operation != parser.OperationOr {
+	if !ok || root.Operation != parser.OperationOr || avoidSplitting {
 		return []parser.CriteriaAST{tree}
 	}
 	return root.Children

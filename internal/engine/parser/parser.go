@@ -11,8 +11,9 @@ import (
 
 // Rule is an intermediate representation of a Gmail filter.
 type Rule struct {
-	Criteria CriteriaAST
-	Actions  Actions
+	Criteria       CriteriaAST
+	Actions        Actions
+	AvoidSplitting bool
 }
 
 // Actions contains the actions to be applied to a set of emails.
@@ -53,8 +54,9 @@ func parseRule(rule cfg.Rule) (Rule, error) {
 	}
 
 	return Rule{
-		Criteria: scrit,
-		Actions:  Actions(rule.Actions),
+		Criteria:       scrit,
+		Actions:        Actions(rule.Actions),
+		AvoidSplitting: rule.AvoidSplitting,
 	}, nil
 }
 

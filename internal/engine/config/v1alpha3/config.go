@@ -88,8 +88,9 @@ func (f FilterNode) NonEmptyFields() []string {
 // For every email, if the filter applies correctly, then the specified actions
 // will be applied to it.
 type Rule struct {
-	Filter  FilterNode `json:"filter"`
-	Actions Actions    `json:"actions"`
+	Filter         FilterNode `json:"filter"`
+	Actions        Actions    `json:"actions"`
+	AvoidSplitting bool       `json:"avoidSplitting,omitempty"`
 }
 
 // Author represents the owner of the gmail account.
