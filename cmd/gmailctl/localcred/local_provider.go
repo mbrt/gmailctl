@@ -20,7 +20,7 @@ const (
 
 To do so, head to https://console.developers.google.com
 
-1. Create a new project if you don't have one.
+0. Create a new project if you don't have one.
 1. Go to 'Enable API and services', search for Gmail and enable it.
 2. Go to 'OAuth consent screen'.
     2a. If your account is managed by an organization, you have to
@@ -29,10 +29,10 @@ To do so, head to https://console.developers.google.com
     2b. Set an application name (e.g. 'gmailctl').
     2c. Use your email for 'User support email' and 'Developer
         contact information'. Save and continue.
-    3c. Select 'Add or remove scopes' and add:
+    2d. Select 'Add or remove scopes' and add:
         * https://www.googleapis.com/auth/gmail.labels
         * https://www.googleapis.com/auth/gmail.settings.basic
-    3d. Save and continue until you're back to the dashboard.
+    2e. Save and continue until you're back to the dashboard.
 3. You now have a choice. You can either:
     * Click on 'Publish App' and avoid 'Submitting for
       verification'. This will result in scary confirmation
