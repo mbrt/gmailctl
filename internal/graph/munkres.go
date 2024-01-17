@@ -450,7 +450,7 @@ func (o *Munkres) findPrimeInRow(r int) (c int) {
 }
 
 /* Notes:
- 1. The algorthm will work even when the minimum values in two or more rows are in the same column.
+ 1. The algorithm will work even when the minimum values in two or more rows are in the same column.
  2. The algorithm will work even when two or more of the rows contain the same values in the the same order.
  3. The algorithm will work even when all the values are the same (although the result is not very interesting).
  4. Munkres Assignment Algorithm is not exponential run time or intractable; it is of a low order polynomial run time, worst-case O(n3).
