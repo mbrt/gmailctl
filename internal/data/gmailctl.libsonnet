@@ -13,7 +13,7 @@
   chainFilters(fs)::
     // utility that given a rule it returns its negated filter.
     local negate(r) = { not: r.filter };
-    // recursive that goes trough all elements of arr
+    // recursive that goes through all elements of arr
     local aux(arr, i, negated, running) =
       if i >= std.length(arr) then
         running

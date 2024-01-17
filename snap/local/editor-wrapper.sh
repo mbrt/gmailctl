@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Wrapper arround xdg-open for snap package.
+# Wrapper around xdg-open for snap package.
 # xdg-open is the only way to escape the containerized
 # snap environment to use the user's favorite editor.
 
