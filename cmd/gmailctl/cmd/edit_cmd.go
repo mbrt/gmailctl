@@ -142,8 +142,7 @@ func copyToTmp(path string) (string, error) {
 		return "", errors.WithCause(err, config.ErrNotFound)
 	}
 
-	// Use the same extension as the original file.
-	tmp, err := os.CreateTemp("", fmt.Sprintf("gmailctl-*%s", filepath.Ext(path)))
+	tmp, err := createTmp(path)
 	if err != nil {
 		return "", fmt.Errorf("creating tmp file: %w", err)
 	}
@@ -154,6 +153,25 @@ func copyToTmp(path string) (string, error) {
 
 	res := tmp.Name()
 	return res, tmp.Close()
+}
+
+func createTmp(originalPath string) (*os.File, error) {
+	// First try in the same directory as the original file. This is useful to
+	// allow IDEs to access libraries imported from the same directory.
+	preferredDir := filepath.Dir(originalPath)
+	// Use the same extension as the original file.
+	pattern := fmt.Sprintf("gmailctl-tmp-*%s", filepath.Ext(originalPath))
+	tmp, err := os.CreateTemp(preferredDir, pattern)
+	if err == nil {
+		return tmp, nil
+	}
+
+	// Fall back to the system temporary directory.
+	tmp, err = os.CreateTemp("", pattern)
+	if err != nil {
+		return nil, fmt.Errorf("creating tmp file: %w", err)
+	}
+	return tmp, err
 }
 
 func spawnEditor(path string) error {
