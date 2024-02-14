@@ -12,7 +12,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/stale@v1
+    - uses: actions/stale@v9
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: |
@@ -23,6 +23,7 @@ jobs:
           This will be closed in 7 days, unless you add the 'lifecycle/keep-alive' label or comment.
         stale-pr-label: 'lifecycle/stale'
         stale-issue-label: 'lifecycle/stale'
-        exempt-issue-label: 'lifecycle/keep-alive'
+        exempt-issue-labels: 'lifecycle/keep-alive'
+        exempt-pr-labels: 'lifecycle/keep-alive'
         days-before-stale: 30
         days-before-close: 7
