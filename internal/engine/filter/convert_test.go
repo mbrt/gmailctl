@@ -24,6 +24,7 @@ func TestQuotes(t *testing.T) {
 					"with spaces",
 					"with+plus",
 					"with+plus@email.com",
+					`"already-quoted"`,
 				},
 			},
 			Actions: parser.Actions{
@@ -35,7 +36,7 @@ func TestQuotes(t *testing.T) {
 	expected := Filters{
 		{
 			Criteria: Criteria{
-				From: `{a "with spaces" "with+plus" with+plus@email.com}`,
+				From: `{a "with spaces" "with+plus" with+plus@email.com "already-quoted"}`,
 			},
 			Action: Actions{
 				Archive: true,

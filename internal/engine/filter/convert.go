@@ -246,6 +246,10 @@ func quoteStrings(a ...string) []string {
 }
 
 func quote(a string) string {
+	// Skip quoting if already quoted.
+	if strings.HasPrefix(a, `"`) && strings.HasSuffix(a, `"`) {
+		return a
+	}
 	if strings.ContainsAny(a, " \t{}()") {
 		return fmt.Sprintf(`"%s"`, a)
 	}
