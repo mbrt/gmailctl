@@ -51,7 +51,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (default is $HOME/.config/gmailctl unless $HOME/.gmailctl is already present)")
+	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (default search paths: $HOME/.gmailctl, $HOME/.config/gmailctl)")
 }
 
 // initConfig reads in config file and ENV variables if set.
