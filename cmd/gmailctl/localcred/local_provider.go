@@ -47,8 +47,9 @@ To do so, head to https://console.developers.google.com
     4b. Select 'OAuth client ID'.
     4c. Select 'Desktop app' as 'Application type' and give it a name.
     4d. Create.
-5. Download the credentials file into %q and execute the 'init'
-   command again.
+5. Download the credentials file into
+   %q
+   and execute the 'init' command again.
 
 Documentation about Gmail API authorization can be found
 at: https://developers.google.com/gmail/api/auth/about-auth
@@ -81,8 +82,8 @@ func (Provider) InitConfig(cfgDir string) error {
 
 	auth, err := openCredentials(cpath)
 	if err != nil {
-		fmt.Printf(credentialsMissingMsg, cpath)
-		return err
+		return errors.WithDetails(err,
+			fmt.Sprintf(credentialsMissingMsg, cpath))
 	}
 	_, err = openToken(context.Background(), auth, tpath)
 	if err != nil {
