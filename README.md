@@ -29,6 +29,9 @@ label, archive and manage your inbox automatically.
     - [Automatic labels](#automatic-labels)
     - [Multiple Gmail accounts](#multiple-gmail-accounts)
   - [Known issues](#known-issues)
+    - [Apply filters to existing emails](#apply-filters-to-existing-emails)
+    - [OAuth2 authentication errors](#oauth2-authentication-errors)
+    - [YAML config is unsupported](#yaml-config-is-unsupported)
   - [Comparison with existing projects](#comparison-with-existing-projects)
   - [Footnotes](#footnotes)
 
@@ -64,9 +67,9 @@ This project then exists to provide to your Gmail filters:
 
 ## Install
 
-gmailctl is written in Go and requires at least Go version 1.17. Make sure to
-setup your [$GOPATH](https://golang.org/doc/code.html#GOPATH) correctly,
-including the `bin` subdirectory in your `$PATH`.
+gmailctl is written in Go and requires a recent version (see [go.mod](go.mod)).
+Make sure to setup your [`$GOPATH`](https://golang.org/doc/code.html#GOPATH)
+correctly and include its `bin` subdirectory in your `$PATH`.
 
 ```
 go install github.com/mbrt/gmailctl/cmd/gmailctl@latest
