@@ -131,8 +131,15 @@ func moveFile(from, to string) error {
 	}
 	_, err = f.Write(b)
 	if err != nil {
+		_ = f.Close()
 		return err
 	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
 	return os.Remove(from)
 }
 
