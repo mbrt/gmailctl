@@ -28,21 +28,9 @@ jobs:
         version: v1.51
 
     - name: Test
-      run: go test -v ./...
+      run: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
 
-    - name: Coverage
-      id: coverage
-      run: |
-        go test -v -coverpkg=./... -coverprofile=cov.out ./...
-        go tool cover -html=cov.out -o coverage.html
-        COV=$(go tool cover -func=cov.out | awk '/total/ { gsub("%", "", $3); print $3 }')
-        echo "Total coverage: ${COV} (Required ${MIN_COV})"
-        (( $(echo "${COV} > ${MIN_COV}" | bc -l) )) && echo "Min coverage passed" || exit 1
-      env:
-        MIN_COV: 60
-
-    - uses: actions/upload-artifact@v4
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
       with:
-        name: coverage
-        path: coverage.html
-        retention-days: 7
+        token: ${{ secrets.CODECOV_TOKEN }}
