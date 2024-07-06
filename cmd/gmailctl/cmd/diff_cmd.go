@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	diffFilename string
+	diffFilename  string
+	diffDebug     bool
 )
 
 // diffCmd represents the diff command
@@ -37,6 +38,7 @@ func init() {
 
 	// Flags and configuration settings
 	diffCmd.PersistentFlags().StringVarP(&diffFilename, "filename", "f", "", "configuration file")
+	diffCmd.PersistentFlags().BoolVarP(&diffDebug, "debug", "", false, "print extra debugging information")
 }
 
 func diff(path string) error {
@@ -55,7 +57,7 @@ func diff(path string) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, diffDebug)
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}

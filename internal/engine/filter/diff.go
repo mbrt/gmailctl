@@ -14,12 +14,12 @@ import (
 // Diff computes the diff between two lists of filters.
 //
 // To compute the diff, IDs are ignored, only the contents of the filters are actually considered.
-func Diff(upstream, local Filters) (FiltersDiff, error) {
+func Diff(upstream, local Filters, debugInfo bool) (FiltersDiff, error) {
 	// Computing the diff is very expensive, so we have to minimize the number of filters
 	// we have to analyze. To do so, we get rid of the filters that are exactly the same,
 	// by hashing them.
 	added, removed := changedFilters(upstream, local)
-	return NewMinimalFiltersDiff(added, removed), nil
+	return NewMinimalFiltersDiff(added, removed, debugInfo), nil
 }
 
 // NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
@@ -28,17 +28,18 @@ func Diff(upstream, local Filters) (FiltersDiff, error) {
 // The algorithm used is a quadratic approximation to the otherwise NP-complete
 // travel salesman problem. Hopefully the number of filters is low enough to
 // make this not too slow and the approximation not too bad.
-func NewMinimalFiltersDiff(added, removed Filters) FiltersDiff {
+func NewMinimalFiltersDiff(added, removed Filters, printDebugInfo bool) FiltersDiff {
 	if len(added) > 0 && len(removed) > 0 {
 		added, removed = reorderWithHungarian(added, removed)
 	}
-	return FiltersDiff{added, removed}
+	return FiltersDiff{added, removed, printDebugInfo}
 }
 
 // FiltersDiff contains filters that have been added and removed locally with respect to upstream.
 type FiltersDiff struct {
-	Added   Filters
-	Removed Filters
+	Added          Filters
+	Removed        Filters
+	PrintDebugInfo bool
 }
 
 // Empty returns true if the diff is empty.
@@ -47,16 +48,25 @@ func (f FiltersDiff) Empty() bool {
 }
 
 func (f FiltersDiff) String() string {
+	var removed, added string
+	if f.PrintDebugInfo {
+		removed = f.Removed.DebugString()
+		added = f.Added.DebugString()
+	} else {
+		removed = f.Removed.String()
+		added = f.Added.String()
+	}
+
 	s, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
-		A:        difflib.SplitLines(f.Removed.String()),
-		B:        difflib.SplitLines(f.Added.String()),
+		A:        difflib.SplitLines(removed),
+		B:        difflib.SplitLines(added),
 		FromFile: "Current",
 		ToFile:   "TO BE APPLIED",
 		Context:  5,
 	})
 	if err != nil {
 		// We can't get a diff apparently, let's make something up here
-		return fmt.Sprintf("Removed:\n%s\nAdded:\n%s", f.Removed, f.Added)
+		return fmt.Sprintf("Removed:\n%s\nAdded:\n%s", removed, added)
 	}
 	return s
 }
