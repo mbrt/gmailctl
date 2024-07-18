@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -63,10 +62,9 @@ func debug(path string) error {
 		if err != nil {
 			return fmt.Errorf("generating criteria: %w", err)
 		}
-		search := criteria.ToGmailSearch()
 
-		fmt.Printf("# Search: %s\n", search)
-		fmt.Printf("# URL: %s\n", toGmailURL(search))
+		fmt.Printf("# Search: %s\n", criteria.ToGmailSearch())
+		fmt.Printf("# URL: %s\n", criteria.ToGmailSearchURL())
 		cfg := parsedRules[i]
 		b, err := yaml.Marshal(cfg)
 		if err != nil {
@@ -76,11 +74,4 @@ func debug(path string) error {
 	}
 
 	return nil
-}
-
-func toGmailURL(s string) string {
-	return fmt.Sprintf(
-		"https://mail.google.com/mail/u/0/#search/%s",
-		url.QueryEscape(s),
-	)
 }

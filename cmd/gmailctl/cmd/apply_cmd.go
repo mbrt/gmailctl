@@ -14,6 +14,7 @@ var (
 	applyYes          bool
 	applyRemoveLabels bool
 	applySkipTests    bool
+	applyDebug        bool
 )
 
 const renameLabelWarning = `Warning: You are going to delete labels. This operation is
@@ -50,6 +51,7 @@ func init() {
 	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
 	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
 	applyCmd.Flags().BoolVarP(&applySkipTests, "yolo", "", false, "skip configuration tests")
+	applyCmd.PersistentFlags().BoolVarP(&applyDebug, "debug", "", false, "print extra debugging information")
 }
 
 func apply(path string, interactive, test bool) error {
@@ -68,7 +70,7 @@ func apply(path string, interactive, test bool) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, applyDebug)
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}

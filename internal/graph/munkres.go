@@ -24,18 +24,18 @@ const (
 )
 
 // Munkres (Hungarian algorithm) method to solve the assignment problem
-//  based on code by Bob Pilgrim from http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
-//  Note: this method runs in O(n³), in the worst case; therefore is not efficient for large matrix
-//   Example:
-//           $ | Clean  Sweep   Wash
-//      -------|--------------------
-//      Fry    |   [2]      3      3
-//      Leela  |     3    [2]      3
-//      Bender |     3      3    [2]
-//      minimum cost = 6
 //
-//  Note: cost will be minimised
+//	based on code by Bob Pilgrim from http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
+//	Note: this method runs in O(n³), in the worst case; therefore is not efficient for large matrix
+//	 Example:
+//	         $ | Clean  Sweep   Wash
+//	    -------|--------------------
+//	    Fry    |   [2]      3      3
+//	    Leela  |     3    [2]      3
+//	    Bender |     3      3    [2]
+//	    minimum cost = 6
 //
+//	Note: cost will be minimised
 type Munkres struct {
 
 	// main
@@ -80,7 +80,8 @@ func (o *Munkres) Init(nrow, ncol int) {
 }
 
 // SetCostMatrix sets cost matrix by copying from C to internal o.C
-//  Note: costs must be positive
+//
+//	Note: costs must be positive
 func (o *Munkres) SetCostMatrix(C [][]float64) {
 	o.Cori = C
 	for i := 0; i < o.nrowOri; i++ {
@@ -101,11 +102,12 @@ func (o *Munkres) SetCostMatrix(C [][]float64) {
 }
 
 // Run runs the iterative algorithm
-//  Output:
-//   o.Links -- will contain assignments, where len(assignments) == nrow and
-//              j := o.Links[i] means that i is assigned to j
-//              -1 means no assignment/link
-//   o.Cost -- will have the total cost by following links
+//
+//	Output:
+//	 o.Links -- will contain assignments, where len(assignments) == nrow and
+//	            j := o.Links[i] means that i is assigned to j
+//	            -1 means no assignment/link
+//	 o.Cost -- will have the total cost by following links
 func (o *Munkres) Run() {
 
 	// column matrix

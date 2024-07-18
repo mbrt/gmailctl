@@ -68,7 +68,7 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 
 			// Apply the diff.
-			d, err := apply.Diff(pres.GmailConfig, upres)
+			d, err := apply.Diff(pres.GmailConfig, upres, false)
 			require.Nil(t, err)
 			err = apply.Apply(d, gapi, true)
 			require.Nil(t, err)
@@ -139,7 +139,7 @@ func TestIntegrationImportExport(t *testing.T) {
 			require.Nil(t, err)
 
 			// Apply the diff.
-			d, err := apply.Diff(pres.GmailConfig, upres)
+			d, err := apply.Diff(pres.GmailConfig, upres, false)
 			require.Nil(t, err)
 			err = apply.Apply(d, gapi, true)
 			require.Nil(t, err)
@@ -174,7 +174,7 @@ func TestIntegrationImportExport(t *testing.T) {
 }
 
 func assertEmptyDiff(t *testing.T, local, remote apply.GmailConfig) {
-	d, err := apply.Diff(local, remote)
+	d, err := apply.Diff(local, remote, false)
 	require.Nil(t, err)
 	assert.Empty(t, d.FiltersDiff)
 	assert.Empty(t, d.LabelsDiff)

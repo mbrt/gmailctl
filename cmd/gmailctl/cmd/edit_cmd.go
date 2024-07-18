@@ -19,6 +19,7 @@ import (
 var (
 	editFilename  string
 	editSkipTests bool
+	editDebug     bool
 )
 
 var (
@@ -68,6 +69,7 @@ func init() {
 	// Flags and configuration settings
 	editCmd.PersistentFlags().StringVarP(&editFilename, "filename", "f", "", "configuration file")
 	editCmd.Flags().BoolVarP(&editSkipTests, "yolo", "", false, "skip configuration tests")
+	editCmd.PersistentFlags().BoolVarP(&editDebug, "debug", "", false, "print extra debugging information")
 }
 
 func edit(path string, test bool) error {
@@ -221,7 +223,7 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, editDebug)
 	if err != nil {
 		return errors.New("comparing upstream with local config")
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 
 	"github.com/mbrt/gmailctl/internal/engine/gmail"
@@ -22,6 +23,21 @@ func (fs Filters) String() string {
 		}
 		first = false
 		w.WriteString(f.String())
+	}
+
+	return w.String()
+}
+
+func (fs Filters) DebugString() string {
+	w := writer{}
+
+	first := true
+	for _, f := range fs {
+		if !first {
+			w.WriteRune('\n')
+		}
+		first = false
+		w.WriteString(f.DebugString())
 	}
 
 	return w.String()
@@ -66,6 +82,18 @@ func (f Filter) String() string {
 	w.WriteParam("categorize as", string(f.Action.Category))
 	w.WriteParam("apply label", f.Action.AddLabel)
 	w.WriteParam("forward to", f.Action.Forward)
+
+	return w.String()
+}
+
+// DebugString returns text representation of the filter with extra debugging
+// information Gmail search representation and URL included.
+func (f Filter) DebugString() string {
+	w := writer{}
+
+	w.WriteString(fmt.Sprintf("# Search: %s\n", f.Criteria.ToGmailSearch()))
+	w.WriteString(fmt.Sprintf("# URL: %s\n", f.Criteria.ToGmailSearchURL()))
+	w.WriteString(f.String())
 
 	return w.String()
 }
@@ -212,6 +240,13 @@ func (c Criteria) ToGmailSearch() string {
 	}
 
 	return strings.Join(res, " ")
+}
+
+// ToGmailSearchURL returns the equivalent query in an URL to Gmail search.
+func (c Criteria) ToGmailSearchURL() string {
+	return fmt.Sprintf(
+		"https://mail.google.com/mail/u/0/#search/%s",
+		url.QueryEscape(c.ToGmailSearch()))
 }
 
 type writer struct {
