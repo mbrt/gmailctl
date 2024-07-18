@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	diffFilename  string
-	diffDebug     bool
+	diffFilename string
+	diffDebug    bool
 )
 
 // diffCmd represents the diff command
