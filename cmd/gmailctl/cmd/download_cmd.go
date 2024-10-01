@@ -38,7 +38,7 @@ move to gmailctl.
 WARNING: This functionality is experimental. After downloading, verify
 that no diff is detected with the remote filters by using the 'diff'
 command.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		if err := download(downloadOutput); err != nil {
 			fatal(err)
 		}

@@ -236,6 +236,7 @@ func (w indentWriter) Write(b []byte) (int, error) {
 			i++
 		}
 		// Look for the next newline.
+		//revive:disable:empty-block This is intentional to find the next newline.
 		for j = i; j < len(b) && b[j] != '\n'; j++ {
 		}
 		// Write everything up to the newline, or the end of buffer.

@@ -26,7 +26,7 @@ them with other people.
 
 By default export uses the configuration file inside the config
 directory [config.jsonnet].`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		f := exportFilename
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)

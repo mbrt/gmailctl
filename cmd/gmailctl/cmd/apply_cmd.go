@@ -33,7 +33,7 @@ to make them match your local configuration file.
 
 By default apply uses the configuration file inside the config
 directory [config.jsonnet].`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		f := applyFilename
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)

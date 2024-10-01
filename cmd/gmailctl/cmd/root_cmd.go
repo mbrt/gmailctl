@@ -56,15 +56,15 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgDir != "" {
+	if cfgDir == "" {
 		// Use config file from the flag.
-	} else {
-		// Find home directory.
-		usr, err := user.Current()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		cfgDir = path.Join(usr.HomeDir, ".gmailctl")
+		return
 	}
+	// Find home directory.
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	cfgDir = path.Join(usr.HomeDir, ".gmailctl")
 }

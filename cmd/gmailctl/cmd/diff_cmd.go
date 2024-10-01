@@ -22,7 +22,7 @@ configuration and the current Gmail settings of your account.
 
 By default diff uses the configuration file inside the config
 directory [config.jsonnet].`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		f := diffFilename
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)

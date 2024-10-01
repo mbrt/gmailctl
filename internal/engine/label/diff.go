@@ -74,7 +74,7 @@ func (d LabelsDiff) Empty() bool {
 }
 
 func (d LabelsDiff) String() string {
-	var old, new []string
+	var old, curr []string
 
 	cleanup := func(l Label) Label {
 		// Get rid of distracting information in the diff.
@@ -86,7 +86,7 @@ func (d LabelsDiff) String() string {
 
 	for _, ml := range d.Modified {
 		old = append(old, cleanup(ml.Old).String()+"\n")
-		new = append(new, ml.New.String()+"\n")
+		curr = append(curr, ml.New.String()+"\n")
 	}
 
 	for _, l := range d.Removed {
@@ -94,12 +94,12 @@ func (d LabelsDiff) String() string {
 	}
 
 	for _, l := range d.Added {
-		new = append(new, l.String()+"\n")
+		curr = append(curr, l.String()+"\n")
 	}
 
 	s, err := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
 		A:        old,
-		B:        new,
+		B:        curr,
 		FromFile: "Current",
 		ToFile:   "TO BE APPLIED",
 		Context:  3,
@@ -108,7 +108,7 @@ func (d LabelsDiff) String() string {
 		// We can't get a diff apparently, let's make something up here
 		return fmt.Sprintf("Removed:\n%s\nAdded:\n%sModified:%s",
 			strings.Join(old, "\n"),
-			strings.Join(new, "\n"),
+			strings.Join(curr, "\n"),
 			fmt.Sprint(d.Modified),
 		)
 	}
