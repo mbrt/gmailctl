@@ -22,7 +22,7 @@ List of unsupported constructs:
 
 By default test uses the configuration file inside the config
 directory [config.jsonnet].`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		f := testFilename
 		if f == "" {
 			f = configFilenameFromDir(cfgDir)

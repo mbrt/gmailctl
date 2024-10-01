@@ -24,7 +24,7 @@ var initCmd = &cobra.Command{
 	Long: `The init command initialize the Gmail configuration, asking
 you for details and guiding you through the process of
 setting up the API authorizations and initial settings.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		var err error
 		if initReset {
 			err = resetConfig()

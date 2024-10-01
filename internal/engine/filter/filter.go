@@ -106,6 +106,7 @@ func indent(query string, level int) string {
 	return "\n" + strings.TrimRight(indented.String(), "\n ")
 }
 
+//revive:disable:cyclomatic High complexity, needs some refactoring
 func indentInternal(queryReader io.RuneReader, out *bytes.Buffer, level int) bool {
 	type parseState int
 	const (
