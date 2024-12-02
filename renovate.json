@@ -5,6 +5,10 @@
     "group:all",
     "schedule:monthly"
   ],
+  "postUpdateOptions": [
+    "gomodTidy",
+    "gomodUpdateImportPaths"
+  ],
   "labels": [
     "kind/dependencies"
   ]
