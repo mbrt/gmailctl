@@ -1,0 +1,10 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto  # Uses the current coverage as a baseline.
+        threshold: 1%  # Allows up to a 1% decrease without failing.
+    patch:
+      default:
+        target: 80%  # Desired coverage for new code changes.
+        threshold: 1%  # Allows up to a 1% decrease in patch coverage.
