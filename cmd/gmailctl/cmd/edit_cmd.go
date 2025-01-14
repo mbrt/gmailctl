@@ -17,9 +17,10 @@ import (
 
 // Parameters
 var (
-	editFilename  string
-	editSkipTests bool
-	editDebug     bool
+	editFilename    string
+	editSkipTests   bool
+	editDebug       bool
+	editDiffContext int
 )
 
 var (
@@ -70,9 +71,14 @@ func init() {
 	editCmd.PersistentFlags().StringVarP(&editFilename, "filename", "f", "", "configuration file")
 	editCmd.Flags().BoolVarP(&editSkipTests, "yolo", "", false, "skip configuration tests")
 	editCmd.PersistentFlags().BoolVarP(&editDebug, "debug", "", false, "print extra debugging information")
+	editCmd.PersistentFlags().IntVarP(&editDiffContext, "diff-context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
 }
 
 func edit(path string, test bool) error {
+	if editDiffContext < 0 {
+		return errors.New("--diff-context must be non-negative")
+	}
+
 	// First make sure that Gmail can be contacted, so that we don't
 	// waste the user's time editing a config file that cannot be
 	// applied now.
@@ -223,7 +229,7 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, editDebug)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, editDebug, editDiffContext)
 	if err != nil {
 		return errors.New("comparing upstream with local config")
 	}

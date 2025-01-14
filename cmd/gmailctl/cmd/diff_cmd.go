@@ -6,11 +6,13 @@ import (
 	"github.com/spf13/cobra"
 
 	papply "github.com/mbrt/gmailctl/internal/engine/apply"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 var (
 	diffFilename string
 	diffDebug    bool
+	diffContext  int
 )
 
 // diffCmd represents the diff command
@@ -39,9 +41,14 @@ func init() {
 	// Flags and configuration settings
 	diffCmd.PersistentFlags().StringVarP(&diffFilename, "filename", "f", "", "configuration file")
 	diffCmd.PersistentFlags().BoolVarP(&diffDebug, "debug", "", false, "print extra debugging information")
+	diffCmd.PersistentFlags().IntVarP(&diffContext, "context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
 }
 
 func diff(path string) error {
+	if diffContext < 0 {
+		return errors.New("--context must be non-negative")
+	}
+
 	parseRes, err := parseConfig(path, "", false)
 	if err != nil {
 		return err
@@ -57,7 +64,7 @@ func diff(path string) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, diffDebug)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, diffDebug, diffContext)
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}

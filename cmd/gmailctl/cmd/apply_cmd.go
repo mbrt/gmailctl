@@ -15,6 +15,7 @@ var (
 	applyRemoveLabels bool
 	applySkipTests    bool
 	applyDebug        bool
+	applyDiffContext  int
 )
 
 const renameLabelWarning = `Warning: You are going to delete labels. This operation is
@@ -52,9 +53,14 @@ func init() {
 	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
 	applyCmd.Flags().BoolVarP(&applySkipTests, "yolo", "", false, "skip configuration tests")
 	applyCmd.PersistentFlags().BoolVarP(&applyDebug, "debug", "", false, "print extra debugging information")
+	applyCmd.PersistentFlags().IntVarP(&applyDiffContext, "diff-context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
 }
 
 func apply(path string, interactive, test bool) error {
+	if applyDiffContext < 0 {
+		return errors.New("--diff-context must be non-negative")
+	}
+
 	parseRes, err := parseConfig(path, "", test)
 	if err != nil {
 		return err
@@ -70,7 +76,7 @@ func apply(path string, interactive, test bool) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, applyDebug)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, applyDebug, applyDiffContext)
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}
