@@ -56,7 +56,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgDir == "" {
+	if cfgDir != "" {
 		// Use config file from the flag.
 		return
 	}
