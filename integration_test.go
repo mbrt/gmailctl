@@ -68,7 +68,7 @@ func TestIntegration(t *testing.T) {
 			require.Nil(t, err)
 
 			// Apply the diff.
-			d, err := apply.Diff(pres.GmailConfig, upres, false)
+			d, err := apply.Diff(pres.GmailConfig, upres, false, apply.DefaultContextLines)
 			require.Nil(t, err)
 			err = apply.Apply(d, gapi, true)
 			require.Nil(t, err)
@@ -139,7 +139,7 @@ func TestIntegrationImportExport(t *testing.T) {
 			require.Nil(t, err)
 
 			// Apply the diff.
-			d, err := apply.Diff(pres.GmailConfig, upres, false)
+			d, err := apply.Diff(pres.GmailConfig, upres, false, apply.DefaultContextLines)
 			require.Nil(t, err)
 			err = apply.Apply(d, gapi, true)
 			require.Nil(t, err)
@@ -174,10 +174,10 @@ func TestIntegrationImportExport(t *testing.T) {
 }
 
 func assertEmptyDiff(t *testing.T, local, remote apply.GmailConfig) {
-	d, err := apply.Diff(local, remote, false)
+	d, err := apply.Diff(local, remote, false, -1)
 	require.Nil(t, err)
-	assert.Empty(t, d.FiltersDiff)
-	assert.Empty(t, d.LabelsDiff)
+	assert.True(t, d.FiltersDiff.Empty())
+	assert.True(t, d.LabelsDiff.Empty())
 }
 
 func mustParseTime(layout, value string) time.Time {

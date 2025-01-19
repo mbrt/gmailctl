@@ -11,6 +11,9 @@ import (
 	"github.com/mbrt/gmailctl/internal/engine/parser"
 )
 
+// DefaultContextLines is the default number of lines of context to show in the filter diff.
+const DefaultContextLines = 5
+
 // GmailConfig represents a Gmail configuration.
 type GmailConfig struct {
 	Labels  label.Labels
@@ -113,13 +116,13 @@ func (d ConfigDiff) Validate() error {
 }
 
 // Diff computes the diff between local and upstream configuration.
-func Diff(local, upstream GmailConfig, debugInfo bool) (ConfigDiff, error) {
+func Diff(local, upstream GmailConfig, debugInfo bool, contextLines int) (ConfigDiff, error) {
 	res := ConfigDiff{
 		LocalConfig: local,
 	}
 	var err error
 
-	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters, debugInfo)
+	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters, debugInfo, contextLines)
 	if err != nil {
 		return res, fmt.Errorf("cannot compute filters diff: %w", err)
 	}
