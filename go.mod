@@ -6,7 +6,7 @@ require (
 	github.com/google/go-jsonnet v0.20.0
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/pmezard/go-difflib v1.0.0
+	github.com/martinohmann/go-difflib v1.1.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.24.0
@@ -19,6 +19,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/color v1.12.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -28,6 +29,9 @@ require (
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.58.0 // indirect

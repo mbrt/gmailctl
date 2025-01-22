@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pmezard/go-difflib/difflib"
+	"github.com/martinohmann/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/graph"
 )
@@ -64,6 +64,7 @@ func (f FiltersDiff) String() string {
 		FromFile: "Current",
 		ToFile:   "TO BE APPLIED",
 		Context:  f.ContextLines,
+		Color:    true,
 	})
 	if err != nil {
 		// We can't get a diff apparently, let's make something up here

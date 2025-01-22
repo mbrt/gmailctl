@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pmezard/go-difflib/difflib"
+	"github.com/martinohmann/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
 	"github.com/mbrt/gmailctl/internal/engine/gmail"
