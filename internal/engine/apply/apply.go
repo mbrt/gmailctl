@@ -116,13 +116,13 @@ func (d ConfigDiff) Validate() error {
 }
 
 // Diff computes the diff between local and upstream configuration.
-func Diff(local, upstream GmailConfig, debugInfo bool, contextLines int) (ConfigDiff, error) {
+func Diff(local, upstream GmailConfig, debugInfo bool, contextLines int, allowColor bool) (ConfigDiff, error) {
 	res := ConfigDiff{
 		LocalConfig: local,
 	}
 	var err error
 
-	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters, debugInfo, contextLines)
+	res.FiltersDiff, err = filter.Diff(upstream.Filters, local.Filters, debugInfo, contextLines, allowColor)
 	if err != nil {
 		return res, fmt.Errorf("cannot compute filters diff: %w", err)
 	}
