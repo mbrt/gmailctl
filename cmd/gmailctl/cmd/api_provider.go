@@ -20,7 +20,7 @@ type GmailAPIProvider interface {
 	// ResetConfig cleans up the configuration.
 	ResetConfig(cfgDir string) error
 	// InitConfig initializes the configuration.
-	InitConfig(cfgDir string) error
+	InitConfig(cfgDir string, port int) error
 }
 
 // APIKeyProvider is the interface implemented by API providers with
@@ -34,7 +34,7 @@ type APIKeyProvider interface {
 // TokenRefresher allows to refresh API tokens if they are expired.
 type TokenRefresher interface {
 	// RefreshToken refreshes the token if it is expired.
-	RefreshToken(ctx context.Context, cfgDir string) error
+	RefreshToken(ctx context.Context, cfgDir string, port int) error
 }
 
 func openAPI() (*api.GmailAPI, error) {
