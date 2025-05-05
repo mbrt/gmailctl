@@ -52,8 +52,8 @@ func newOauth2Server(expectedState string) *oauth2Server {
 }
 
 // Start the oauth2Server asynchronously.
-func (s *oauth2Server) Start() (string, error) {
-	l, err := net.Listen("tcp", ":0") //nolint:gosec
+func (s *oauth2Server) Start(port int) (string, error) {
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port)) //nolint:gosec
 	if err != nil {
 		return "", err
 	}

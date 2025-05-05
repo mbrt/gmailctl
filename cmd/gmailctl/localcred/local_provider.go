@@ -76,7 +76,7 @@ func (Provider) Service(ctx context.Context, cfgDir string) (*gmail.Service, err
 	return openToken(ctx, auth, tokenPath(cfgDir))
 }
 
-func (Provider) InitConfig(cfgDir string) error {
+func (Provider) InitConfig(cfgDir string, port int) error {
 	cpath := credentialsPath(cfgDir)
 	tpath := tokenPath(cfgDir)
 
@@ -88,7 +88,7 @@ func (Provider) InitConfig(cfgDir string) error {
 	_, err = openToken(context.Background(), auth, tpath)
 	if err != nil {
 		stderrPrintf("%v\n\n", err)
-		err = setupToken(auth, tpath)
+		err = setupToken(auth, tpath, port)
 	}
 	return err
 }
@@ -103,7 +103,7 @@ func (Provider) ResetConfig(cfgDir string) error {
 	return nil
 }
 
-func (Provider) RefreshToken(ctx context.Context, cfgDir string) error {
+func (Provider) RefreshToken(ctx context.Context, cfgDir string, port int) error {
 	auth, err := openCredentials(credentialsPath(cfgDir))
 	if err != nil {
 		return errors.WithDetails(fmt.Errorf("invalid credentials: %w", err),
@@ -111,11 +111,11 @@ func (Provider) RefreshToken(ctx context.Context, cfgDir string) error {
 	}
 	svc, err := openToken(ctx, auth, tokenPath(cfgDir))
 	if err != nil {
-		return setupToken(auth, tokenPath(cfgDir))
+		return setupToken(auth, tokenPath(cfgDir), port)
 	}
 	// Check whether the token works by getting a label.
 	if _, err := svc.Users.Labels.Get("me", "INBOX").Context(ctx).Do(); err != nil {
-		return setupToken(auth, tokenPath(cfgDir))
+		return setupToken(auth, tokenPath(cfgDir), port)
 	}
 	return nil
 }
@@ -136,9 +136,9 @@ func openToken(ctx context.Context, auth *api.Authenticator, path string) (*gmai
 	return auth.Service(ctx, token)
 }
 
-func setupToken(auth *api.Authenticator, path string) error {
+func setupToken(auth *api.Authenticator, path string, port int) error {
 	localSrv := newOauth2Server(auth.State)
-	addr, err := localSrv.Start()
+	addr, err := localSrv.Start(port)
 	if err != nil {
 		return errors.WithDetails(fmt.Errorf("starting local server: %w", err),
 			"gmailctl requires a temporary local HTTP server for the authentication flow.")
