@@ -129,7 +129,7 @@ func Diff(local, upstream GmailConfig, debugInfo bool, contextLines int, allowCo
 
 	if len(local.Labels) > 0 {
 		// LabelsDiff management opted-in
-		res.LabelsDiff, err = label.Diff(upstream.Labels, local.Labels)
+		res.LabelsDiff, err = label.Diff(upstream.Labels, local.Labels, allowColor)
 		if err != nil {
 			return res, fmt.Errorf("cannot compute labels diff: %w", err)
 		}
