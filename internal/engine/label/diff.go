@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pmezard/go-difflib/difflib"
+	"github.com/martinohmann/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/engine/filter"
 )
@@ -14,11 +14,11 @@ import (
 //
 // To compute the diff, IDs are ignored, only the properties of the labels are
 // actually considered.
-func Diff(upstream, local Labels) (LabelsDiff, error) {
+func Diff(upstream, local Labels, allowColor bool) (LabelsDiff, error) {
 	sort.Sort(byName(upstream))
 	sort.Sort(byName(local))
 
-	res := LabelsDiff{}
+	res := LabelsDiff{AllowColor: allowColor}
 	i, j := 0, 0
 
 	for i < len(upstream) && j < len(local) {
@@ -63,9 +63,10 @@ func Diff(upstream, local Labels) (LabelsDiff, error) {
 
 // LabelsDiff contains the diff of two lists of labels.
 type LabelsDiff struct {
-	Modified []ModifiedLabel
-	Added    Labels
-	Removed  Labels
+	Modified   []ModifiedLabel
+	Added      Labels
+	Removed    Labels
+	AllowColor bool
 }
 
 // Empty returns true if the diff is empty.
@@ -103,6 +104,7 @@ func (d LabelsDiff) String() string {
 		FromFile: "Current",
 		ToFile:   "TO BE APPLIED",
 		Context:  3,
+		Color:    d.AllowColor,
 	})
 	if err != nil {
 		// We can't get a diff apparently, let's make something up here

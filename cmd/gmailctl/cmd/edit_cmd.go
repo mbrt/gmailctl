@@ -21,6 +21,7 @@ var (
 	editSkipTests   bool
 	editDebug       bool
 	editDiffContext int
+	editColor       string
 )
 
 var (
@@ -70,13 +71,17 @@ func init() {
 	// Flags and configuration settings
 	editCmd.PersistentFlags().StringVarP(&editFilename, "filename", "f", "", "configuration file")
 	editCmd.Flags().BoolVarP(&editSkipTests, "yolo", "", false, "skip configuration tests")
-	editCmd.PersistentFlags().BoolVarP(&editDebug, "debug", "", false, "print extra debugging information")
-	editCmd.PersistentFlags().IntVarP(&editDiffContext, "diff-context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
+	editCmd.PersistentFlags().BoolVar(&editDebug, "debug", false, "print extra debugging information")
+	editCmd.PersistentFlags().IntVar(&editDiffContext, "diff-context", papply.DefaultContextLines, "number of lines of filter diff context to show")
+	editCmd.PersistentFlags().StringVar(&editColor, "color", "auto", "whether to enable color output (must be \"auto\" or \"never\")")
 }
 
 func edit(path string, test bool) error {
 	if editDiffContext < 0 {
 		return errors.New("--diff-context must be non-negative")
+	}
+	if editColor != "auto" && editColor != "never" {
+		return errors.New("--color must be \"auto\" or \"never\"")
 	}
 
 	// First make sure that Gmail can be contacted, so that we don't
@@ -229,7 +234,7 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, editDebug, editDiffContext)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, editDebug, editDiffContext, editColor == "auto")
 	if err != nil {
 		return errors.New("comparing upstream with local config")
 	}

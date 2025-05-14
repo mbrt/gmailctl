@@ -16,6 +16,7 @@ var (
 	applySkipTests    bool
 	applyDebug        bool
 	applyDiffContext  int
+	applyColor        string
 )
 
 const renameLabelWarning = `Warning: You are going to delete labels. This operation is
@@ -51,14 +52,18 @@ func init() {
 	applyCmd.PersistentFlags().StringVarP(&applyFilename, "filename", "f", "", "configuration file")
 	applyCmd.Flags().BoolVarP(&applyYes, "yes", "y", false, "don't ask for confirmation, just apply")
 	applyCmd.Flags().BoolVarP(&applyRemoveLabels, "remove-labels", "r", false, "allow removing labels")
-	applyCmd.Flags().BoolVarP(&applySkipTests, "yolo", "", false, "skip configuration tests")
-	applyCmd.PersistentFlags().BoolVarP(&applyDebug, "debug", "", false, "print extra debugging information")
-	applyCmd.PersistentFlags().IntVarP(&applyDiffContext, "diff-context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
+	applyCmd.Flags().BoolVar(&applySkipTests, "yolo", false, "skip configuration tests")
+	applyCmd.PersistentFlags().BoolVar(&applyDebug, "debug", false, "print extra debugging information")
+	applyCmd.PersistentFlags().IntVar(&applyDiffContext, "diff-context", papply.DefaultContextLines, "number of lines of filter diff context to show")
+	applyCmd.PersistentFlags().StringVar(&applyColor, "color", "auto", "whether to enable color output (must be \"auto\" or \"never\")")
 }
 
 func apply(path string, interactive, test bool) error {
 	if applyDiffContext < 0 {
 		return errors.New("--diff-context must be non-negative")
+	}
+	if applyColor != "auto" && applyColor != "never" {
+		return errors.New("--color must be \"auto\" or \"never\"")
 	}
 
 	parseRes, err := parseConfig(path, "", test)
@@ -76,7 +81,7 @@ func apply(path string, interactive, test bool) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, applyDebug, applyDiffContext)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, applyDebug, applyDiffContext, applyColor == "auto")
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}
