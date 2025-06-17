@@ -8,17 +8,18 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/engine/filter"
+	"github.com/mbrt/gmailctl/internal/reporting"
 )
 
 // Diff computes the diff between two lists of labels.
 //
 // To compute the diff, IDs are ignored, only the properties of the labels are
 // actually considered.
-func Diff(upstream, local Labels) (LabelsDiff, error) {
+func Diff(upstream, local Labels, colorize bool) (LabelsDiff, error) {
 	sort.Sort(byName(upstream))
 	sort.Sort(byName(local))
 
-	res := LabelsDiff{}
+	res := LabelsDiff{Colorize: colorize}
 	i, j := 0, 0
 
 	for i < len(upstream) && j < len(local) {
@@ -66,6 +67,7 @@ type LabelsDiff struct {
 	Modified []ModifiedLabel
 	Added    Labels
 	Removed  Labels
+	Colorize bool
 }
 
 // Empty returns true if the diff is empty.
@@ -111,6 +113,9 @@ func (d LabelsDiff) String() string {
 			strings.Join(curr, "\n"),
 			fmt.Sprint(d.Modified),
 		)
+	}
+	if d.Colorize {
+		s = reporting.ColorizeDiff(s)
 	}
 
 	return s

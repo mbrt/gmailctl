@@ -9,17 +9,18 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 
 	"github.com/mbrt/gmailctl/internal/graph"
+	"github.com/mbrt/gmailctl/internal/reporting"
 )
 
 // Diff computes the diff between two lists of filters.
 //
 // To compute the diff, IDs are ignored, only the contents of the filters are actually considered.
-func Diff(upstream, local Filters, debugInfo bool, contextLines int) (FiltersDiff, error) {
+func Diff(upstream, local Filters, debugInfo bool, contextLines int, colorize bool) (FiltersDiff, error) {
 	// Computing the diff is very expensive, so we have to minimize the number of filters
 	// we have to analyze. To do so, we get rid of the filters that are exactly the same,
 	// by hashing them.
 	added, removed := changedFilters(upstream, local)
-	return NewMinimalFiltersDiff(added, removed, debugInfo, contextLines), nil
+	return NewMinimalFiltersDiff(added, removed, debugInfo, contextLines, colorize), nil
 }
 
 // NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
@@ -28,11 +29,11 @@ func Diff(upstream, local Filters, debugInfo bool, contextLines int) (FiltersDif
 // The algorithm used is a quadratic approximation to the otherwise NP-complete
 // travel salesman problem. Hopefully the number of filters is low enough to
 // make this not too slow and the approximation not too bad.
-func NewMinimalFiltersDiff(added, removed Filters, printDebugInfo bool, contextLines int) FiltersDiff {
+func NewMinimalFiltersDiff(added, removed Filters, printDebugInfo bool, contextLines int, colorize bool) FiltersDiff {
 	if len(added) > 0 && len(removed) > 0 {
 		added, removed = reorderWithHungarian(added, removed)
 	}
-	return FiltersDiff{added, removed, printDebugInfo, contextLines}
+	return FiltersDiff{added, removed, printDebugInfo, contextLines, colorize}
 }
 
 // FiltersDiff contains filters that have been added and removed locally with respect to upstream.
@@ -41,6 +42,7 @@ type FiltersDiff struct {
 	Removed        Filters
 	PrintDebugInfo bool
 	ContextLines   int
+	Colorize       bool
 }
 
 // Empty returns true if the diff is empty.
@@ -69,6 +71,10 @@ func (f FiltersDiff) String() string {
 		// We can't get a diff apparently, let's make something up here
 		return fmt.Sprintf("Removed:\n%s\nAdded:\n%s", removed, added)
 	}
+	if f.Colorize {
+		s = reporting.ColorizeDiff(s)
+	}
+
 	return s
 }
 
