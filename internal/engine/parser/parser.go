@@ -105,7 +105,7 @@ func checkSyntax(f cfg.FilterNode) error {
 	}
 
 	// Check that 'isRaw' is used correctly
-	allowed := []string{"from", "to", "subject"}
+	allowed := []string{"from", "to", "subject", "deliveredto"}
 	for _, s := range allowed {
 		if fs[0] == s {
 			return nil
@@ -154,6 +154,9 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 	}
 	if f.Query != "" {
 		return FunctionQuery, f.Query
+	}
+	if f.DeliveredTo != "" {
+		return FunctionDeliveredTo, f.DeliveredTo
 	}
 	return FunctionNone, ""
 }

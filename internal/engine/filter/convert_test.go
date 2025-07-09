@@ -370,3 +370,58 @@ func TestActions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, got)
 }
+
+func TestDeliveredTo(t *testing.T) {
+	rules := []parser.Rule{
+		{
+			Criteria: &parser.Leaf{
+				Function: parser.FunctionDeliveredTo,
+				Args:     []string{"user+tag@example.com"},
+			},
+			Actions: parser.Actions{
+				Archive: true,
+			},
+		},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{
+				Query: "deliveredto:user+tag@example.com",
+			},
+			Action: Actions{
+				Archive: true,
+			},
+		},
+	}
+	got, err := FromRules(rules)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}
+
+func TestDeliveredToEscaped(t *testing.T) {
+	rules := []parser.Rule{
+		{
+			Criteria: &parser.Leaf{
+				Function: parser.FunctionDeliveredTo,
+				Args:     []string{"user with spaces@example.com"},
+				IsRaw:    true,
+			},
+			Actions: parser.Actions{
+				Archive: true,
+			},
+		},
+	}
+	expected := Filters{
+		{
+			Criteria: Criteria{
+				Query: "deliveredto:user with spaces@example.com",
+			},
+			Action: Actions{
+				Archive: true,
+			},
+		},
+	}
+	got, err := FromRules(rules)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, got)
+}

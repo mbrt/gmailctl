@@ -30,20 +30,21 @@ type FilterNode struct {
 	Or  []FilterNode `json:"or,omitempty"`
 	Not *FilterNode  `json:"not,omitempty"`
 
-	From    string `json:"from,omitempty"`
-	To      string `json:"to,omitempty"`
-	Cc      string `json:"cc,omitempty"`
-	Bcc     string `json:"bcc,omitempty"`
-	ReplyTo string `json:"replyto,omitempty"`
-	Subject string `json:"subject,omitempty"`
-	List    string `json:"list,omitempty"`
-	Has     string `json:"has,omitempty"`
-	Query   string `json:"query,omitempty"`
+	From        string `json:"from,omitempty"`
+	To          string `json:"to,omitempty"`
+	Cc          string `json:"cc,omitempty"`
+	Bcc         string `json:"bcc,omitempty"`
+	ReplyTo     string `json:"replyto,omitempty"`
+	Subject     string `json:"subject,omitempty"`
+	List        string `json:"list,omitempty"`
+	Has         string `json:"has,omitempty"`
+	Query       string `json:"query,omitempty"`
+	DeliveredTo string `json:"deliveredto,omitempty"`
 
 	// IsEscaped specifies that the given parameters don't need any
 	// further escaping.
 	//
-	// Only allowed in combination with 'From', 'To' or 'Subject'.
+	// Only allowed in combination with 'From', 'To', 'Subject', or 'DeliveredTo'.
 	IsEscaped bool `json:"isEscaped,omitempty"`
 }
 

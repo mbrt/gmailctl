@@ -141,6 +141,10 @@ func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
 		return Criteria{
 			Query: fmt.Sprintf("list:%s", query),
 		}, nil
+	case parser.FunctionDeliveredTo:
+		return Criteria{
+			Query: fmt.Sprintf("deliveredto:%s", query),
+		}, nil
 	case parser.FunctionHas, parser.FunctionQuery:
 		return Criteria{
 			Query: query,

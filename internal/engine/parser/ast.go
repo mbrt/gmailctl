@@ -40,6 +40,7 @@ const (
 	FunctionList
 	FunctionHas
 	FunctionQuery
+	FunctionDeliveredTo
 )
 
 // FunctionType is the type of a function.
@@ -67,6 +68,8 @@ func (f FunctionType) String() string {
 		return "has"
 	case FunctionQuery:
 		return "query"
+	case FunctionDeliveredTo:
+		return "deliveredto"
 	default:
 		return "<unknown>"
 	}
