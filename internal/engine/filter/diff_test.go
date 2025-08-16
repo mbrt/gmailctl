@@ -34,7 +34,7 @@ func TestNoDiff(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	assert.Nil(t, err)
 	// No difference even if the ID is present in only one of them.
 	assert.True(t, fd.Empty())
@@ -67,7 +67,7 @@ func TestDiffOutput(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	assert.Nil(t, err)
 
 	expected := `
@@ -91,6 +91,59 @@ func TestDiffOutput(t *testing.T) {
    Actions:
      mark as read
      categorize as: personal`
+	assert.Equal(t, strings.TrimSpace(fd.String()), strings.TrimSpace(expected))
+}
+
+func TestDiffOutputWithColor(t *testing.T) {
+	prev := Filters{
+		{
+			ID: "abcdefg",
+			Criteria: Criteria{
+				From:  "someone@gmail.com",
+				Query: "(a b) subject:(foo bar)",
+			},
+			Action: Actions{
+				MarkRead: true,
+				Category: gmail.CategoryPersonal,
+			},
+		},
+	}
+	curr := Filters{
+		{
+			Criteria: Criteria{
+				From:  "{someone@gmail.com else@gmail.com}",
+				Query: "(a c) subject:(foo baz)",
+			},
+			Action: Actions{
+				MarkRead: true,
+				Category: gmail.CategoryPersonal,
+			},
+		},
+	}
+
+	fd, err := Diff(prev, curr, false, contextLines, true /* colorize */)
+	assert.Nil(t, err)
+
+	expected := "\x1b[1m--- Current\x1b[0m\n" +
+		"\x1b[1m+++ TO BE APPLIED\x1b[0m\n" +
+		"\x1b[36m@@ -1,15 +1,15 @@\x1b[0m\n" +
+		" * Criteria:\n" +
+		"\x1b[31m-    from: someone@gmail.com\x1b[0m\n" +
+		"\x1b[32m+    from: {someone@gmail.com else@gmail.com}\x1b[0m\n" +
+		"     query: \n" +
+		"       (\n" +
+		"         a\n" +
+		"\x1b[31m-        b\x1b[0m\n" +
+		"\x1b[32m+        c\x1b[0m\n" +
+		"       )\n" +
+		"       subject:(\n" +
+		"         foo\n" +
+		"\x1b[31m-        bar\x1b[0m\n" +
+		"\x1b[32m+        baz\x1b[0m\n" +
+		"       )\n" +
+		"   Actions:\n" +
+		"     mark as read\n" +
+		"     categorize as: personal"
 	assert.Equal(t, strings.TrimSpace(fd.String()), strings.TrimSpace(expected))
 }
 
@@ -121,7 +174,7 @@ func TestDiffOutputWithCustomContextLines(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, 1 /* contextLines */)
+	fd, err := Diff(prev, curr, false, 1 /* contextLines */, false /* colorize */)
 	assert.Nil(t, err)
 
 	expected := `
@@ -172,7 +225,7 @@ func TestDiffOutputWithGmailSearchURL(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, true, contextLines)
+	fd, err := Diff(prev, curr, true, contextLines, false /* colorize */)
 	assert.Nil(t, err)
 
 	expected := `
@@ -266,7 +319,7 @@ func TestDiffAddRemove(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	expected := FiltersDiff{
 		Added:        Filters{curr[0]},
 		Removed:      Filters{prev[1]},
@@ -306,7 +359,7 @@ func TestDiffReorder(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	assert.Nil(t, err)
 	assert.Len(t, fd.Added, 0)
 	assert.Len(t, fd.Removed, 0)
@@ -342,7 +395,7 @@ func TestDiffModify(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	expected := FiltersDiff{
 		Added:        Filters{curr[1]},
 		Removed:      Filters{prev[1]},
@@ -391,7 +444,7 @@ func TestDiffAdd(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	expected := FiltersDiff{
 		Added:        Filters{curr[2]},
 		ContextLines: contextLines,
@@ -414,7 +467,7 @@ func TestDiffRemove(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	expected := FiltersDiff{
 		Removed:      Filters{prev[2], prev[0]},
 		ContextLines: contextLines,
@@ -445,7 +498,7 @@ func TestDuplicate(t *testing.T) {
 		},
 	}
 
-	fd, err := Diff(prev, curr, false, contextLines)
+	fd, err := Diff(prev, curr, false, contextLines, false /* colorize */)
 	assert.Nil(t, err)
 	// Only one of the two identical filters is present
 	assert.Equal(t, curr[1:], fd.Added)

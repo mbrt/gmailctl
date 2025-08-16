@@ -40,14 +40,16 @@ func init() {
 
 	// Flags and configuration settings
 	diffCmd.PersistentFlags().StringVarP(&diffFilename, "filename", "f", "", "configuration file")
-	diffCmd.PersistentFlags().BoolVarP(&diffDebug, "debug", "", false, "print extra debugging information")
-	diffCmd.PersistentFlags().IntVarP(&diffContext, "context", "", papply.DefaultContextLines, "number of lines of filter diff context to show")
+	diffCmd.PersistentFlags().BoolVar(&diffDebug, "debug", false, "print extra debugging information")
+	diffCmd.PersistentFlags().IntVar(&diffContext, "context", papply.DefaultContextLines, "number of lines of filter diff context to show")
 }
 
 func diff(path string) error {
 	if diffContext < 0 {
 		return errors.New("--context must be non-negative")
 	}
+
+	useColor := shouldUseColorDiff()
 
 	parseRes, err := parseConfig(path, "", false)
 	if err != nil {
@@ -64,7 +66,7 @@ func diff(path string) error {
 		return err
 	}
 
-	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, diffDebug, diffContext)
+	diff, err := papply.Diff(parseRes.Res.GmailConfig, upstream, diffDebug, diffContext, useColor)
 	if err != nil {
 		return fmt.Errorf("cannot compare upstream with local config: %w", err)
 	}

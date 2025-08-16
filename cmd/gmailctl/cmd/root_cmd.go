@@ -6,10 +6,12 @@ import (
 	"os/user"
 	"path"
 
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
 var cfgDir string
+var colorFlag string
 
 // rootCmd is the command run when executing without subcommands.
 var rootCmd = &cobra.Command{
@@ -52,6 +54,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (default is $HOME/.gmailctl)")
+	rootCmd.PersistentFlags().StringVar(&colorFlag, "color", "auto",
+		"whether to enable color output ('always', 'auto' or 'never')")
+	rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -67,4 +72,21 @@ func initConfig() {
 		os.Exit(1)
 	}
 	cfgDir = path.Join(usr.HomeDir, ".gmailctl")
+}
+
+// shouldUseColorDiff decides, based on the value of the color flag and other
+// factors, whether gmailctl should use color output.
+func shouldUseColorDiff() bool {
+	switch colorFlag {
+	case "never":
+		return false
+	case "auto":
+		return os.Getenv("TERM") != "dumb" &&
+			(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()))
+	case "always":
+		return true
+	default:
+		fatal(fmt.Errorf("--color must be 'always', 'auto' or 'never', not '%v'", colorFlag))
+		return false
+	}
 }
