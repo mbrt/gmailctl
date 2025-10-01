@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Go 1.21
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
-        go-version: '1.24'
+        go-version: '1.25'
 
     - name: Test
       run: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
@@ -30,6 +30,6 @@ jobs:
         exclude: ./internal/graph/...
 
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5.4.3
+      uses: codecov/codecov-action@v5.5.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
