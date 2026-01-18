@@ -58,7 +58,7 @@ func Import(filters []*gmailv1.Filter, lmap LabelMap) (filter.Filters, error) {
 		impFilter, err := importFilter(gfilter, lmap)
 		if err != nil {
 			// We don't want to return here, but continue and skip the problematic filter
-			err = fmt.Errorf("importing filter %q: %w", gfilter.Id, err)
+			err = fmt.Errorf("importing filter %q (criteria: %s): %w", gfilter.Id, formatCriteria(gfilter.Criteria), err)
 			reserr = multierror.Append(reserr, err)
 		} else {
 			res = append(res, impFilter)
@@ -235,4 +235,31 @@ func appendQuery(q []string, a string) []string {
 
 func isDefault(v reflect.Value) bool {
 	return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
+}
+
+// formatCriteria returns a human-readable summary of the filter criteria.
+func formatCriteria(c *gmailv1.FilterCriteria) string {
+	if c == nil {
+		return "<empty>"
+	}
+	var parts []string
+	if c.From != "" {
+		parts = append(parts, fmt.Sprintf("from:%s", c.From))
+	}
+	if c.To != "" {
+		parts = append(parts, fmt.Sprintf("to:%s", c.To))
+	}
+	if c.Subject != "" {
+		parts = append(parts, fmt.Sprintf("subject:%s", c.Subject))
+	}
+	if c.Query != "" {
+		parts = append(parts, c.Query)
+	}
+	if c.NegatedQuery != "" {
+		parts = append(parts, fmt.Sprintf("-{%s}", c.NegatedQuery))
+	}
+	if len(parts) == 0 {
+		return "<empty>"
+	}
+	return strings.Join(parts, " ")
 }
