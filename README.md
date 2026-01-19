@@ -105,6 +105,16 @@ editor. For example, if you'd like to use `vim`:
 xdg-mime default vim.desktop text/x-csrc
 ```
 
+If you are on windows, you can configure an editor (like VS Code) like this:
+```cmd
+//cmd
+set "EDITOR=code --wait"
+```
+```powershell
+//powershell
+setx EDITOR "code --wait"
+```
+
 Once installed, run the init process:
 
 ```
