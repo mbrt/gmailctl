@@ -265,5 +265,5 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 	}
 
 	fmt.Println("Applying the changes...")
-	return papply.Apply(diff, gmailapi, true)
+	return papply.Apply(diff, gmailapi, true, ShouldShowProgress())
 }

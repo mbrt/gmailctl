@@ -90,3 +90,10 @@ func shouldUseColorDiff() bool {
 		return false
 	}
 }
+
+// ShouldShowProgress returns true if stderr is an interactive terminal
+// that can display progress indicators.
+func ShouldShowProgress() bool {
+	return os.Getenv("TERM") != "dumb" &&
+		(isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd()))
+}
