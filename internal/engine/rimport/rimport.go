@@ -55,7 +55,10 @@ func fromLabel(l label.Label) v1alpha3.Label {
 	}
 }
 
-func fromFilter(f filter.Filter) (v1alpha3.Rule, error) {
+// FilterToRule converts a single filter to a v1alpha3.Rule.
+// This is exported to allow callers to convert filters individually
+// while preserving their own config structure.
+func FilterToRule(f filter.Filter) (v1alpha3.Rule, error) {
 	n, err := fromCriteria(f.Criteria)
 	if err != nil {
 		return v1alpha3.Rule{}, err
@@ -65,6 +68,10 @@ func fromFilter(f filter.Filter) (v1alpha3.Rule, error) {
 		Filter:  n,
 		Actions: a,
 	}, err
+}
+
+func fromFilter(f filter.Filter) (v1alpha3.Rule, error) {
+	return FilterToRule(f)
 }
 
 func fromCriteria(c filter.Criteria) (v1alpha3.FilterNode, error) {
