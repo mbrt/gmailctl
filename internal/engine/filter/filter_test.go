@@ -28,7 +28,7 @@ func TestCriteria(t *testing.T) {
 			gmailSearchURL: "https://mail.google.com/mail/u/0/#search/%7Bfrom%3Anoreply%40acme.com+to%3A%7Bme%40google.com+me%40acme.com%7D%7D",
 		},
 		{
-			name: "all fileds",
+			name: "all fields",
 			criteria: Criteria{
 				From:    "someone@gmail.com",
 				To:      "me@gmail.com",

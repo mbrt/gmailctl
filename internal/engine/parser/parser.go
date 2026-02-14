@@ -15,13 +15,13 @@ type Rule struct {
 	Actions  Actions
 }
 
-// Actions contains the actions to be applied to a set of emails.
+// Actions contain the actions to be applied to a set of emails.
 type Actions cfg.Actions
 
 // Parse parses config file rules into their intermediate representation.
 //
 // Note that the number of rules and their contents might be different than the
-// original, because symplifications will be performed on the data.
+// original because simplifications will be performed on the data.
 func Parse(config cfg.Config) ([]Rule, error) {
 	res := []Rule{}
 	for i, rule := range config.Rules {

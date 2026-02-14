@@ -77,7 +77,7 @@ type CriteriaAST interface {
 	// RootOperation returns the operation performed by the root node,
 	// or the grouping, if the root is a leaf.
 	RootOperation() OperationType
-	// RootOperation returns the function performed by the root node,
+	// RootFunction returns the function performed by the root node,
 	// if any.
 	RootFunction() FunctionType
 	// IsLeaf returns true if the root node is a leaf.

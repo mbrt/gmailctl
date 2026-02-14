@@ -14,6 +14,7 @@ label, archive and manage your inbox automatically.
   - [Install](#install)
   - [Usage](#usage)
     - [Migrate from another solution](#migrate-from-another-solution)
+    - [Pull and merge](#pull-and-merge)
     - [Other commands](#other-commands)
   - [Configuration](#configuration)
     - [Search operators](#search-operators)
@@ -190,6 +191,72 @@ Can be translated into:
 }
 ```
 
+### Pull and merge
+
+The `pull` command is the reverse of `apply`: it pulls the current Gmail filter
+state and writes it to your local config file. This is useful when you've made
+changes directly in Gmail and want to sync them to your local configuration.
+
+```bash
+# Pull Gmail state to local config (warns if local differs)
+gmailctl pull
+
+# Force overwrite local config with Gmail state
+gmailctl pull --force
+```
+
+**Merge mode** allows you to safely incorporate new filters from Gmail into your
+existing local config without losing your Jsonnet structure (variables, comments,
+formatting, etc.):
+
+```bash
+# Merge new filters from Gmail into local config
+gmailctl pull --merge
+```
+
+With `--merge`, gmailctl will:
+
+1. **Analyze differences** between local and Gmail filters
+2. **Preserve your local config** structure completely
+3. **Append new rules** from Gmail (filters that exist in Gmail but not locally)
+4. **Append new labels** from Gmail (labels that exist in Gmail but not locally)
+5. **Show conflicts** (filters with same criteria but different actions) that
+   require manual resolution
+
+Example output:
+```
+=== Merge Analysis ===
+
+Filters:
+  Unchanged: 15 filter(s) already in sync
+  Local-only: 3 filter(s) (keeping as-is)
+  Gmail-only: 2 new filter(s) to add
+  Conflicts: 1 filter(s) need manual resolution
+
+Labels:
+  Local: 8, Gmail: 10
+  New from Gmail: 2 label(s) to add
+```
+
+New items are appended to your config with a timestamped comment:
+```jsonnet
+    // --- New rules from Gmail (added by gmailctl pull --merge @ 2026-02-14 15:30:45) ---
+    {
+      filter: { from: "newsletter@example.com" },
+      actions: { archive: true }
+    }
+```
+
+**When to use merge:**
+
+* You created filters in Gmail's web interface and want to add them to your config
+* A colleague shared filters via Gmail and you want to incorporate them
+* You want to see what's different between local and Gmail without overwriting
+
+**Note:** Conflicts (same filter criteria, different actions) cannot be
+auto-merged and require manual editing. The merge command will show you the
+diff for each conflict so you can decide how to resolve it.
+
 ### Other commands
 
 All the available commands (you can also check with `gmailctl help`):
@@ -203,6 +270,7 @@ All the available commands (you can also check with `gmailctl help`):
   export      Export filters into the Gmail XML format
   help        Help about any command
   init        Initialize the Gmail configuration
+  pull        Pull Gmail filters to local config file
   test        Execute config tests
 ```
 
@@ -890,7 +958,7 @@ the other alias.
 ### Apply filters to existing emails
 
 gmailctl doesn't support this functionality for security reasons. The project
-currently needs only very basic permissisons, and applying filters to existing
+currently needs only very basic permissions, and applying filters to existing
 emails requires full Gmail access. Bugs in gmailctl or in your configuration
 won't screw up your old emails in any way, so this is an important safety
 feature. If you really want to do this, you can manually export your rules with

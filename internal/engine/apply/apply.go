@@ -50,7 +50,7 @@ type FetchAPI interface {
 	ListLabels() (label.Labels, error)
 }
 
-// FromConfig creates a GmailConfig from Gmail APIs.
+// FromAPI creates a GmailConfig from Gmail APIs.
 func FromAPI(api FetchAPI) (GmailConfig, error) {
 	l, err := api.ListLabels()
 	if err != nil {

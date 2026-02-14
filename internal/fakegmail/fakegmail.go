@@ -1,4 +1,4 @@
-// package fakegmail provides a fake implementation of Gmail APIs.
+// Package fakegmail provides a fake implementation of Gmail APIs.
 //
 // Inspired by https://github.com/googleapis/google-cloud-go
 // internal/examples/fake/fake_test.go.
