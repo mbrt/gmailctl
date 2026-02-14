@@ -108,7 +108,7 @@ func apply(path string, interactive, test bool) error {
 	}
 
 	fmt.Println("Applying the changes...")
-	return papply.Apply(diff, gmailapi, applyRemoveLabels)
+	return papply.Apply(diff, gmailapi, applyRemoveLabels, ShouldShowProgress())
 }
 
 func configurationError(err error) error {

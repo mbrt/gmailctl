@@ -70,7 +70,7 @@ func TestIntegration(t *testing.T) {
 			// Apply the diff.
 			d, err := apply.Diff(pres.GmailConfig, upres, false, apply.DefaultContextLines, false /* colorize */)
 			require.Nil(t, err)
-			err = apply.Apply(d, gapi, true)
+			err = apply.Apply(d, gapi, true, false /* showProgress */)
 			require.Nil(t, err)
 
 			// Import.
@@ -141,7 +141,7 @@ func TestIntegrationImportExport(t *testing.T) {
 			// Apply the diff.
 			d, err := apply.Diff(pres.GmailConfig, upres, false, apply.DefaultContextLines, false /* colorize */)
 			require.Nil(t, err)
-			err = apply.Apply(d, gapi, true)
+			err = apply.Apply(d, gapi, true, false /* showProgress */)
 			require.Nil(t, err)
 
 			// Import.

@@ -2,6 +2,7 @@ package apply
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -9,10 +10,36 @@ import (
 	"github.com/mbrt/gmailctl/internal/engine/filter"
 	"github.com/mbrt/gmailctl/internal/engine/label"
 	"github.com/mbrt/gmailctl/internal/engine/parser"
+	"github.com/schollz/progressbar/v3"
 )
 
 // DefaultContextLines is the default number of lines of context to show in the filter diff.
 const DefaultContextLines = 5
+
+// progress wraps a progressbar to encapsulate nil checks.
+type progress struct {
+	bar *progressbar.ProgressBar
+}
+
+func (p *progress) Describe(desc string) {
+	if p.bar != nil {
+		p.bar.Describe(desc)
+	}
+}
+
+func (p *progress) Add(n int) {
+	if p.bar != nil {
+		if err := p.bar.Add(n); err != nil {
+			fmt.Fprintf(os.Stderr, "progress bar update failed: %v\n", err)
+		}
+	}
+}
+
+func (p *progress) Finish() {
+	if p.bar != nil {
+		p.bar.Finish()
+	}
+}
 
 // GmailConfig represents a Gmail configuration.
 type GmailConfig struct {
@@ -140,15 +167,15 @@ func Diff(local, upstream GmailConfig, debugInfo bool, contextLines int, coloriz
 
 // API provides access to Gmail APIs.
 type API interface {
-	AddLabels(lbs label.Labels) error
-	AddFilters(fs filter.Filters) error
-	UpdateLabels(lbs label.Labels) error
-	DeleteFilters(ids []string) error
-	DeleteLabels(ids []string) error
+	AddLabels(lbs label.Labels, onProgress ...func()) error
+	AddFilters(fs filter.Filters, onProgress ...func()) error
+	UpdateLabels(lbs label.Labels, onProgress ...func()) error
+	DeleteFilters(ids []string, onProgress ...func()) error
+	DeleteLabels(ids []string, onProgress ...func()) error
 }
 
 // Apply applies the changes identified by the diff to the remote configuration.
-func Apply(d ConfigDiff, api API, allowRemoveLabels bool) error {
+func Apply(d ConfigDiff, api API, allowRemoveLabels bool, showProgress bool) error {
 	// In order to prevent not found errors, the sequence has to be:
 	//
 	// - add new labels
@@ -157,30 +184,50 @@ func Apply(d ConfigDiff, api API, allowRemoveLabels bool) error {
 	// - remove filters
 	// - remove labels
 
-	if err := addLabels(d.LabelsDiff.Added, api); err != nil {
+	// Calculate total items to process
+	total := len(d.LabelsDiff.Added) +
+		len(d.FiltersDiff.Added) +
+		len(d.LabelsDiff.Modified) +
+		len(d.FiltersDiff.Removed)
+	if allowRemoveLabels {
+		total += len(d.LabelsDiff.Removed)
+	}
+
+	// Create progress wrapper (handles nil internally)
+	bar := &progress{}
+	if showProgress && total > 0 {
+		bar.bar = progressbar.NewOptions(total,
+			progressbar.OptionSetDescription("Applying changes"),
+			progressbar.OptionShowCount(),
+			progressbar.OptionSetWriter(os.Stderr),
+		)
+	}
+	defer bar.Finish()
+
+	if err := addLabels(d.LabelsDiff.Added, api, bar); err != nil {
 		return fmt.Errorf("creating labels: %w", err)
 	}
-	if err := addFilters(d.FiltersDiff.Added, api); err != nil {
+	if err := addFilters(d.FiltersDiff.Added, api, bar); err != nil {
 		return fmt.Errorf("creating filters: %w", err)
 	}
-	if err := updateLabels(d.LabelsDiff.Modified, api); err != nil {
+	if err := updateLabels(d.LabelsDiff.Modified, api, bar); err != nil {
 		return fmt.Errorf("updating labels: %w", err)
 	}
-	if err := removeFilters(d.FiltersDiff.Removed, api); err != nil {
+	if err := removeFilters(d.FiltersDiff.Removed, api, bar); err != nil {
 		return fmt.Errorf("deleting filters: %w", err)
 	}
 
 	if !allowRemoveLabels {
 		return nil
 	}
-	if err := removeLabels(d.LabelsDiff.Removed, api); err != nil {
+	if err := removeLabels(d.LabelsDiff.Removed, api, bar); err != nil {
 		return fmt.Errorf("removing labels: %w", err)
 	}
 
 	return nil
 }
 
-func addLabels(lbs label.Labels, api API) error {
+func addLabels(lbs label.Labels, api API, bar *progress) error {
 	if len(lbs) == 0 {
 		return nil
 	}
@@ -188,41 +235,72 @@ func addLabels(lbs label.Labels, api API) error {
 	// As a quick hack, we could sort them by the length of the name,
 	// because a label is strictly longer than its prefixes.
 	sort.Sort(byLen(lbs))
-	return api.AddLabels(lbs)
-}
 
-func addFilters(ls filter.Filters, api API) error {
-	if len(ls) > 0 {
-		return api.AddFilters(ls)
+	bar.Describe("Adding labels")
+
+	if err := api.AddLabels(lbs, func() { bar.Add(1) }); err != nil {
+		return err
 	}
+
 	return nil
 }
 
-func updateLabels(ms []label.ModifiedLabel, api API) error {
+func addFilters(fs filter.Filters, api API, bar *progress) error {
+	if len(fs) == 0 {
+		return nil
+	}
+
+	bar.Describe("Adding filters")
+
+	if err := api.AddFilters(fs, func() { bar.Add(1) }); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateLabels(ms []label.ModifiedLabel, api API, bar *progress) error {
 	if len(ms) == 0 {
 		return nil
 	}
-	var lbs label.Labels
-	for _, m := range ms {
-		label := m.New
-		label.ID = m.Old.ID
-		lbs = append(lbs, label)
+
+	bar.Describe("Updating labels")
+
+	// Prepare all labels with their IDs
+	lbs := make(label.Labels, len(ms))
+	for i, m := range ms {
+		lb := m.New
+		lb.ID = m.Old.ID
+		lbs[i] = lb
 	}
-	return api.UpdateLabels(lbs)
+
+	if err := api.UpdateLabels(lbs, func() { bar.Add(1) }); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func removeFilters(ls filter.Filters, api API) error {
-	if len(ls) == 0 {
+func removeFilters(fs filter.Filters, api API, bar *progress) error {
+	if len(fs) == 0 {
 		return nil
 	}
-	ids := make([]string, len(ls))
-	for i, f := range ls {
+
+	bar.Describe("Removing filters")
+
+	ids := make([]string, len(fs))
+	for i, f := range fs {
 		ids[i] = f.ID
 	}
-	return api.DeleteFilters(ids)
+
+	if err := api.DeleteFilters(ids, func() { bar.Add(1) }); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func removeLabels(lbs label.Labels, api API) error {
+func removeLabels(lbs label.Labels, api API, bar *progress) error {
 	if len(lbs) == 0 {
 		return nil
 	}
@@ -231,12 +309,19 @@ func removeLabels(lbs label.Labels, api API) error {
 	// because a label is strictly longer than its prefixes.
 	sort.Sort(byLen(lbs))
 
-	// Delete in reverse order
-	var ids []string
-	for i := len(lbs) - 1; i >= 0; i-- {
-		ids = append(ids, lbs[i].ID)
+	bar.Describe("Removing labels")
+
+	// Collect IDs in reverse order (longest names first = deepest nested first)
+	ids := make([]string, len(lbs))
+	for i := 0; i < len(lbs); i++ {
+		ids[i] = lbs[len(lbs)-1-i].ID
 	}
-	return api.DeleteLabels(ids)
+
+	if err := api.DeleteLabels(ids, func() { bar.Add(1) }); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type byLen label.Labels

@@ -53,18 +53,33 @@ func (g *GmailAPI) ListFilters() (filter.Filters, error) {
 }
 
 // DeleteFilters deletes all the given filter IDs.
-func (g *GmailAPI) DeleteFilters(ids []string) error {
+// If onProgress is provided, it is called after each filter is deleted.
+func (g *GmailAPI) DeleteFilters(ids []string, onProgress ...func()) error {
+	var progressFn func()
+	if len(onProgress) > 0 {
+		progressFn = onProgress[0]
+	}
+
 	for _, id := range ids {
 		err := g.service.Users.Settings.Filters.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("deleting filter %q: %w", id, annotateError(err))
+		}
+		if progressFn != nil {
+			progressFn()
 		}
 	}
 	return nil
 }
 
 // AddFilters creates the given filters.
-func (g *GmailAPI) AddFilters(fs filter.Filters) error {
+// If onProgress is provided, it is called after each filter is created.
+func (g *GmailAPI) AddFilters(fs filter.Filters, onProgress ...func()) error {
+	var progressFn func()
+	if len(onProgress) > 0 {
+		progressFn = onProgress[0]
+	}
+
 	lmap, err := g.getLabelMap()
 	if err != nil {
 		return err
@@ -79,6 +94,9 @@ func (g *GmailAPI) AddFilters(fs filter.Filters) error {
 		_, err = g.service.Users.Settings.Filters.Create(gmailUser, gfilter).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("creating filter %d: %w", i, annotateError(err))
+		}
+		if progressFn != nil {
+			progressFn()
 		}
 	}
 
@@ -119,32 +137,55 @@ func (g *GmailAPI) ListLabels() (label.Labels, error) {
 }
 
 // DeleteLabels deletes all the given label IDs.
-func (g *GmailAPI) DeleteLabels(ids []string) error {
+// If onProgress is provided, it is called after each label is deleted.
+func (g *GmailAPI) DeleteLabels(ids []string, onProgress ...func()) error {
+	var progressFn func()
+	if len(onProgress) > 0 {
+		progressFn = onProgress[0]
+	}
+
 	for _, id := range ids {
 		err := g.service.Users.Labels.Delete(gmailUser, id).Do(g.opts...)
 		if err != nil {
 			return fmt.Errorf("deleting label %q: %w", id, annotateError(err))
 		}
+		if progressFn != nil {
+			progressFn()
+		}
 	}
 	return nil
-
 }
 
 // AddLabels creates the given labels.
-func (g *GmailAPI) AddLabels(lbs label.Labels) error {
+// If onProgress is provided, it is called after each label is created.
+func (g *GmailAPI) AddLabels(lbs label.Labels, onProgress ...func()) error {
+	var progressFn func()
+	if len(onProgress) > 0 {
+		progressFn = onProgress[0]
+	}
+
 	for _, lb := range lbs {
 		_, err := g.service.Users.Labels.Create(gmailUser, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
 			return annotateError(fmt.Errorf("creating label %q: %w", lb.Name, err))
+		}
+		if progressFn != nil {
+			progressFn()
 		}
 	}
 	return nil
 }
 
 // UpdateLabels modifies the given labels.
+// If onProgress is provided, it is called after each label is updated.
 //
 // The label ID is required for the edit to be successful.
-func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
+func (g *GmailAPI) UpdateLabels(lbs label.Labels, onProgress ...func()) error {
+	var progressFn func()
+	if len(onProgress) > 0 {
+		progressFn = onProgress[0]
+	}
+
 	for _, lb := range lbs {
 		if lb.ID == "" {
 			return fmt.Errorf("label %q has empty ID", lb.Name)
@@ -152,6 +193,9 @@ func (g *GmailAPI) UpdateLabels(lbs label.Labels) error {
 		_, err := g.service.Users.Labels.Patch(gmailUser, lb.ID, labelToGmailAPI(lb)).Do(g.opts...)
 		if err != nil {
 			return annotateError(fmt.Errorf("patching label %q: %w", lb.Name, err))
+		}
+		if progressFn != nil {
+			progressFn()
 		}
 	}
 	return nil
