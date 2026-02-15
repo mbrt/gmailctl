@@ -49,7 +49,7 @@ func TestIntegration(t *testing.T) {
 		name := strings.TrimSuffix(cfgPath, ".jsonnet")
 		t.Run(name, func(t *testing.T) {
 			// Parse the config.
-			cfg, err := config.ReadFile(cfgPath, filepath.Join("testdata", cfgPath))
+			cfg, err := config.ReadFile(cfgPath, cfgPath)
 			require.Nil(t, err)
 			pres, err := apply.FromConfig(cfg)
 			require.Nil(t, err)
@@ -108,15 +108,15 @@ func TestIntegration(t *testing.T) {
 			// Import.
 			b, err := os.ReadFile(name + ".json")
 			require.Nil(t, err)
-			assert.Equal(t, string(b), string(icfgJSON))
+			assert.Equal(t, normalizeLineEndings(string(b)), normalizeLineEndings(string(icfgJSON)))
 			// Diff.
 			b, err = os.ReadFile(name + ".diff")
 			require.Nil(t, err)
-			assert.Equal(t, string(b), d.String())
+			assert.Equal(t, normalizeLineEndings(string(b)), normalizeLineEndings(d.String()))
 			// Export
 			b, err = os.ReadFile(name + ".xml")
 			require.Nil(t, err)
-			assert.Equal(t, string(b), cfgxml.String())
+			assert.Equal(t, normalizeLineEndings(string(b)), normalizeLineEndings(cfgxml.String()))
 		})
 	}
 }
@@ -129,7 +129,7 @@ func TestIntegrationImportExport(t *testing.T) {
 		name := strings.TrimSuffix(cfgPath, ".jsonnet")
 		t.Run(name, func(t *testing.T) {
 			// Parse the config.
-			cfg, err := config.ReadFile(cfgPath, filepath.Join("testdata", cfgPath))
+			cfg, err := config.ReadFile(cfgPath, cfgPath)
 			require.Nil(t, err)
 			pres, err := apply.FromConfig(cfg)
 			require.Nil(t, err)
@@ -186,4 +186,9 @@ func mustParseTime(layout, value string) time.Time {
 		panic(err)
 	}
 	return t
+}
+
+// normalizeLineEndings converts CRLF to LF for cross-platform compatibility.
+func normalizeLineEndings(s string) string {
+	return strings.ReplaceAll(s, "\r\n", "\n")
 }
