@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/google/go-jsonnet"
@@ -54,7 +53,7 @@ func ReadJsonnet(p string, buf []byte) (v1alpha3.Config, error) {
 	var res v1alpha3.Config
 	vm := jsonnet.MakeVM()
 	vm.Importer(&jsonnet.FileImporter{
-		JPaths: []string{path.Dir(p)},
+		JPaths: []string{filepath.Dir(p)},
 	})
 	jstr, err := vm.EvaluateAnonymousSnippet(p, string(buf))
 	if err != nil {
