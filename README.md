@@ -67,6 +67,13 @@ This project then exists to provide to your Gmail filters:
 
 ## Install
 
+Pre-built binaries for Linux, macOS, and Windows (amd64 and arm64) are available
+on the [GitHub releases page](https://github.com/mbrt/gmailctl/releases). Download
+the archive for your platform, extract it, and place the `gmailctl` binary somewhere
+in your `$PATH`.
+
+Alternatively, if you have Go installed, you can build and install from source:
+
 gmailctl is written in Go and requires a recent version (see [go.mod](go.mod)).
 Make sure to setup your [`$GOPATH`](https://golang.org/doc/code.html#GOPATH)
 correctly and include its `bin` subdirectory in your `$PATH`.
@@ -75,7 +82,7 @@ correctly and include its `bin` subdirectory in your `$PATH`.
 go install github.com/mbrt/gmailctl/cmd/gmailctl@latest
 ```
 
-Alternatively, if you're on macOS, you can install easily via Homebrew or Macports:
+If you're on macOS, you can also install via Homebrew or Macports:
 
 ```
 # Install with Homebrew

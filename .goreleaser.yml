@@ -1,0 +1,39 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    main: ./cmd/gmailctl
+    ldflags:
+      - -s -w -X github.com/mbrt/gmailctl/cmd/gmailctl/cmd.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "gmailctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+release:
+  draft: false
+  prerelease: auto
