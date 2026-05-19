@@ -15,6 +15,7 @@ const (
 	labelIDCategoryUpdates    = "CATEGORY_UPDATES"
 	labelIDCategoryForums     = "CATEGORY_FORUMS"
 	labelIDCategoryPromotions = "CATEGORY_PROMOTIONS"
+	labelIDCategoryPurchases  = "CATEGORY_PURCHASES"
 )
 
 // LabelMap maps label names and IDs together.

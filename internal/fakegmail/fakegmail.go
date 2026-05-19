@@ -37,6 +37,7 @@ var defaultLabels = stringset.New(
 	"CATEGORY_UPDATES",
 	"CATEGORY_FORUMS",
 	"CATEGORY_PROMOTIONS",
+	"CATEGORY_PURCHASES",
 )
 
 // NewService returns a fake server that implements GMail APIs.

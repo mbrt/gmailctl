@@ -468,7 +468,8 @@ are the same as the ones in the Gmail interface:
 * `markImportant: false`: do never mark the message as important, overriding
   Gmail heuristics;
 * `category: <CATEGORY>`: force the message into a specific category (supported
-  categories are "personal", "social", "updates", "forums", "promotions");
+  categories are "personal", "social", "updates", "forums", "promotions",
+  "purchases");
 * `labels: [list, of, labels]`: an array of labels to apply to the message. Note
   that these labels have to be already present in your settings (they won't be
   created automatically), and you can specify multiple labels (normally Gmail

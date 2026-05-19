@@ -32,6 +32,7 @@ const (
 	SmartLabelNotification = "notification"
 	SmartLabelPromo        = "promo"
 	SmartLabelSocial       = "social"
+	SmartLabelReceipt      = "receipt"
 )
 
 func categoryToSmartLabel(cat gmail.Category) (string, error) {
@@ -47,6 +48,8 @@ func categoryToSmartLabel(cat gmail.Category) (string, error) {
 		smartl = SmartLabelGroup
 	case gmail.CategoryPromotions:
 		smartl = SmartLabelPromo
+	case gmail.CategoryPurchases:
+		smartl = SmartLabelReceipt
 	default:
 		possib := gmail.PossibleCategoryValues()
 		return "", fmt.Errorf("unrecognized category %q (possible values: %s)",

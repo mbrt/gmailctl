@@ -113,6 +113,8 @@ func exportCategory(category gmail.Category) (string, error) {
 		return labelIDCategoryForums, nil
 	case gmail.CategoryPromotions:
 		return labelIDCategoryPromotions, nil
+	case gmail.CategoryPurchases:
+		return labelIDCategoryPurchases, nil
 	}
 	return "", fmt.Errorf("unknown category %q", category)
 }

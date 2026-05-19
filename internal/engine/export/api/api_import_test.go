@@ -91,6 +91,34 @@ func TestImportCriteria(t *testing.T) {
 	assert.Equal(t, imported, expected)
 }
 
+func TestImportCategoryPurchases(t *testing.T) {
+	filters := []*gmailv1.Filter{
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds:    []string{labelIDCategoryPurchases},
+				RemoveLabelIds: []string{},
+			},
+			Criteria: &gmailv1.FilterCriteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+	imported, err := Import(filters, emptyLabelMap())
+	expected := filter.Filters{
+		{
+			Action: filter.Actions{
+				Category: gmail.CategoryPurchases,
+			},
+			Criteria: filter.Criteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, expected, imported)
+}
+
 func TestImportLabels(t *testing.T) {
 	filters := []*gmailv1.Filter{
 		{

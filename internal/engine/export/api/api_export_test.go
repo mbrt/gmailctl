@@ -117,6 +117,33 @@ func TestExportNoCriteria(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestExportCategoryPurchases(t *testing.T) {
+	filters := filter.Filters{
+		{
+			Action: filter.Actions{
+				Category: gmail.CategoryPurchases,
+			},
+			Criteria: filter.Criteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+	exported, err := Export(filters, emptyLabelMap())
+	expected := []*gmailv1.Filter{
+		{
+			Action: &gmailv1.FilterAction{
+				AddLabelIds: []string{labelIDCategoryPurchases},
+			},
+			Criteria: &gmailv1.FilterCriteria{
+				From: "foo@bar.com",
+			},
+		},
+	}
+
+	assert.Nil(t, err)
+	assert.Equal(t, expected, exported)
+}
+
 func TestExportLabels(t *testing.T) {
 	filters := filter.Filters{
 		{
