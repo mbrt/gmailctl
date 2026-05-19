@@ -7,6 +7,7 @@ const (
 	CategoryUpdates    Category = "updates"
 	CategoryForums     Category = "forums"
 	CategoryPromotions Category = "promotions"
+	CategoryPurchases  Category = "purchases"
 )
 
 // Category is one of the smart categories in Gmail.
@@ -22,5 +23,6 @@ func PossibleCategoryValues() []string {
 		string(CategoryUpdates),
 		string(CategoryForums),
 		string(CategoryPromotions),
+		string(CategoryPurchases),
 	}
 }

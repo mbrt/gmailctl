@@ -168,6 +168,8 @@ func importCategory(labelID string) gmail.Category {
 		return gmail.CategoryForums
 	case labelIDCategoryPromotions:
 		return gmail.CategoryPromotions
+	case labelIDCategoryPurchases:
+		return gmail.CategoryPurchases
 	default:
 		return ""
 	}
