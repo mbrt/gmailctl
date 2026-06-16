@@ -5,6 +5,7 @@ go 1.25.0
 toolchain go1.26.1
 
 require (
+	github.com/adrg/xdg v0.5.3
 	github.com/fatih/color v1.18.1-0.20251010072730-26fd5780133d
 	github.com/google/go-jsonnet v0.21.0
 	github.com/gorilla/mux v1.8.1

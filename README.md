@@ -13,6 +13,7 @@ label, archive and manage your inbox automatically.
   - [Motivation](#motivation)
   - [Install](#install)
   - [Usage](#usage)
+    - [Config directory](#config-directory)
     - [Migrate from another solution](#migrate-from-another-solution)
     - [Other commands](#other-commands)
   - [Configuration](#configuration)
@@ -136,16 +137,26 @@ settings without leaving your command line.
 [![asciicast](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx.svg)](https://asciinema.org/a/1NIWhzeJNcrN7cCe7mGjWQQnx)
 
 The easiest way to use gmailctl is to run `gmailctl edit`. This will open the
-local `.gmailctl/config.jsonnet` file in your editor. After you exit the editor
-the configuration is applied to Gmail. See [Configuration](#configuration) for
-the configuration file format. This is the preferred way if you want to start
-your filters from scratch.
+local config file in your editor. After you exit
+the editor the configuration is applied to Gmail. See
+[Configuration](#configuration) for the configuration file format. This is the
+preferred way if you want to start your filters from scratch.
 
 **NOTE:** It's recommended to backup your current configuration before you apply
 the generated one for the first time. Your current filters will be wiped and
 replaced with the ones specified in the config file. The diff you'll get during
 the first run will probably be pretty big, but from that point on, all changes
 should generate a small and simple to review diff.
+
+### Config directory
+
+Configuration and credentials are in a shared directory, either in a default orq
+custom location.
+
+- `~/.config/gmailctl` — This is the current default location.
+- `~/.gmailctl` — This was the previous default location. `gmailctl` will continue
+  to use this location if it exists on your device.
+- Custom location: use the `--config` argument.
 
 ### Migrate from another solution
 
@@ -164,7 +175,8 @@ Example of usage:
 
 ```bash
 # download the filters to the default configuration file
-gmailctl download > ~/.gmailctl/config.jsonnet
+mkdir -p ~/.config/gmailctl
+gmailctl download > ~/.config/gmailctl/config.jsonnet
 # check that the diff is empty and no errors are present
 gmailctl diff
 # happy editing!
