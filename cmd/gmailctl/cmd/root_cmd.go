@@ -54,7 +54,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (defaults to legacy path $HOME/.gmailctl if it exists, else $HOME/.config/gmailctl)")
+	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (defaults to $HOME/.gmailctl if it exists, else $HOME/.config/gmailctl)")
 	rootCmd.PersistentFlags().StringVar(&colorFlag, "color", "auto",
 		"whether to enable color output ('always', 'auto' or 'never')")
 	rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
