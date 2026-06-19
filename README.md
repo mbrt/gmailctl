@@ -150,14 +150,11 @@ should generate a small and simple to review diff.
 
 ### Config directory
 
-Configuration and credentials are in a shared directory, either in a default orq
-custom location.
+Configuration and credentials are in either:
 
-- `~/.config/gmailctl` — This is the current default location.
-- `~/.gmailctl` — This was the previous default location. `gmailctl` will continue
-  to use this location if it exists on your device.
+- `<XDG_BASE_DIR>/gmailctl` (using the [XDG base directory spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html), commonly `~/.config/gmailctl` on Linux.
+- `~/.gmailctl`: The previous default location. If the directory exists `gmailctl` will continue to use it for backward compatibility
 - Custom location: use the `--config` argument.
-
 ### Migrate from another solution
 
 If you want to preserve your current filters and migrate to a more sane
