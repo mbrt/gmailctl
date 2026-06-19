@@ -6,6 +6,7 @@ import (
 	"os/user"
 	"path"
 
+	"github.com/adrg/xdg"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
@@ -53,7 +54,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (default is $HOME/.gmailctl)")
+	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (defaults to $HOME/.gmailctl if it exists, else $HOME/.config/gmailctl)")
 	rootCmd.PersistentFlags().StringVar(&colorFlag, "color", "auto",
 		"whether to enable color output ('always', 'auto' or 'never')")
 	rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
@@ -71,7 +72,13 @@ func initConfig() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	cfgDir = path.Join(usr.HomeDir, ".gmailctl")
+
+	legacyCfgDir := path.Join(usr.HomeDir, ".gmailctl")
+	if _, err := os.Stat(legacyCfgDir); err != nil && os.IsNotExist(err) {
+		cfgDir = path.Join(xdg.ConfigHome, "gmailctl")
+	} else {
+		cfgDir = legacyCfgDir
+	}
 }
 
 // shouldUseColorDiff decides, based on the value of the color flag and other
