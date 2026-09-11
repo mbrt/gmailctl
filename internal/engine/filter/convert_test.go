@@ -48,6 +48,27 @@ func TestQuotes(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func TestNeedsQuoting(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{"plain", "term", false},
+		{"space", "some term", true},
+		{"tab", "some\tterm", true},
+		{"parens", "-(some-term)", true},
+		{"braces", "{some-term}", true},
+		{"plus without at", "foo+bar", true},
+		{"plus with at", "foo+bar@example.com", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, NeedsQuoting(tt.in))
+		})
+	}
+}
+
 func TestAndNode(t *testing.T) {
 	rules := []parser.Rule{
 		{

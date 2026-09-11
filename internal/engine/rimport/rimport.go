@@ -115,7 +115,15 @@ func fromCriteria(c filter.Criteria) (v1alpha3.FilterNode, error) {
 }
 
 func needsEscape(s string) bool {
-	return strings.ContainsAny(s, ` '"`)
+	// A value that already contains a quote character was necessarily typed
+	// as raw syntax (Gmail doesn't add quotes on its own), so it must be
+	// preserved as-is.
+	//
+	// A value that would be quoted by filter.NeedsQuoting on export (e.g.
+	// because it contains parentheses, braces or a bare plus sign) must also
+	// be marked as already escaped, otherwise it would silently gain quotes
+	// it didn't have originally, changing its meaning (see issue #456).
+	return strings.ContainsAny(s, `'"`) || filter.NeedsQuoting(s)
 }
 
 func fromActions(c filter.Actions) (v1alpha3.Actions, error) {
