@@ -16,8 +16,8 @@ import (
 
 // NewAuthenticator creates an Authenticator instance from credentials JSON file contents.
 //
-// Credentials can be obtained by creating a new OAuth client ID at the Google API console
-// https://console.developers.google.com/apis/credentials.
+// Credentials can be obtained by creating a Desktop app OAuth client in Google Auth Platform:
+// https://console.cloud.google.com/auth/clients.
 func NewAuthenticator(credentials io.Reader) (*Authenticator, error) {
 	cfg, err := clientFromCredentials(credentials)
 	if err != nil {

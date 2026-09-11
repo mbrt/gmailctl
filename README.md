@@ -129,8 +129,11 @@ Once installed, run the init process:
 gmailctl init
 ```
 
-This will guide you through setting up the Gmail APIs and update your
-settings without leaving your command line.
+Follow the instructions to enable the Gmail API and configure a Desktop app
+OAuth client in [Google Auth
+Platform](https://console.cloud.google.com/auth/overview). Save the downloaded
+client JSON file at the path printed by gmailctl, then run the same `gmailctl
+init` command again to authorize access.
 
 ## Usage
 
@@ -934,6 +937,13 @@ $ gmailctl init --refresh-expired
 ```
 
 and follow the instructions on screen.
+
+If this happens every seven days, your External app may still have
+[Testing status](https://support.google.com/cloud/answer/15549945).
+In **Google Auth Platform > Audience**, select **Publish app** to switch to
+**In production** and avoid the testing expiry. Google does not require
+verification for [personal-use apps](https://support.google.com/cloud/answer/13464323),
+but may still show an unverified-app warning when you authorize access.
 
 If this doesn't help, retry the authorization workflow from the start:
 
