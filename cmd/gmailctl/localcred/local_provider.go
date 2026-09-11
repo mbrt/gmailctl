@@ -14,45 +14,49 @@ import (
 )
 
 const (
-	// Keep in sync with https://rclone.org/drive/#making-your-own-client-id.
-	// They hit the exact same issues with Google Drive.
+	// Keep in sync with Google's OAuth setup documentation:
+	// https://developers.google.com/workspace/guides/configure-oauth-consent
+	// https://developers.google.com/workspace/guides/create-credentials#desktop-app
 	credentialsMissingMsg = `The credentials are not initialized.
 
-To do so, head to https://console.developers.google.com
+To set them up, open https://console.cloud.google.com in your browser.
 
-0. Create a new project if you don't have one.
-1. Go to 'Enable API and services', search for Gmail and enable it.
-2. Go to 'OAuth consent screen'.
-    2a. If your account is managed by an organization, you have to
-        select 'Internal' as 'User Type'. For individual accounts
-        select 'External'.
-    2b. Set an application name (e.g. 'gmailctl').
-    2c. Use your email for 'User support email' and 'Developer
-        contact information'. Save and continue.
-    2d. Select 'Add or remove scopes' and add:
+1. Create or select a project. Use this project for all the steps below.
+2. Go to 'APIs & Services' > 'Library', find 'Gmail API' and enable it.
+3. Go to 'Google Auth Platform' > 'Branding'. If it is not configured
+   yet, click 'Get started':
+    3a. Enter an 'App name' (e.g. 'gmailctl') and your 'User support email'.
+    3b. Under 'Audience', choose 'External' for a personal Google account.
+        'Internal' is available for projects owned by an organization
+        and limits access to accounts in that organization. Otherwise,
+        use 'External'.
+    3c. Enter your email under 'Contact Information', review the terms
+        under 'Finish', then click 'Continue' and 'Create' if you agree.
+   If already configured, review these settings in 'Branding' and 'Audience'.
+4. Go to 'Data Access' > 'Add or remove scopes' and select:
         * https://www.googleapis.com/auth/gmail.labels
         * https://www.googleapis.com/auth/gmail.settings.basic
-    2e. Save and continue until you're back to the dashboard.
-3. You now have a choice. You can either:
-    * Click on 'Publish App' and avoid 'Submitting for
-      verification'. This will result in scary confirmation
-      screens or error messages when you authorize gmailctl with
-      your account (but for some users it works), OR
-    * You could add your email as 'Test user' and keep the app in
-      'Testing' mode. In this case everything will work, but
-      you'll have to login and confirm the access every week (token
-      expiration).
-4.  Go to Credentials on the left.
-    4a. Click 'Create credentials'.
-    4b. Select 'OAuth client ID'.
-    4c. Select 'Desktop app' as 'Application type' and give it a name.
-    4d. Create.
-5. Download the credentials file into
+   Click 'Update', then 'Save'.
+5. For an 'External' audience, go to 'Audience' and choose either:
+    * Keep 'Testing' status. Under 'Test users', click 'Add users', add
+      the Google account you will use with gmailctl, and save. Access
+      expires after seven days; run 'gmailctl init --refresh-expired'
+      to authorize again.
+    * Click 'Publish app' to switch to 'In production' and avoid the
+      seven-day testing expiry. For your own personal use, verification
+      is not required, but Google may show an 'unverified app' warning
+      when you authorize access.
+   Skip this step for an 'Internal' audience.
+6. Go to 'Clients' > 'Create client'. Select 'Desktop app' as the
+   'Application type', give it a name, and click 'Create'. Download the
+   client JSON file before closing the dialog and save it as:
    %q
-   and execute the 'init' command again.
+   Then rerun the same 'gmailctl init' command.
 
-Documentation about Gmail API authorization can be found
-at: https://developers.google.com/gmail/api/auth/about-auth
+Setup documentation:
+https://developers.google.com/workspace/guides/configure-oauth-consent
+Personal-use verification exceptions:
+https://support.google.com/cloud/answer/13464323
 `
 	authMessage = `Go to the following link in your browser and authorize gmailctl:
 
