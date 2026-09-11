@@ -62,6 +62,29 @@ func GenerateCriteria(crit parser.CriteriaAST) (Criteria, error) {
 	return Criteria{}, errors.New("found unknown criteria node")
 }
 
+// NeedsQuoting reports whether a string contains characters that Gmail's
+// search syntax would interpret specially, and that therefore need to be
+// escaped with quotes before the string can be used verbatim in a search
+// query.
+//
+// This is the single source of truth for that decision: callers that need to
+// know upfront whether a value will be quoted (e.g. rimport, when deciding
+// whether a value downloaded from Gmail already carries meaningful raw
+// syntax that must not be re-quoted) must use this same predicate, or risk
+// silently diverging from the actual quoting behavior below.
+func NeedsQuoting(a string) bool {
+	if strings.ContainsAny(a, " \t{}()") {
+		return true
+	}
+	// We need to quote the plus sign, _unless_ it's within a full email
+	// address. This is necessary because "foo+bar" is considered like
+	// "foo OR bar", but "foo+bar@gmail.com" is not.
+	if strings.Contains(a, "+") && !strings.Contains(a, "@") {
+		return true
+	}
+	return false
+}
+
 func generateNode(node *parser.Node) (Criteria, error) {
 	switch node.Operation {
 	case parser.OperationOr:
@@ -254,29 +277,6 @@ func quote(a string) string {
 		return fmt.Sprintf(`"%s"`, a)
 	}
 	return a
-}
-
-// NeedsQuoting reports whether a string contains characters that Gmail's
-// search syntax would interpret specially, and that therefore need to be
-// escaped with quotes before the string can be used verbatim in a search
-// query.
-//
-// This is the single source of truth for that decision: callers that need to
-// know upfront whether a value will be quoted (e.g. rimport, when deciding
-// whether a value downloaded from Gmail already carries meaningful raw
-// syntax that must not be re-quoted) must use this same predicate, or risk
-// silently diverging from the actual quoting behavior below.
-func NeedsQuoting(a string) bool {
-	if strings.ContainsAny(a, " \t{}()") {
-		return true
-	}
-	// We need to quote the plus sign, _unless_ it's within a full email
-	// address. This is necessary because "foo+bar" is considered like
-	// "foo OR bar", but "foo+bar@gmail.com" is not.
-	if strings.Contains(a, "+") && !strings.Contains(a, "@") {
-		return true
-	}
-	return false
 }
 
 func splitCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
