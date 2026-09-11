@@ -3,6 +3,7 @@ package cfgtest
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/mbrt/gmailctl/internal/engine/parser"
@@ -122,7 +123,7 @@ func emailField(f matchField, arg string) RuleEvaluator {
 	r := funcNode{
 		field:     f,
 		expected:  normalizeField(arg),
-		matchType: matchTypeExact,
+		matchType: matchTypeWords,
 	}
 	// Asking for *@gmail.com or @gmail.com is the same and means
 	// match the suffix.
@@ -131,6 +132,12 @@ func emailField(f matchField, arg string) RuleEvaluator {
 		r.matchType = matchTypeSuffix
 	} else if strings.HasPrefix(r.expected, ".") {
 		r.matchType = matchTypeSuffix
+	}
+	if r.matchType == matchTypeWords {
+		// Match complete terms within an address: "me" matches
+		// "me@gmail.com", but not "notme@gmail.com". Use Unicode word
+		// boundaries because regexp's \b only recognizes ASCII word characters.
+		r.pattern = regexp.MustCompile(`(^|[^\p{L}\p{M}\p{N}_])` + regexp.QuoteMeta(r.expected) + `($|[^\p{L}\p{M}\p{N}_])`)
 	}
 	return r
 }

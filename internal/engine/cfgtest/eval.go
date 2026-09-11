@@ -1,6 +1,7 @@
 package cfgtest
 
 import (
+	"regexp"
 	"strings"
 
 	cfg "github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
@@ -9,7 +10,7 @@ import (
 type matchType int
 
 const (
-	matchTypeExact = iota
+	matchTypeWords = iota
 	matchTypeSuffix
 	matchTypeContains
 )
@@ -73,6 +74,7 @@ type funcNode struct {
 	field     matchField
 	expected  string
 	matchType matchType
+	pattern   *regexp.Regexp
 }
 
 func (n funcNode) Match(msg cfg.Message) bool {
@@ -102,8 +104,8 @@ func (n funcNode) Match(msg cfg.Message) bool {
 		normF := normalizeField(f)
 
 		switch n.matchType {
-		case matchTypeExact:
-			isMatch = normF == n.expected
+		case matchTypeWords:
+			isMatch = n.pattern.MatchString(normF)
 		case matchTypeSuffix:
 			isMatch = strings.HasSuffix(normF, n.expected)
 		case matchTypeContains:

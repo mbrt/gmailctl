@@ -692,6 +692,12 @@ and filters with `isEscaped: true` are ignored by the tests. Warnings are
 generated when this happens. Keep in mind that in that case your tests might
 yield incorrect results.
 
+Address matching in tests is a local approximation of Gmail search. Criteria
+match complete terms within addresses: `{to: 'some-list'}` matches
+`some-list@google.com`, while `{to: 'me'}` does not match `notme@gmail.com`.
+Matching is case insensitive; `@example.com` and `*@example.com` match address
+suffixes.
+
 ## Tips and tricks
 
 ### Chain filtering

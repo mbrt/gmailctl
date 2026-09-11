@@ -28,6 +28,7 @@ func TestExec(t *testing.T) {
 		expectedOut string
 	}{
 		{path: "pass.jsonnet"},
+		{path: "partial-addresses.jsonnet"},
 		{
 			path:    "invalid.jsonnet",
 			numErrs: 1,
