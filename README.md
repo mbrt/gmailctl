@@ -342,6 +342,12 @@ Example:
 }
 ```
 
+Values are quoted automatically when needed, e.g. `subject: 'important mail'`
+becomes `subject:"important mail"`, so there's no need to add quotes yourself.
+Wrapping the whole value in double quotes is accepted as well, but quotes
+anywhere else are an error, because Gmail has no way to escape them. Use `query`
+to write raw Gmail search syntax.
+
 ### Logic operators
 
 Filters can contain only one expression. If you want to combine multiple of them
