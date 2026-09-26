@@ -14,6 +14,9 @@ import (
 var cfgDir string
 var colorFlag string
 
+// xdgCfgDir is the default config directory, unless the legacy one exists.
+var xdgCfgDir = path.Join(xdg.ConfigHome, "gmailctl")
+
 // rootCmd is the command run when executing without subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "gmailctl",
@@ -54,7 +57,8 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "", "config directory (defaults to $HOME/.gmailctl if it exists, else $HOME/.config/gmailctl)")
+	rootCmd.PersistentFlags().StringVar(&cfgDir, "config", "",
+		fmt.Sprintf("config directory (defaults to $HOME/.gmailctl if it exists, else %s)", xdgCfgDir))
 	rootCmd.PersistentFlags().StringVar(&colorFlag, "color", "auto",
 		"whether to enable color output ('always', 'auto' or 'never')")
 	rootCmd.PersistentFlags().Lookup("color").NoOptDefVal = "always"
@@ -75,7 +79,7 @@ func initConfig() {
 
 	legacyCfgDir := path.Join(usr.HomeDir, ".gmailctl")
 	if _, err := os.Stat(legacyCfgDir); err != nil && os.IsNotExist(err) {
-		cfgDir = path.Join(xdg.ConfigHome, "gmailctl")
+		cfgDir = xdgCfgDir
 	} else {
 		cfgDir = legacyCfgDir
 	}
