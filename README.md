@@ -1,5 +1,4 @@
 # gmailctl
-[![Go Report Card](https://goreportcard.com/badge/github.com/mbrt/gmailctl)](https://goreportcard.com/report/github.com/mbrt/gmailctl)
 ![Go](https://github.com/mbrt/gmailctl/workflows/Go/badge.svg)
 
 This utility helps you generate and maintain Gmail filters in a declarative way.
