@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -103,7 +104,7 @@ func apply(path string, interactive, test bool) error {
 		}
 	}
 
-	if interactive && !askYN("Do you want to apply them?") {
+	if interactive && !askYN(os.Stdin, os.Stdout, "Do you want to apply them?") {
 		return nil
 	}
 
