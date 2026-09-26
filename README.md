@@ -307,6 +307,10 @@ the following common operators:
 * `cc`: the mail has the given address as CC destination
 * `bcc`: the mail has the given address as BCC destination
 * `replyto`: the mail has the given address as Reply-To destination
+* `deliveredto`: the mail was delivered to the given address, according to its
+  Delivered-To header. Useful to match `+` aliases (e.g. `me+tag@gmail.com`)
+  or mail coming from forwarding services, regardless of the recipients in
+  `to`. Note that it doesn't match Google Workspace domain aliases.
 
 One more special function is given if you need to use less common operators<sup
 id="a1">[1](#f1)</sup>, or want to compose your query manually:
@@ -645,6 +649,7 @@ as possible. This is the list of fields:
 * `cc: [<list>]`: a list of emails in cc.
 * `bcc: [<list>]`: a list of emails in bcc.
 * `replyto: <string>`: the email listed in the Reply-To field.
+* `deliveredto: [<list>]`: a list of emails in the Delivered-To headers.
 * `lists: [<list>]`: a list of mailing lists.
 * `subject: <string>`: the subject of the email.
 * `body: <string>`: the body of the email.

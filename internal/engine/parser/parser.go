@@ -143,6 +143,9 @@ func parseFunction(f cfg.FilterNode) (FunctionType, string) {
 	if f.ReplyTo != "" {
 		return FunctionReplyTo, f.ReplyTo
 	}
+	if f.DeliveredTo != "" {
+		return FunctionDeliveredTo, f.DeliveredTo
+	}
 	if f.Subject != "" {
 		return FunctionSubject, f.Subject
 	}

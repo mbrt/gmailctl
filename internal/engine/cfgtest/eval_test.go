@@ -20,6 +20,7 @@ func TestEmailFieldMatching(t *testing.T) {
 		{parser.FunctionCc, func(s string) cfg.Message { return cfg.Message{Cc: []string{s}} }},
 		{parser.FunctionBcc, func(s string) cfg.Message { return cfg.Message{Bcc: []string{s}} }},
 		{parser.FunctionReplyTo, func(s string) cfg.Message { return cfg.Message{ReplyTo: []string{s}} }},
+		{parser.FunctionDeliveredTo, func(s string) cfg.Message { return cfg.Message{DeliveredTo: []string{s}} }},
 		{parser.FunctionList, func(s string) cfg.Message { return cfg.Message{Lists: []string{s}} }},
 		{parser.FunctionHas, func(s string) cfg.Message { return cfg.Message{From: s} }},
 	}

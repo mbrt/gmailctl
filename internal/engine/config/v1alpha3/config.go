@@ -30,15 +30,16 @@ type FilterNode struct {
 	Or  []FilterNode `json:"or,omitempty"`
 	Not *FilterNode  `json:"not,omitempty"`
 
-	From    string `json:"from,omitempty"`
-	To      string `json:"to,omitempty"`
-	Cc      string `json:"cc,omitempty"`
-	Bcc     string `json:"bcc,omitempty"`
-	ReplyTo string `json:"replyto,omitempty"`
-	Subject string `json:"subject,omitempty"`
-	List    string `json:"list,omitempty"`
-	Has     string `json:"has,omitempty"`
-	Query   string `json:"query,omitempty"`
+	From        string `json:"from,omitempty"`
+	To          string `json:"to,omitempty"`
+	Cc          string `json:"cc,omitempty"`
+	Bcc         string `json:"bcc,omitempty"`
+	ReplyTo     string `json:"replyto,omitempty"`
+	DeliveredTo string `json:"deliveredto,omitempty"`
+	Subject     string `json:"subject,omitempty"`
+	List        string `json:"list,omitempty"`
+	Has         string `json:"has,omitempty"`
+	Query       string `json:"query,omitempty"`
 
 	// IsEscaped specifies that the given parameters don't need any
 	// further escaping.
@@ -147,14 +148,15 @@ type Test struct {
 
 // Message represents the contents and metadata of an email.
 type Message struct {
-	From    string   `json:"from,omitempty"`
-	To      []string `json:"to,omitempty"`
-	Cc      []string `json:"cc,omitempty"`
-	Bcc     []string `json:"bcc,omitempty"`
-	ReplyTo []string `json:"replyto,omitempty"`
-	Lists   []string `json:"lists,omitempty"`
-	Subject string   `json:"subject,omitempty"`
-	Body    string   `json:"body,omitempty"`
+	From        string   `json:"from,omitempty"`
+	To          []string `json:"to,omitempty"`
+	Cc          []string `json:"cc,omitempty"`
+	Bcc         []string `json:"bcc,omitempty"`
+	ReplyTo     []string `json:"replyto,omitempty"`
+	DeliveredTo []string `json:"deliveredto,omitempty"`
+	Lists       []string `json:"lists,omitempty"`
+	Subject     string   `json:"subject,omitempty"`
+	Body        string   `json:"body,omitempty"`
 }
 
 func jsonTagName(t reflect.StructTag) string {
