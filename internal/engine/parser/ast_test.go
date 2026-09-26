@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSimplify(t *testing.T) {
@@ -41,6 +42,29 @@ func TestSimplify(t *testing.T) {
 
 }
 
+func TestSimplifyKeepsRawArgsSeparate(t *testing.T) {
+	// The raw flag applies to all the arguments of a leaf, so merging would
+	// make "John Smith" lose its quotes and match "John" OR "Smith".
+	expr := or(
+		fn1(FunctionFrom, "John Smith"),
+		raw(fn1(FunctionFrom, "-(foo bar)")),
+		fn1(FunctionFrom, "b"),
+		raw(fn1(FunctionFrom, `"c d"`)),
+	)
+	expected := or(
+		fn(FunctionFrom, OperationOr, "John Smith", "b"),
+		raw(fn(FunctionFrom, OperationOr, "-(foo bar)", `"c d"`)),
+	)
+
+	// Map iteration order is random, so repeat to make sure the result is
+	// deterministic.
+	for range 20 {
+		got, err := SimplifyCriteria(expr.Clone())
+		require.Nil(t, err)
+		require.Equal(t, expected, got)
+	}
+}
+
 func and(children ...CriteriaAST) *Node {
 	return &Node{
 		Operation: OperationAnd,
@@ -72,4 +96,9 @@ func fn(ftype FunctionType, op OperationType, args ...string) *Leaf {
 
 func fn1(ftype FunctionType, arg string) *Leaf {
 	return fn(ftype, OperationNone, arg)
+}
+
+func raw(l *Leaf) *Leaf {
+	l.IsRaw = true
+	return l
 }
