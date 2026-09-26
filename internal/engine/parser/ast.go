@@ -262,9 +262,15 @@ func functionsGrouping(tree CriteriaAST) int {
 	//
 	// Example:
 	// and(foo:x bar:y foo:z) => and(foo:(x z) bar:z)
+	//
+	// Raw and non-raw leaves are grouped separately, because the 'raw'
+	// modifier applies to all the arguments of a leaf.
+	type groupKey struct {
+		function FunctionType
+		raw      bool
+	}
 	newChildren := []CriteriaAST{}
-	functions := map[FunctionType][]string{}
-	rawFunctions := map[FunctionType]bool{}
+	functions := map[groupKey][]string{}
 	for _, child := range root.Children {
 		leaf, ok := child.(*Leaf)
 		if !ok || (len(leaf.Args) > 1 && leaf.Grouping != root.Operation) {
@@ -273,21 +279,17 @@ func functionsGrouping(tree CriteriaAST) int {
 			newChildren = append(newChildren, child)
 			continue
 		}
-		functions[leaf.Function] = append(functions[leaf.Function], leaf.Args...)
-		// When grouping preserve the 'raw' modifier.
-		if leaf.IsRaw {
-			rawFunctions[leaf.Function] = true
-		}
+		key := groupKey{leaf.Function, leaf.IsRaw}
+		functions[key] = append(functions[key], leaf.Args...)
 	}
 
 	// Re-construct the grouped children
-	for ft, args := range functions {
-		_, raw := rawFunctions[ft]
+	for key, args := range functions {
 		newChildren = append(newChildren, &Leaf{
-			Function: ft,
+			Function: key.function,
 			Grouping: root.Operation,
 			Args:     args,
-			IsRaw:    raw,
+			IsRaw:    key.raw,
 		})
 		count++
 	}
@@ -361,7 +363,7 @@ func sortTreeNodes(nodes []CriteriaAST) {
 
 	sort.Slice(nodes, func(i, j int) bool {
 		// ordering will be:
-		// - leaves in grouping and function order, then
+		// - leaves in grouping and function order (non-raw first), then
 		// - nodes in operation order
 		ni, nj := nodes[i], nodes[j]
 		if ni.IsLeaf() != nj.IsLeaf() {
@@ -372,8 +374,16 @@ func sortTreeNodes(nodes []CriteriaAST) {
 		if ni.RootOperation() != nj.RootOperation() {
 			return ni.RootOperation() < nj.RootOperation()
 		}
-		return ni.RootFunction() < nj.RootFunction()
+		if ni.RootFunction() != nj.RootFunction() {
+			return ni.RootFunction() < nj.RootFunction()
+		}
+		return !isRaw(ni) && isRaw(nj)
 	})
+}
+
+func isRaw(tree CriteriaAST) bool {
+	leaf, ok := tree.(*Leaf)
+	return ok && leaf.IsRaw
 }
 
 func sortTree(tree CriteriaAST) {
