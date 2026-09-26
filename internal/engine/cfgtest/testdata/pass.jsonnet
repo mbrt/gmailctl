@@ -63,6 +63,17 @@ local filters = {
         delete: true,
       }
     },
+    {
+      filter: {
+        or: [
+          {deliveredto: 'pippo+shopping@gmail.com'},
+          {deliveredto: 'pippo+deals@gmail.com'},
+        ]
+      },
+      actions: {
+        labels: ['shopping'],
+      }
+    },
   ],
   tests: [
     {
@@ -112,6 +123,19 @@ local filters = {
         archive: true,
         markImportant: true,
         labels: ['maillist', 'onemorelabel'],
+      },
+    },
+    {
+      name: 'forwarded aliases',
+      messages: [
+        {
+          to: ['store@simplelogin.com'],
+          deliveredto: ['pippo+shopping@gmail.com'],
+        },
+        {deliveredto: ['pippo+deals@gmail.com']},
+      ],
+      actions: {
+        labels: ['shopping'],
       },
     },
   ],

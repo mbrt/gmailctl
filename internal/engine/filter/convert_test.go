@@ -189,6 +189,44 @@ func TestQuoting(t *testing.T) {
 	assert.Equal(t, expected, got)
 }
 
+func TestDeliveredTo(t *testing.T) {
+	tests := []struct {
+		name     string
+		criteria parser.CriteriaAST
+		want     Criteria
+	}{
+		{
+			name: "grouped leaf",
+			criteria: &parser.Leaf{
+				Function: parser.FunctionDeliveredTo,
+				Grouping: parser.OperationOr,
+				Args:     []string{"me+a@gmail.com", "me+b@gmail.com"},
+			},
+			want: Criteria{Query: "deliveredto:{me+a@gmail.com me+b@gmail.com}"},
+		},
+		{
+			name: "nested leaf",
+			criteria: &parser.Node{
+				Operation: parser.OperationNot,
+				Children: []parser.CriteriaAST{
+					&parser.Leaf{
+						Function: parser.FunctionDeliveredTo,
+						Args:     []string{"me+a@gmail.com"},
+					},
+				},
+			},
+			want: Criteria{Query: "-deliveredto:me+a@gmail.com"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateCriteria(tt.criteria)
+			assert.Nil(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestSplitLeaf(t *testing.T) {
 	rule := parser.Rule{
 		Criteria: &parser.Leaf{
