@@ -117,7 +117,7 @@ func edit(path string, test bool) error {
 			}
 
 			stderrPrintf("Error applying configuration: %v\n", err)
-			if !askYN("Do you want to continue editing?") {
+			if !askYN(os.Stdin, os.Stdout, "Do you want to continue editing?") {
 				return errors.WithDetails(errAbort, fmt.Sprintf(abortHelp, tmpPath))
 			}
 			// Retry
@@ -255,7 +255,12 @@ func applyEdited(path, originalPath string, test bool, gmailapi *api.GmailAPI) e
 		yesOption = "yes, and I ALSO WANT TO DELETE LABELS"
 	}
 
-	switch askOptions("Do you want to apply them?", []string{yesOption, "no (continue editing)", "abort"}) {
+	choice, err := askOptions(os.Stdin, os.Stdout, "Do you want to apply them?",
+		[]string{yesOption, "no (continue editing)", "abort"})
+	if err != nil {
+		return errors.WithCause(err, errAbort)
+	}
+	switch choice {
 	case 0:
 		break
 	case 1:

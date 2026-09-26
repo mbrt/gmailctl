@@ -3,29 +3,38 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/mbrt/gmailctl/internal/errors"
 )
 
-func askYN(prompt string) bool {
-	r := bufio.NewReader(os.Stdin)
+func askYN(in io.Reader, out io.Writer, prompt string) bool {
+	r := bufio.NewReader(in)
 	for {
-		fmt.Printf("%s [y/N]: ", prompt)
-		if choice, err := r.ReadString('\n'); err == nil {
-			switch strings.ToLower(strings.TrimRight(choice, "\r\n")) {
-			case "y", "yes":
-				return true
-			case "n", "no", "": // empty string defaults to 'no'
-				return false
-			}
+		fmt.Fprintf(out, "%s [y/N]: ", prompt)
+		choice, err := r.ReadString('\n')
+		answer := strings.ToLower(strings.TrimRight(choice, "\r\n"))
+		if err != nil {
+			// Stdin is exhausted (e.g. EOF), so asking again would loop forever.
+			// Accept a last unterminated answer, otherwise default to 'no'.
+			fmt.Fprintln(out)
+			return answer == "y" || answer == "yes"
 		}
-		fmt.Println("invalid choice")
+		switch answer {
+		case "y", "yes":
+			return true
+		case "n", "no", "": // empty string defaults to 'no'
+			return false
+		}
+		fmt.Fprintln(out, "invalid choice")
 	}
 }
 
-func askOptions(prompt string, choices []string) int {
+// askOptions returns the index of the choice picked by the user, or an error
+// if the input ends before a valid choice is made.
+func askOptions(in io.Reader, out io.Writer, prompt string, choices []string) (int, error) {
 	var prettyChoices []string
 	for _, c := range choices {
 		if len(c) == 0 {
@@ -36,23 +45,28 @@ func askOptions(prompt string, choices []string) int {
 	}
 
 	for {
-		fmt.Printf("%s:\n", prompt)
+		fmt.Fprintf(out, "%s:\n", prompt)
 		for _, c := range prettyChoices {
-			fmt.Printf("    %s\n", c)
+			fmt.Fprintf(out, "    %s\n", c)
 		}
-		fmt.Printf("> ")
+		fmt.Fprintf(out, "> ")
 
 		var choice string
-		if _, err := fmt.Scanln(&choice); err == nil {
+		_, err := fmt.Fscanln(in, &choice)
+		if errors.Is(err, io.EOF) {
+			fmt.Fprintln(out)
+			return 0, fmt.Errorf("reading answer: %w", err)
+		}
+		if err == nil {
 			choice = strings.ToLower(choice)
 			for i, c := range choices {
 				if strings.HasPrefix(c, choice) {
-					return i
+					return i, nil
 				}
 			}
 		}
 
-		fmt.Println("invalid choice")
+		fmt.Fprintln(out, "invalid choice")
 	}
 }
 
