@@ -155,9 +155,13 @@ should generate a small and simple to review diff.
 
 Configuration and credentials are in either:
 
-- `<XDG_BASE_DIR>/gmailctl` (using the [XDG base directory spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html), commonly `~/.config/gmailctl` on Linux.
+- `$XDG_CONFIG_HOME/gmailctl` (using the [XDG base directory spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)).
+  If `XDG_CONFIG_HOME` is not set, this is `~/.config/gmailctl` on Linux and
+  `~/Library/Application Support/gmailctl` on macOS. Run `gmailctl --help` to
+  see the exact path on your system.
 - `~/.gmailctl`: The previous default location. If the directory exists `gmailctl` will continue to use it for backward compatibility
 - Custom location: use the `--config` argument.
+
 ### Migrate from another solution
 
 If you want to preserve your current filters and migrate to a more sane
