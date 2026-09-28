@@ -69,6 +69,103 @@ func TestNeedsQuoting(t *testing.T) {
 	}
 }
 
+func TestIsQuoted(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{"plain", "term", false},
+		{"phrase", `"some term"`, true},
+		{"lone quote", `"`, false},
+		{"unbalanced start", `"some term`, false},
+		{"unbalanced end", `some term"`, false},
+		{"inner quotes", `"say "hi" now"`, false},
+		{"multiple phrases", `"foo" OR "bar"`, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, IsQuoted(tt.in))
+		})
+	}
+}
+
+func TestQuotesInValues(t *testing.T) {
+	subject := func(s string) *parser.Leaf {
+		return &parser.Leaf{Function: parser.FunctionSubject, Args: []string{s}}
+	}
+	tests := []struct {
+		name     string
+		criteria parser.CriteriaAST
+		want     Criteria
+		wantErr  string
+	}{
+		{
+			name:     "whole value quoted",
+			criteria: subject(`"hello world"`),
+			want:     Criteria{Subject: `"hello world"`},
+		},
+		{
+			name:     "quoted plus address",
+			criteria: &parser.Leaf{Function: parser.FunctionTo, Args: []string{`"foo+bar"`}},
+			want:     Criteria{To: `"foo+bar"`},
+		},
+		{
+			name:     "inner quotes",
+			criteria: subject(`say "hi" now`),
+			wantErr:  `invalid quotes in 'say "hi" now'`,
+		},
+		{
+			name:     "unbalanced quote",
+			criteria: subject(`"unbalanced start`),
+			wantErr:  `invalid quotes in '"unbalanced start'`,
+		},
+		{
+			name:     "quote without spaces",
+			criteria: &parser.Leaf{Function: parser.FunctionFrom, Args: []string{`foo"bar`}},
+			wantErr:  `invalid quotes in 'foo"bar'`,
+		},
+		{
+			name:     "multiple phrases",
+			criteria: subject(`"foo" OR "bar"`),
+			wantErr:  `invalid quotes in '"foo" OR "bar"'`,
+		},
+		{
+			name: "nested inner quotes",
+			criteria: &parser.Node{
+				Operation: parser.OperationNot,
+				Children:  []parser.CriteriaAST{subject(`say "hi" now`)},
+			},
+			wantErr: `invalid quotes in 'say "hi" now'`,
+		},
+		{
+			name: "raw value",
+			criteria: &parser.Leaf{
+				Function: parser.FunctionSubject,
+				Args:     []string{`"foo" OR "bar"`},
+				IsRaw:    true,
+			},
+			want: Criteria{Subject: `"foo" OR "bar"`},
+		},
+		{
+			name:     "query",
+			criteria: &parser.Leaf{Function: parser.FunctionQuery, Args: []string{`subject:"foo" OR "bar"`}},
+			want:     Criteria{Query: `subject:"foo" OR "bar"`},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GenerateCriteria(tt.criteria)
+			if tt.wantErr != "" {
+				assert.ErrorContains(t, err, tt.wantErr)
+				return
+			}
+			assert.Nil(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestAndNode(t *testing.T) {
 	rules := []parser.Rule{
 		{

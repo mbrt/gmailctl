@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mbrt/gmailctl/internal/engine/filter"
 	"github.com/mbrt/gmailctl/internal/engine/parser"
 )
 
@@ -80,13 +81,22 @@ func (r *evalBuilder) VisitLeaf(n *parser.Leaf) {
 	r.Res, r.Err = group(n.Grouping, rules)
 }
 
-// expandAll applies the given expander to all the arguments.
+// expandAll applies the given expander to all the unquoted arguments.
 func expandAll(args []string, f func(arg string) RuleEvaluator) []RuleEvaluator {
 	var res []RuleEvaluator
 	for _, arg := range args {
-		res = append(res, f(arg))
+		res = append(res, f(unquote(arg)))
 	}
 	return res
+}
+
+// unquote removes the quotes around a phrase. They are part of the Gmail
+// syntax, not of the text to match.
+func unquote(arg string) string {
+	if filter.IsQuoted(arg) {
+		return arg[1 : len(arg)-1]
+	}
+	return arg
 }
 
 // expandTo expands the 'to' function into the corresponding evaluators.

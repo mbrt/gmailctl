@@ -6,35 +6,6 @@ It has a [Jsonnet](https://jsonnet.org/) configuration file that aims to be
 simpler to write and maintain than using the Gmail web interface, to categorize,
 label, archive and manage your inbox automatically.
 
-## Table of contents
-- [gmailctl](#gmailctl)
-  - [Table of contents](#table-of-contents)
-  - [Motivation](#motivation)
-  - [Install](#install)
-  - [Usage](#usage)
-    - [Config directory](#config-directory)
-    - [Migrate from another solution](#migrate-from-another-solution)
-    - [Other commands](#other-commands)
-  - [Configuration](#configuration)
-    - [Search operators](#search-operators)
-    - [Logic operators](#logic-operators)
-    - [Reusing filters](#reusing-filters)
-    - [Actions](#actions)
-    - [Labels](#labels)
-    - [Tests](#tests)
-  - [Tips and tricks](#tips-and-tricks)
-    - [Chain filtering](#chain-filtering)
-    - [To me](#to-me)
-    - [Directly to me](#directly-to-me)
-    - [Automatic labels](#automatic-labels)
-    - [Multiple Gmail accounts](#multiple-gmail-accounts)
-  - [Known issues](#known-issues)
-    - [Apply filters to existing emails](#apply-filters-to-existing-emails)
-    - [OAuth2 authentication errors](#oauth2-authentication-errors)
-    - [YAML config is unsupported](#yaml-config-is-unsupported)
-  - [Comparison with existing projects](#comparison-with-existing-projects)
-  - [Footnotes](#footnotes)
-
 ## Motivation
 
 If you use Gmail and have to maintain (like me) a lot of filters (to apply
@@ -312,8 +283,8 @@ the following common operators:
   or mail coming from forwarding services, regardless of the recipients in
   `to`. Note that it doesn't match Google Workspace domain aliases.
 
-One more special function is given if you need to use less common operators<sup
-id="a1">[1](#f1)</sup>, or want to compose your query manually:
+One more special function is given if you need to use less common
+operators[^gmail-operators], or want to compose your query manually:
 
 * `query`: passes the given contents verbatim to the Gmail filter, without
   escaping or interpreting the contents in any way.
@@ -468,7 +439,10 @@ The example is effectively equivalent to this one:
   ],
 }
 ```
-Relying on Jsonnet also allows [importing code and raw data](https://jsonnet.org/learning/tutorial.html#imports) from other files<sup id="a3">[3](#f3)</sup>.
+
+Relying on Jsonnet also allows [importing code and raw
+data](https://jsonnet.org/learning/tutorial.html#imports) from other
+files[^jsonnet-import].
 
 ### Actions
 
@@ -994,6 +968,33 @@ $ mv /tmp/gmailctl-config.jsonnet ~/.gmailctl/config.jsonnet
 $ rm ~/.gmailctl/config.yaml
 ```
 
+### Quoting
+
+Values are quoted automatically when needed, e.g. `subject: 'important mail'`
+becomes `subject:"important mail"`, so there's no need to add quotes yourself.
+Wrapping the whole value in double quotes is accepted as well, but quotes
+anywhere else are an error, because Gmail has no way to escape them. To write
+raw Gmail search syntax, set `isEscaped: true` (only for `from`, `to` and
+`subject`) or use the `query` operator:
+
+```jsonnet
+// Error: invalid quotes
+{ subject: '"weekly report" OR "monthly report"' }
+
+// subject:("weekly report" OR "monthly report")
+{
+  subject: '("weekly report" OR "monthly report")',
+  isEscaped: true,
+}
+
+// Same as above
+{ query: 'subject:("weekly report" OR "monthly report")' }
+```
+
+Escaped values are passed to Gmail verbatim, so group multiple terms with
+parentheses yourself. Without them, only the first term is matched against the
+subject.
+
 ## Comparison with existing projects
 
 [gmail-britta](https://github.com/antifuchs/gmail-britta) has similar
@@ -1004,8 +1005,8 @@ this one are:
 * `gmail-britta` is imperative because it allows you to write arbitrary Ruby
   code in your filters (versus pure declarative for `gmailctl`)
 * `gmail-britta` allows one to write complex chains of filters, but they feel
-  very hardcoded and fails to provide easy ways to write reasonably easy filters
-  <sup id="a2">[2](#f2)</sup>.
+  very hardcoded and fails to provide easy ways to write reasonably easy
+  filters[^britta-example].
 * `gmail-britta` exports only to the Gmail XML format. You have to import the
   filters yourself by using the Gmail web interface, manually delete the filters
   you updated and import only the new ones. This process becomes tedious very
@@ -1027,116 +1028,117 @@ filters.
 
 ## Footnotes
 
-<b id="f1">1</b>: See [Search operators you can use with
-Gmail](https://support.google.com/mail/answer/7190?hl=en) [↩](#a1).
+[^gmail-operators]: See [Search operators you can use with
+    Gmail](https://support.google.com/mail/answer/7190?hl=en).
 
-<b id="f2">2</b>: Try to write the equivalent of this filter with `gmail-britta` [↩](#a2)
+[^britta-example]: Try to write the equivalent of this filter with `gmail-britta`:
 
-```jsonnet
-local spam = {
-  or: [
-    { from: 'pippo@gmail.com' },
-    { from: 'pippo@hotmail.com' },
-    { subject: 'buy this' },
-    { subject: 'buy that' },
-  ],
-};
-{
-  version: 'v1alpha3',
-  rules: [
+    ```jsonnet
+    local spam = {
+      or: [
+        { from: 'pippo@gmail.com' },
+        { from: 'pippo@hotmail.com' },
+        { subject: 'buy this' },
+        { subject: 'buy that' },
+      ],
+    };
     {
-      filter: spam,
-      actions: { delete: true },
-    },
-  ],
-}
-```
+      version: 'v1alpha3',
+      rules: [
+        {
+          filter: spam,
+          actions: { delete: true },
+        },
+      ],
+    }
+    ```
 
-It becomes something like this:
+    It becomes something like this:
 
-```ruby
-#!/usr/bin/env ruby
+    ```ruby
+    #!/usr/bin/env ruby
 
-# NOTE: This file requires the latest master (30/07/2018) of gmail-britta.
-# The Ruby repos are not up to date
+    # NOTE: This file requires the latest master (30/07/2018) of gmail-britta.
+    # The Ruby repos are not up to date
 
-require 'rubygems'
-require 'gmail-britta'
+    require 'rubygems'
+    require 'gmail-britta'
 
-SPAM_EMAILS = %w{foo@gmail.com bar@hotmail.com}
-SPAM_SUBJECTS = ['"buy this"', '"buy my awesome product"']
+    SPAM_EMAILS = %w{foo@gmail.com bar@hotmail.com}
+    SPAM_SUBJECTS = ['"buy this"', '"buy my awesome product"']
 
-puts(GmailBritta.filterset(:me => MY_EMAILS) do
-       # Spam
-       filter {
-         has [{:or => "from:(#{SPAM_EMAILS.join("|")})"}]
-         delete_it
-       }
-       filter {
-         has [{:or => "subject:(#{SPAM_SUBJECTS.join("|")})"}]
-         delete_it
-       }
-     end.generate)
-```
+    puts(GmailBritta.filterset(:me => MY_EMAILS) do
+           # Spam
+           filter {
+             has [{:or => "from:(#{SPAM_EMAILS.join("|")})"}]
+             delete_it
+           }
+           filter {
+             has [{:or => "subject:(#{SPAM_SUBJECTS.join("|")})"}]
+             delete_it
+           }
+         end.generate)
+    ```
 
-Not the most readable configuration I would say. Note: You also have to make
-sure to quote the terms correctly when they contain spaces.
+    Not the most readable configuration I would say. Note: You also have to make
+    sure to quote the terms correctly when they contain spaces.
 
-So what about nesting expressions?
+    So what about nesting expressions?
 
-```jsonnet
-local me = 'pippo@gmail.com';
-local spam = {
-  or: [
-    { from: 'foo@gmail.com' },
-    { from: 'bar@hotmail.com' },
-    { subject: 'buy this' },
-    { subject: 'buy that' },
-  ],
-};
-{
-  version: 'v1alpha3',
-  rules: [
+    ```jsonnet
+    local me = 'pippo@gmail.com';
+    local spam = {
+      or: [
+        { from: 'foo@gmail.com' },
+        { from: 'bar@hotmail.com' },
+        { subject: 'buy this' },
+        { subject: 'buy that' },
+      ],
+    };
     {
-      filter: {
-        and: [
-          { to: me },
-          { from: 'friend@mail.com' },
-          { not: spam },
-        ],
-      },
-      actions: { delete: true },
-    },
-  ],
-}
-```
+      version: 'v1alpha3',
+      rules: [
+        {
+          filter: {
+            and: [
+              { to: me },
+              { from: 'friend@mail.com' },
+              { not: spam },
+            ],
+          },
+          actions: { delete: true },
+        },
+      ],
+    }
+    ```
 
-The reality is that you have to manually build the Gmail expressions yourself.
+    The reality is that you have to manually build the Gmail expressions yourself.
 
-<b id="f3">3</b>: Import variables from  a `.libjsonnet` file [↩](#a3)
+[^jsonnet-import]: Import variables from a `.libjsonnet` file:
+    File: `spam.libjsonnet`
 
-File: `spam.libjsonnet`
-```jsonnet
-{
-  or: [
-    { from: 'foo@gmail.com' },
-    { from: 'bar@hotmail.com' },
-    { subject: 'buy this' },
-    { subject: 'buy that' },
-  ],
-}
-```
-
-File `config.jsonnet`
-```jsonnet
-local spam_filter = import 'spam.libjsonnet';
-{
-  version: 'v1alpha3',
-  rules: [
+    ```jsonnet
     {
-      filter: spam_filter,
-      actions: { delete: true },
-    },
-  ],
-}
-```
+      or: [
+        { from: 'foo@gmail.com' },
+        { from: 'bar@hotmail.com' },
+        { subject: 'buy this' },
+        { subject: 'buy that' },
+      ],
+    }
+    ```
+
+    File `config.jsonnet`
+
+    ```jsonnet
+    local spam_filter = import 'spam.libjsonnet';
+    {
+      version: 'v1alpha3',
+      rules: [
+        {
+          filter: spam_filter,
+          actions: { delete: true },
+        },
+      ],
+    }
+    ```

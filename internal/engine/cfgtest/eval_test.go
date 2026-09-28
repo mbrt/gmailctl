@@ -40,6 +40,7 @@ func TestEmailFieldMatching(t *testing.T) {
 		{"domain suffix", "@google.com", "some-list@google.com", true},
 		{"wildcard domain", "*@google.com", "some-list@google.com", true},
 		{"plus address", "some+list@google.com", "some+list@google.com", true},
+		{"quoted address", `"some+list@google.com"`, "some+list@google.com", true},
 		{"unicode name", "büro", "büro@example.com", true},
 		{"later whole word", "me", "notme.me@gmail.com", true},
 		{"prefix of name", "some", "someone@google.com", false},
@@ -77,6 +78,7 @@ func TestParseEval(t *testing.T) {
 			fn1(parser.FunctionTo, "me@gmail.com"),
 		),
 		fn1(parser.FunctionSubject, "Subject"),
+		fn1(parser.FunctionSubject, `"Exact phrase"`),
 		fn(parser.FunctionFrom, parser.OperationOr, "@google.com", "b"),
 		fn1(parser.FunctionHas, "Important message"),
 		fn1(parser.FunctionHas, "foo@bar.com"),
@@ -95,6 +97,13 @@ func TestParseEval(t *testing.T) {
 			name: "subject",
 			message: cfg.Message{
 				Subject: "contains subject yes",
+			},
+			expectMatch: true,
+		},
+		{
+			name: "quoted subject",
+			message: cfg.Message{
+				Subject: "has an exact phrase inside",
 			},
 			expectMatch: true,
 		},

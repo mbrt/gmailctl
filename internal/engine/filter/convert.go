@@ -1,16 +1,20 @@
 package filter
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/mbrt/gmailctl/internal/engine/parser"
+	"github.com/mbrt/gmailctl/internal/errors"
 )
 
 // There's no documented limit on filter size on Gmail, but this educated guess
 // is better than nothing.
 const defaultSizeLimit = 20
+
+const invalidQuotesHelp = `Gmail can't escape quotes, so they are only allowed around the whole value,
+e.g. '"hello world"'. Quotes are added automatically when needed, so you can
+also just remove them. See https://github.com/mbrt/gmailctl/blob/master/README.md#quoting`
 
 // FromRules translates rules into entries that map directly into Gmail filters.
 func FromRules(rs []parser.Rule) (Filters, error) {
@@ -85,6 +89,16 @@ func NeedsQuoting(a string) bool {
 	return false
 }
 
+// IsQuoted reports whether the whole string is a single quoted phrase, e.g.
+// `"hello world"`. Gmail matches such a phrase exactly, and it can be used as
+// is in a query without further quoting.
+func IsQuoted(a string) bool {
+	return len(a) >= 2 &&
+		strings.HasPrefix(a, `"`) &&
+		strings.HasSuffix(a, `"`) &&
+		!strings.Contains(a[1:len(a)-1], `"`)
+}
+
 func generateNode(node *parser.Node) (Criteria, error) {
 	switch node.Operation {
 	case parser.OperationOr:
@@ -127,9 +141,11 @@ func generateNode(node *parser.Node) (Criteria, error) {
 
 func generateLeaf(leaf *parser.Leaf) (Criteria, error) {
 	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
-	query := joinStrings(needEscape, leaf.Args...)
+	query, err := joinStrings(needEscape, leaf.Args...)
+	if err != nil {
+		return Criteria{}, err
+	}
 	if len(leaf.Args) > 1 {
-		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
 			return Criteria{}, err
 		}
@@ -201,9 +217,11 @@ func generateNodeAsString(node *parser.Node) (string, error) {
 
 func generateLeafAsString(leaf *parser.Leaf) (string, error) {
 	needEscape := leaf.Function != parser.FunctionQuery && !leaf.IsRaw
-	query := joinStrings(needEscape, leaf.Args...)
+	query, err := joinStrings(needEscape, leaf.Args...)
+	if err != nil {
+		return "", err
+	}
 	if len(leaf.Args) > 1 {
-		var err error
 		if query, err = groupWithOperation(query, leaf.Grouping); err != nil {
 			return "", err
 		}
@@ -253,34 +271,36 @@ func joinQueries(f1, f2 string) string {
 	return fmt.Sprintf("%s %s", f1, f2)
 }
 
-func joinStrings(escape bool, a ...string) string {
+func joinStrings(escape bool, a ...string) (string, error) {
 	if escape {
 		return joinQuoted(a...)
 	}
-	return strings.Join(a, " ")
+	return strings.Join(a, " "), nil
 }
 
-func joinQuoted(a ...string) string {
-	return strings.Join(quoteStrings(a...), " ")
-}
-
-func quoteStrings(a ...string) []string {
+func joinQuoted(a ...string) (string, error) {
 	res := make([]string, len(a))
 	for i, s := range a {
-		res[i] = quote(s)
+		q, err := quote(s)
+		if err != nil {
+			return "", err
+		}
+		res[i] = q
 	}
-	return res
+	return strings.Join(res, " "), nil
 }
 
-func quote(a string) string {
-	// Skip quoting if already quoted.
-	if strings.HasPrefix(a, `"`) && strings.HasSuffix(a, `"`) {
-		return a
+func quote(a string) (string, error) {
+	if IsQuoted(a) {
+		return a, nil
+	}
+	if strings.Contains(a, `"`) {
+		return "", errors.WithDetails(fmt.Errorf("invalid quotes in '%s'", a), invalidQuotesHelp)
 	}
 	if NeedsQuoting(a) {
-		return fmt.Sprintf(`"%s"`, a)
+		return fmt.Sprintf(`"%s"`, a), nil
 	}
-	return a
+	return a, nil
 }
 
 func splitCriteria(tree parser.CriteriaAST, limit int) []parser.CriteriaAST {
