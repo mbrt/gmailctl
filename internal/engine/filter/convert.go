@@ -12,6 +12,10 @@ import (
 // is better than nothing.
 const defaultSizeLimit = 20
 
+const invalidQuotesHelp = `Gmail can't escape quotes, so they are only allowed around the whole value,
+e.g. '"hello world"'. Quotes are added automatically when needed, so you can
+also just remove them. See https://github.com/mbrt/gmailctl/blob/master/README.md#quoting`
+
 // FromRules translates rules into entries that map directly into Gmail filters.
 func FromRules(rs []parser.Rule) (Filters, error) {
 	return FromRulesWithLimit(rs, defaultSizeLimit)
@@ -285,11 +289,6 @@ func joinQuoted(a ...string) (string, error) {
 	}
 	return strings.Join(res, " "), nil
 }
-
-const invalidQuotesHelp = `Gmail can't escape quotes, so they are only allowed around the whole value,
-e.g. '"hello world"'. Quotes are added automatically when needed, so you can
-also just remove them. To write raw Gmail search syntax, use 'isEscaped: true'
-(only for 'from', 'to' and 'subject') or the 'query' operator.`
 
 func quote(a string) (string, error) {
 	if IsQuoted(a) {
