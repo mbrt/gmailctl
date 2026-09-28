@@ -7,8 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	papply "github.com/mbrt/gmailctl/internal/engine/apply"
-	"github.com/mbrt/gmailctl/internal/engine/config/v1alpha3"
 	"github.com/mbrt/gmailctl/internal/engine/rimport"
 )
 
@@ -23,8 +21,8 @@ const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
 `
 
 var (
-	downloadOutput   string
-	downloadNoLabels bool
+	downloadOutput        string
+	downloadIncludeLabels bool
 )
 
 // downloadCmd represents the import command
@@ -53,7 +51,7 @@ func init() {
 
 	// Flags and configuration settings
 	downloadCmd.PersistentFlags().StringVarP(&downloadOutput, "output", "o", "", "output file (default to stdout)")
-	downloadCmd.Flags().BoolVar(&downloadNoLabels, "no-labels", false, "omit the labels section from the generated config (labels are left unmanaged)")
+	downloadCmd.Flags().BoolVar(&downloadIncludeLabels, "include-labels", true, "include the labels section in the generated config")
 }
 
 func download(outputPath string) (err error) {
@@ -74,7 +72,7 @@ func download(outputPath string) (err error) {
 		}()
 		out = f
 	}
-	return downloadWithOut(out, !downloadNoLabels)
+	return downloadWithOut(out, downloadIncludeLabels)
 }
 
 func downloadWithOut(out io.Writer, includeLabels bool) error {
@@ -88,7 +86,11 @@ func downloadWithOut(out io.Writer, includeLabels bool) error {
 		return err
 	}
 
-	cfg, err := importConfig(upstream, includeLabels)
+	labels := upstream.Labels
+	if !includeLabels {
+		labels = nil
+	}
+	cfg, err := rimport.Import(upstream.Filters, labels)
 	if err != nil {
 		return err
 	}
@@ -98,12 +100,4 @@ func downloadWithOut(out io.Writer, includeLabels bool) error {
 		return fmt.Errorf("converting to Jsonnet: %w", err)
 	}
 	return nil
-}
-
-func importConfig(upstream papply.GmailConfig, includeLabels bool) (v1alpha3.Config, error) {
-	labels := upstream.Labels
-	if !includeLabels {
-		labels = nil
-	}
-	return rimport.Import(upstream.Filters, labels)
 }
