@@ -186,6 +186,10 @@ gmailctl diff
 gmailctl edit
 ```
 
+If you prefer to keep managing labels through the Gmail interface, pass
+`--no-labels` to `download`: the generated config won't contain the `labels`
+section, so gmailctl leaves your labels alone.
+
 Often you'll see imported filters with the `isEscaped: true` marker. This tells
 gmailctl to not escape or quote the expression, as it might contain operators
 that have to be interpreted as-is by Gmail. This happens when the `download`
