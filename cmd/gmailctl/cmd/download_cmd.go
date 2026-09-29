@@ -21,7 +21,8 @@ const downloadHeader = `// Auto-imported filters by 'gmailctl download'.
 `
 
 var (
-	downloadOutput string
+	downloadOutput        string
+	downloadIncludeLabels bool
 )
 
 // downloadCmd represents the import command
@@ -50,6 +51,7 @@ func init() {
 
 	// Flags and configuration settings
 	downloadCmd.PersistentFlags().StringVarP(&downloadOutput, "output", "o", "", "output file (default to stdout)")
+	downloadCmd.Flags().BoolVar(&downloadIncludeLabels, "include-labels", true, "include the labels section in the generated config")
 }
 
 func download(outputPath string) (err error) {
@@ -70,10 +72,10 @@ func download(outputPath string) (err error) {
 		}()
 		out = f
 	}
-	return downloadWithOut(out)
+	return downloadWithOut(out, downloadIncludeLabels)
 }
 
-func downloadWithOut(out io.Writer) error {
+func downloadWithOut(out io.Writer, includeLabels bool) error {
 	gmailapi, err := openAPI()
 	if err != nil {
 		return configurationError(fmt.Errorf("connecting to Gmail: %w", err))
@@ -84,7 +86,11 @@ func downloadWithOut(out io.Writer) error {
 		return err
 	}
 
-	cfg, err := rimport.Import(upstream.Filters, upstream.Labels)
+	labels := upstream.Labels
+	if !includeLabels {
+		labels = nil
+	}
+	cfg, err := rimport.Import(upstream.Filters, labels)
 	if err != nil {
 		return err
 	}

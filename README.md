@@ -157,6 +157,9 @@ gmailctl diff
 gmailctl edit
 ```
 
+Pass `--include-labels=false` to `download` if you prefer to keep managing
+labels through the Gmail interface.
+
 Often you'll see imported filters with the `isEscaped: true` marker. This tells
 gmailctl to not escape or quote the expression, as it might contain operators
 that have to be interpreted as-is by Gmail. This happens when the `download`
