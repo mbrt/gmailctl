@@ -23,6 +23,27 @@ func Diff(upstream, local Filters, debugInfo bool, contextLines int, colorize bo
 	return NewMinimalFiltersDiff(added, removed, debugInfo, contextLines, colorize), nil
 }
 
+// FilterNew returns the filters in local that are newly added or modified
+// with respect to upstream, preserving the original ordering in local.
+func FilterNew(local, upstream Filters) Filters {
+	upstreamMap := make(map[string]int)
+	for _, f := range upstream {
+		h := hashFilter(f).hash
+		upstreamMap[h]++
+	}
+
+	var res Filters
+	for _, f := range local {
+		h := hashFilter(f).hash
+		if upstreamMap[h] > 0 {
+			upstreamMap[h]--
+			continue
+		}
+		res = append(res, f)
+	}
+	return res
+}
+
 // NewMinimalFiltersDiff creates a new FiltersDiff with reordered filters, where
 // similar added and removed ones are next to each other.
 //
