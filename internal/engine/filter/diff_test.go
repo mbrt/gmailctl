@@ -545,3 +545,121 @@ func TestIndent(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterNew(t *testing.T) {
+	f1 := Filter{
+		Criteria: Criteria{From: "alice@example.com"},
+		Action:   Actions{MarkRead: true},
+	}
+	f1WithID := Filter{
+		ID:       "id-alice",
+		Criteria: Criteria{From: "alice@example.com"},
+		Action:   Actions{MarkRead: true},
+	}
+	f2 := Filter{
+		Criteria: Criteria{To: "bob@example.com"},
+		Action:   Actions{AddLabel: "work"},
+	}
+	f2WithID := Filter{
+		ID:       "id-bob",
+		Criteria: Criteria{To: "bob@example.com"},
+		Action:   Actions{AddLabel: "work"},
+	}
+	f3 := Filter{
+		Criteria: Criteria{Subject: "urgent"},
+		Action:   Actions{MarkImportant: true},
+	}
+	f2ModifiedCriteria := Filter{
+		Criteria: Criteria{To: "bob@example.com", Subject: "hello"},
+		Action:   Actions{AddLabel: "work"},
+	}
+	f2ModifiedAction := Filter{
+		Criteria: Criteria{To: "bob@example.com"},
+		Action:   Actions{AddLabel: "personal"},
+	}
+
+	t.Run("both empty", func(t *testing.T) {
+		got := FilterNew(nil, nil)
+		assert.Empty(t, got)
+	})
+
+	t.Run("upstream empty returns all local in order", func(t *testing.T) {
+		local := Filters{f1, f2, f3}
+		got := FilterNew(local, nil)
+		assert.Equal(t, local, got)
+	})
+
+	t.Run("all present in upstream returns empty", func(t *testing.T) {
+		local := Filters{f1, f2}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Empty(t, got)
+	})
+
+	t.Run("all present in upstream in different order returns empty", func(t *testing.T) {
+		local := Filters{f1, f2, f3}
+		upstream := Filters{f3, f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Empty(t, got)
+	})
+
+	t.Run("new filter at end", func(t *testing.T) {
+		local := Filters{f1, f2, f3}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f3}, got)
+	})
+
+	t.Run("new filter at beginning", func(t *testing.T) {
+		local := Filters{f3, f1, f2}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f3}, got)
+	})
+
+	t.Run("new filter in middle", func(t *testing.T) {
+		local := Filters{f1, f3, f2}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f3}, got)
+	})
+
+	t.Run("multiple new filters preserve local order", func(t *testing.T) {
+		f4 := Filter{
+			Criteria: Criteria{Query: "has:attachment"},
+			Action:   Actions{Star: true},
+		}
+		local := Filters{f3, f1, f4, f2}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f3, f4}, got)
+	})
+
+	t.Run("modified criteria is returned as new", func(t *testing.T) {
+		local := Filters{f1, f2ModifiedCriteria}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f2ModifiedCriteria}, got)
+	})
+
+	t.Run("modified action is returned as new", func(t *testing.T) {
+		local := Filters{f1, f2ModifiedAction}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f2ModifiedAction}, got)
+	})
+
+	t.Run("upstream extra filters not returned", func(t *testing.T) {
+		local := Filters{f1}
+		upstream := Filters{f1WithID, f2WithID, f3}
+		got := FilterNew(local, upstream)
+		assert.Empty(t, got)
+	})
+
+	t.Run("duplicate filters in local vs single upstream", func(t *testing.T) {
+		local := Filters{f1, f2, f1}
+		upstream := Filters{f1WithID, f2WithID}
+		got := FilterNew(local, upstream)
+		assert.Equal(t, Filters{f1}, got)
+	})
+}
